@@ -24,7 +24,8 @@ def countryCodes():
 @app.route('/resources/classdefinitions')
 def classDefinitions():
     return '<h3>This is a Flask web application.</h3>'
-
+ 
+ #Admin
 @app.route('/login/')
 def login():
     return '<h3>This is a Flask web application.</h3>'
