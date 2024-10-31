@@ -1,0 +1,62 @@
+
+
+/* Navigation Bar */
+#nav-bar{
+    background-color: rgb(1, 1, 90);
+    
+}
+#dropdownMenuButton{
+    color: white;
+    position: relative;
+    top: 22px
+}
+#dropdown-menu{
+
+}
+#nav-items{
+    color: rgb(255, 255, 255);
+    padding-right: 10px ;
+    display:inline-block;
+    border-color: aliceblue;
+    position: relative;
+    top: 20px
+}
+#nav-items a:hover{
+font-family: 'Source Sans Pro',sans-serif;
+text-decoration: none;
+-webkit-transition: all .4s ease;
+transition: all .4s ease;
+line-height: 4ex;
+}
+#dropdownMenuButton{
+    color: white;
+}
+
+
+/* Forms */
+.form-correction {
+    padding: 30px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+}
+#form-daily{
+    width: 50%;
+
+}
+#date-picker{
+    width: max-content;
+}
+
+#date-div {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap; 
+    align-items: stretch;
+    width: 12%;
+}
+body {
+    background-color: rgb(255, 255, 255);
+}
