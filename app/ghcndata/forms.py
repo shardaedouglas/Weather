@@ -31,8 +31,8 @@ STATION_TYPES = (
 class GhcnDataForm(FlaskForm):
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
     date = DateField('Date', validators=[InputRequired()])
-    state = SelectField('State', choices=STATES, default = 'Select')
-    country = SelectField('Country', choices=COUNTRIES, default = 'Select')
-    station_type = SelectField('Type', choices=STATION_TYPES, default = 'Select')
+    state = SelectField('State', choices=STATES, default ='SELECT')
+    country = SelectField('Country', choices=COUNTRIES, default='SELECT')
+    station_type = SelectField('Type', choices=STATION_TYPES, default ='1')
     submit = SubmitField('Submit')
-    test = SelectField('My Field', choices=[('value1', 'Label 1'), ('value2', 'Label 2')], default='value2')
+    # test = SelectField('My Field', choices=[('value1', 'Label 1'), ('value2', 'Label 2')], default='value2')
