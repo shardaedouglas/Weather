@@ -2,4 +2,43 @@
 
 {% block content %}
 
+<div class="container-md">
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{ghcnForm.ghcn_id}} <b style="margin-left:9px;">Or</b>
+            </div>
+            
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Country</span>
+                {{ghcnForm.country}} <b style="margin:2px;">Or</b>
+            </div>
+            
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >State</span>
+                {{ghcnForm.state}}
+            </div>
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default">Type</span>
+                {{ghcnForm.station_type}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnForm.date}}
+            </div>
+        </div>
+        <div class="col input-group" style="flex-wrap: nowrap;">
+            <span class="input-group-text" id="inputGroup-sizing-default" >State</span>
+            {{ghcnForm.test}}
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            {{ ghcnForm.submit() }}
+        </div>
+
+    </form>
+</div>
+
 {% endblock content %}
