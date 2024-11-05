@@ -1,0 +1,904 @@
+<h1>README FILE FOR DAILY GLOBAL HISTORICAL CLIMATOLOGY NETWORK (GHCN-DAILY) </h1>
+<p>Version 3.31</p>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+<br>
+
+<h1>How to cite:</h1>
+
+<p>
+    Note that the GHCN-Daily dataset itself now has a DOI (Digital Object Identifier)
+    so it may be relevant to cite both the methods/overview journal article as well
+    as the specific version of the dataset used.
+</p>
+
+<p>
+    The journal article describing GHCN-Daily is:
+    Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012:  An overview
+    of the Global Historical Climatology Network-Daily Database.  Journal of Atmospheric
+    and Oceanic Technology, 29, 897-910, doi:10.1175/JTECH-D-11-00103.1.
+</p>
+
+<p>
+    To acknowledge the specific version of the dataset used, please cite:
+    Menne, M.J., I. Durre, B. Korzeniewski, S. McNeill, K. Thomas, X. Yin, S. Anthony, R. Ray,
+    R.S. Vose, B.E.Gleason, and T.G. Houston, 2012: Global Historical Climatology Network -
+    Daily (GHCN-Daily), Version 3. [indicate subset used following decimal,
+    e.g. Version 3.12].
+</p>
+
+<p>NOAA National Climatic Data Center. http://doi.org/10.7289/V5D21VHZ [access date].</p>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+<h1>I. DOWNLOAD QUICK START</h1>
+
+<p>Start by downloading "ghcnd-stations.txt," which has metadata for all stations.</p>
+
+<p>Then download one of the following TAR files:</p>
+
+  <ul>
+      <li>"ghcnd-all.tar.gz" if you want all of GHCN-Daily, OR</li>
+      <li>"ghcnd-gsn.tar.gz" if you only want the GCOS Surface Network (GSN), OR</li>
+      <li>"ghcnd-hcn.tar.gz" if you only want the U.S. Historical Climatology Network
+            (U.S. HCN).
+      </li>
+  </ul>
+
+<p>
+    Then uncompress and untar the contents of the tar file,
+    e.g., by using the following Linux command:
+</p>
+
+<p>tar xzvf ghcnd_xxx.tar.gz</p>
+
+<p>
+    Where "xxx" stands for "all", "hcn", or "gsn" as applicable. The files will be
+    extracted into a subdirectory under the directory where the command is issued.
+</p>
+
+<p>ALTERNATIVELY, if you only need data for one station:</p>
+
+  <ul>
+      <li>Find the station's name in "ghcnd-stations.txt" and note its station
+          identification code (e.g., PHOENIX AP (Airport) is "USW00023183"); and
+      </li>
+      <li> Download the data file (i.e., ".dly" file) that corresponds to this code
+            <br>(e.g., "USW00023183.dly" has the data for PHOENIX AP).
+            <br>Note that the ".dly" file is located in the "all" subdirectory.
+      </li>
+  </ul>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+<h1>II. CONTENTS OF ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily</h1>
+
+<dl class="row">
+<dt class="col-sm-3">all:</dt>
+<dd class="col-sm-9">Directory with ".dly" files for all of GHCN-Daily</dd>
+<dt class="col-sm-3">gsn:</dt>
+<dd class="col-sm-9">Directory with ".dly" files for the GCOS Surface Network (GSN)</dd>
+<dt class="col-sm-3">hcn:</dt>
+<dd class="col-sm-9">Directory with ".dly" files for U.S. HCN</dd>
+<dt class="col-sm-3">by_year:</dt>
+<dd class="col-sm-9">Directory with GHCN Daily files parsed into yearly subsets with observation times where available.  See the /by_year/readme.txt and /by_year/ghcn-daily-by_year-format.rtf files for further details</dd>
+<dt class="col-sm-3">by_station:</dt>
+<dd class="col-sm-9">Directory of GHCN daily station data in period of record comma separate (csv) files.  See readme-by_station.txt for additional details</dd>
+<dt class="col-sm-3">grid:</dt>
+<dd class="col-sm-9">Directory with the GHCN-Daily gridded dataset known as HadGHCND</dd>
+<dt class="col-sm-3">papers:</dt>
+<dd class="col-sm-9">Directory with pdf versions of journal articles relevant to the GHCN-Daily dataset</dd>
+<dt class="col-sm-3">figures:</dt>
+<dd class="col-sm-9">Directory containing figures that summarize the inventory and processing of GHCN-Daily station records</dd>
+<dt class="col-sm-3">superghcnd:</dt>
+<dd class="col-sm-9">Directory containing a comma delimited format of GHCN-Daily with station metadata integrated into the data. Two files are provided each day. The superghcnd_full file contains all GHCN-Daily data in comma delimited format and the superghcnd_diff file which contains the differences in the dataset between two successive update runs.  See the readme.txt file in the superghcnd directory for more details.</dd>
+
+<dt class="col-sm-3">ghcnd-all.tar.gz:</dt>
+<dd class="col-sm-9">TAR file of the GZIP-compressed files in the "all" directory</dd>
+<dt class="col-sm-3">ghcnd-gsn.tar.gz:</dt>
+<dd class="col-sm-9">TAR file of the GZIP-compressed "gsn" directory</dd>
+<dt class="col-sm-3">ghcnd-hcn.tar.gz:</dt>
+<dd class="col-sm-9">TAR file of the GZIP-compressed "hcn" directory</dd>
+
+<dt class="col-sm-3">ghcnd-countries.txt:</dt>
+<dd class="col-sm-9">List of country codes (FIPS) and names</dd>
+<dt class="col-sm-3">ghcnd-inventory.txt:</dt>
+<dd class="col-sm-9">File listing the periods of record for each station and element</dd>
+<dt class="col-sm-3">ghcnd-stations.txt:</dt>
+<dd class="col-sm-9">List of stations and their metadata (e.g., coordinates)</dd>
+<dt class="col-sm-3">ghcnd-states.txt:</dt>
+<dd class="col-sm-9">List of U.S. state and Canadian Province codes used in ghcnd-stations.txt</dd>
+<dt class="col-sm-3">ghcnd-version.txt:</dt>
+<dd class="col-sm-9">File that specifies the current version of GHCN Daily</dd>
+<dt class="col-sm-3">mingle-list.txt:</dt>
+<dd class="col-sm-9">File that provides a list of each source and source identifiers associated with each GHCN-Daily station.</dd>
+
+<dt class="col-sm-3">readme.txt:</dt>
+<dd class="col-sm-9">This file</dd>
+<dt class="col-sm-3">status.txt:</dt>
+<dd class="col-sm-9">Notes on the current status of GHCN-Daily</dd>
+
+</dl>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+<h1>III. FORMAT OF DATA FILES (".dly" FILES)</h1>
+
+Each ".dly" file contains data for one station.  The name of the file
+corresponds to a station's identification code.  For example, "USC00026481.dly"
+<p>contains the data for the station with the identification code USC00026481).</p>
+
+<p>Each record in a file contains one month of daily data.
+<br>The variables on each line include the following:</p>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th scope="col">Variable</th>
+            <th scope="col">Columns</th>
+            <th scope="col">Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>ID</td>
+            <td>1-11</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>YEAR</td>
+            <td>12-15</td>
+            <td>Integer</td>
+
+        </tr>
+        <tr>
+            <td>MONTH</td>
+            <td>16-17</td>
+            <td>Integer</td>
+
+        </tr>
+        <tr>
+            <td>ELEMENT</td>
+            <td>18-21</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>VALUE1</td>
+            <td>22-26</td>
+            <td>Integer</td>
+
+        </tr>
+        <tr>
+            <td>MFLAG1</td>
+            <td>27-27</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>QFLAG1</td>
+            <td>28-28</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>SFLAG1</td>
+            <td>29-29</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>VALUE2</td>
+            <td>30-34</td>
+            <td>Integer</td>
+
+        </tr>
+        <tr>
+            <td>MFLAG2</td>
+            <td>35-35</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>QFLAG2</td>
+            <td>36-36</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>SFLAG2</td>
+            <td>37-37</td>
+            <td>Character</td>
+
+        </tr>
+          <tr>
+            <td>.</td>
+             <td>.</td>
+            <td>.</td>
+
+          </tr>
+          <tr>
+            <td>.</td>
+             <td>.</td>
+            <td>.</td>
+
+          </tr>
+          <tr>
+            <td>.</td>
+             <td>.</td>
+            <td>.</td>
+
+          </tr>
+        <tr>
+            <td>VALUE31</td>
+            <td>262-266</td>
+            <td>Integer</td>
+
+        </tr>
+
+        <tr>
+            <td> MFLAG31</td>
+            <td>267-267</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>QFLAG31</td>
+            <td>268-268</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>SFLAG31</td>
+            <td>269-269</td>
+            <td>Character</td>
+
+        </tr>
+    </tbody>
+</table>
+
+<p>------------------------------</p>
+
+<p>These variables have the following definitions:</p>
+
+<dl class="row">
+    <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9">is the station identification code.  Please see "ghcnd-stations.txt" for a complete list of stations and their metadata.</dd>
+    <dt class="col-sm-3">YEAR</dt>
+    <dd class="col-sm-9">is the year of the record.</dd>
+
+    <dt class="col-sm-3">MONTH</dt>
+    <dd class="col-sm-9">is the month of the record.</dd>
+
+    <dt class="col-sm-3">ELEMENT</dt>
+    <dd class="col-sm-9">
+        is the element type. There are five core elements as well as a number of addition elements.
+               <p>The five core elements are:</p>
+
+                   <ul>
+                       <li>PRCP = Precipitation (tenths of mm)</li>
+                        <li>SNOW = Snowfall (mm)</li>
+                        <li>SNWD = Snow depth (mm)</li>
+                       <li>TMAX = Maximum temperature (tenths of degrees C)</li>
+                       <li>TMIN = Minimum temperature (tenths of degrees C)</li>
+                   </ul>
+
+               <p>The other elements are:</p>
+
+               <ul>
+               <li>ACMC = Average cloudiness midnight to midnight from 30-second ceilometer data (percent)</li>
+               <li>ACMH = Average cloudiness midnight to midnight from manual observations (percent)</li>
+                   <li>ACSC = Average cloudiness sunrise to sunset from 30-second ceilometer data (percent)</li>
+               <li>ACSH = Average cloudiness sunrise to sunset from manual observations (percent)</li>
+                   <li>ADPT = Average Dew Point Temperature for the day (tenths of degrees C)</li>
+                   <li>ASLP = Average Sea Level Pressure for the day (hPa * 10)</li>
+                   <li>ASTP = Average Station Level Pressure for the day (hPa * 10)</li>
+                   <li>AWBT = Average Wet Bulb Temperature for the day (tenths of degrees C)</li>
+                   <li>AWDR = Average daily wind direction (degrees)</li>
+               <li>AWND = Average daily wind speed (tenths of meters per second)</li>
+               <li>DAEV = Number of days included in the multiday evaporation total (MDEV)</li>
+               <li>DAPR = Number of days included in the multiday precipiation total (MDPR)</li>
+                   <li>DASF = Number of days included in the multiday snowfall total (MDSF)</li>
+               <li>DATN = Number of days included in the multiday minimum temperature (MDTN)</li>
+               <li>DATX = Number of days included in the multiday maximum temperature (MDTX)</li>
+                   <li>DAWM = Number of days included in the multiday wind movement (MDWM)</li>
+               <li>DWPR = Number of days with non-zero precipitation included in multiday precipitation total (MDPR)</li>
+               <li>EVAP = Evaporation of water from evaporation pan (tenths of mm)</li>
+               <li>FMTM = Time of fastest mile or fastest 1-minute wind (hours and minutes, i.e., HHMM)</li>
+               <li>FRGB = Base of frozen ground layer (cm)</li>
+               <li>FRGT = Top of frozen ground layer (cm)</li>
+               <li>FRTH = Thickness of frozen ground layer (cm)</li>
+               <li>GAHT = Difference between river and gauge height (cm)</li>
+               <li>MDEV = Multiday evaporation total (tenths of mm; use with DAEV)</li>
+               <li>MDPR = Multiday precipitation total (tenths of mm; use with DAPR and DWPR, if available)</li>
+               <li>MDSF = Multiday snowfall total</li>
+               <li>MDTN = Multiday minimum temperature (tenths of degrees C; use with DATN)</li>
+               <li>MDTX = Multiday maximum temperature (tenths of degress C; use with DATX)</li>
+               <li>MDWM = Multiday wind movement (km)</li>
+                   <li>MNPN = Daily minimum temperature of water in an evaporation pan (tenths of degrees C)</li>
+                   <li>MXPN = Daily maximum temperature of water in an evaporation pan (tenths of degrees C)</li>
+               <li>PGTM = Peak gust time (hours and minutes, i.e., HHMM)</li>
+               <li>PSUN = Daily percent of possible sunshine (percent)</li>
+                   <li>RHAV = Average relative humidity for the day (percent)</li>
+                   <li>RHMN = Minimum relative humidity for the day (percent)</li>
+                   <li>RHMX = Maximum relative humidity for the day (percent)</li>
+               <li>SN*# = Minimum soil temperature (tenths of degrees C) where * corresponds to a code for ground cover and # corresponds to a code for soil depth.</li>
+
+                        <ul>
+                            Ground cover codes include the following:
+                            <ul>
+                                <li>0 = unknown</li>
+                                <li>1 = grass</li>
+                                <li>2 = fallow</li>
+                                <li>3 = bare ground</li>
+                                <li>4 = brome grass</li>
+                                <li>5 = sod</li>
+                                <li>6 = straw multch</li>
+                                <li>7 = grass muck</li>
+                                <li>8 = bare muck</li>
+                            </ul>
+                            Depth codes include the following:
+                            <ul>
+                                <li>1 = 5 cm</li>
+                                <li>2 = 10 cm</li>
+                                <li>3 = 20 cm</li>
+                                <li>4 = 50 cm</li>
+                                <li>5 = 100 cm</li>
+                                <li>6 = 150 cm</li>
+                                <li>7 = 180 cm</li>
+                            </ul>
+                        </ul>
+
+               <li>SX*# = Maximum soil temperature (tenths of degrees C) where * corresponds to a code for ground cover and # corresponds to a code for soil depth. See SN*# for ground cover and depth codes.</li>
+                   <li>TAXN = Average daily temperature computed as (TMAX+TMIN)/2.0 (tenths of degrees C)</li>
+                   <li>TAVG = Average daily temperature (tenths of degrees C) </li>
+                   <ul class="list-unstyled">
+                       <li>[Note that TAVG from source 'S' corresponds to an average of hourly readings for the period ending at 2400 UTC rather than local midnight or other Local Standard Time according to a specific Met Service's protocol]</li>
+                        <li>[For sources other than 'S' TAVG is computed in a variety of ways including traditional fixed hours of the day whereas TAXN is solely computed as (TMAX+TMIN)/2.0]</li>
+                   </ul>
+                   <li>THIC = Thickness of ice on water (tenths of mm)</li>
+               <li>TOBS = Temperature at the time of observation (tenths of degrees C)</li>
+               <li>TSUN = Daily total sunshine (minutes)</li>
+               <li>WDF1 = Direction of fastest 1-minute wind (degrees)</li>
+               <li>WDF2 = Direction of fastest 2-minute wind (degrees)</li>
+               <li>WDF5 = Direction of fastest 5-second wind (degrees)</li>
+               <li>WDFG = Direction of peak wind gust (degrees)</li>
+               <li>WDFI = Direction of highest instantaneous wind (degrees)</li>
+               <li>WDFM = Fastest mile wind direction (degrees)</li>
+                   <li>WDMV = 24-hour wind movement (km)</li>
+                   <li>WESD = Water equivalent of snow on the ground (tenths of mm)</li>
+               <li>WESF = Water equivalent of snowfall (tenths of mm)</li>
+               <li>WSF1 = Fastest 1-minute wind speed (tenths of meters per second)</li>
+               <li>WSF2 = Fastest 2-minute wind speed (tenths of meters per second)</li>
+               <li>WSF5 = Fastest 5-second wind speed (tenths of meters per second)</li>
+               <li>WSFG = Peak gust wind speed (tenths of meters per second)</li>
+               <li>WSFI = Highest instantaneous wind speed (tenths of meters per second)</li>
+               <li>WSFM = Fastest mile wind speed (tenths of meters per second)</li>
+               <li>WT** = Weather Type where ** has one of the following values:</li>
+
+                          <ul>
+                              <li>01 = Fog, ice fog, or freezing fog (may include heavy fog)</li>
+                              <li>02 = Heavy fog or heaving freezing fog (not always distinquished from fog)</li>
+                              <li>03 = Thunder</li>
+                              <li>04 = Ice pellets, sleet, snow pellets, or small hail</li>
+                              <li>05 = Hail (may include small hail)</li>
+                              <li>06 = Glaze or rime</li>
+                              <li>07 = Dust, volcanic ash, blowing dust, blowing sand, or blowing obstruction</li>
+                              <li>08 = Smoke or haze</li>
+                              <li>09 = Blowing or drifting snow</li>
+                              <li>10 = Tornado, waterspout, or funnel cloud</li>
+                              <li>11 = High or damaging winds</li>
+                              <li>12 = Blowing spray</li>
+                              <li>13 = Mist</li>
+                              <li>14 = Drizzle</li>
+                              <li>15 = Freezing drizzle</li>
+                              <li>16 = Rain (may include freezing rain, drizzle, and freezing drizzle)</li>
+                              <li>17 = Freezing rain</li>
+                              <li>18 = Snow, snow pellets, snow grains, or ice crystals</li>
+                              <li>19 = Unknown source of precipitation</li>
+                              <li>21 = Ground fog</li>
+                              <li>22 = Ice fog or freezing fog</li>
+                          </ul>
+
+                <li>WV** = Weather in the Vicinity where ** has one of the following values:</li>
+
+                   <ul>
+                       <li>01 = Fog, ice fog, or freezing fog (may include heavy fog)</li>
+                       <li>03 = Thunder</li>
+                       <li>07 = Ash, dust, sand, or other blowing obstruction</li>
+                       <li>18 = Snow or ice crystals</li>
+                       <li>20 = Rain or snow shower</li>
+                   </ul>
+                </ul>
+    </dd>
+
+    <dt class="col-sm-3">VALUE1</dt>
+    <dd class="col-sm-9">is the value on the first day of the month (missing = -9999).</dd>
+
+    <dt class="col-sm-3">MFLAG1</dt>
+    <dd class="col-sm-9">
+        is the measurement flag for the first day of the month.  There are ten possible values:
+                   <ul>
+                       <li>Blank = no measurement information applicable</li>
+                       <li>B     = precipitation total formed from two 12-hour totals</li>
+                       <li>D     = precipitation total formed from four six-hour totals</li>
+                        <li>H     = represents highest or lowest hourly temperature (TMAX or TMIN)</li>
+                        <li>or the average of hourly values (TAVG)</li>
+                        <li>K     = converted from knots</li>
+                        <li>L     = temperature appears to be lagged with respect to reported</li>
+                        <li>hour of observation</li>
+                       <li>O     = converted from oktas</li>
+                        <li>P     = identified as "missing presumed zero" in DSI 3200 and 3206</li>
+                       <li>T     = trace of precipitation, snowfall, or snow depth</li>
+                        <li>W     = converted from 16-point WBAN code (for wind direction)</li>
+                   </ul>
+    </dd>
+
+    <dt class="col-sm-3">QFLAG1</dt>
+    <dd class="col-sm-9">
+        is the quality flag for the first day of the month.  There are fourteen possible values:
+                   <ul>
+                       <li>Blank = did not fail any quality assurance check</li>
+                       <li>D     = failed duplicate check</li>
+                       <li>G     = failed gap check</li>
+                       <li>I     = failed internal consistency check</li>
+                       <li>K     = failed streak/frequent-value check</li>
+                        <li>L     = failed check on length of multiday period</li>
+                       <li>M     = failed megaconsistency check</li>
+                       <li>N     = failed naught check</li>
+                       <li>O     = failed climatological outlier check</li>
+                       <li>R     = failed lagged range check</li>
+                       <li>S     = failed spatial consistency check</li>
+                       <li>T     = failed temporal consistency check</li>
+                       <li>W     = temperature too warm for snow</li>
+                       <li>X     = failed bounds check</li>
+                        <li>Z     = flagged as a result of an official Datzilla investigation</li>
+                   </ul>
+    </dd>
+
+    <dt class="col-sm-3">SFLAG1</dt>
+    <dd class="col-sm-9">
+        is the source flag for the first day of the month. There are thirty possible values (including blank, upper and lower case letters):
+                   <ul>
+                       <li>Blank = No source (i.e., data value missing)</li>
+                       <li>0     = U.S. Cooperative Summary of the Day (NCDC DSI-3200)</li>
+                       <li>6     = CDMP Cooperative Summary of the Day (NCDC DSI-3206)</li>
+                       <li>7     = U.S. Cooperative Summary of the Day -- Transmitted</li>
+                           <li>via WxCoder3 (NCDC DSI-3207)</li>
+                       <li>A     = U.S. Automated Surface Observing System (ASOS) real-time data (since January 1, 2006)</li>
+                                      <li>a     = Australian data from the Australian Bureau of Meteorology</li>
+                       <li>B     = U.S. ASOS data for October 2000-December 2005 (NCDC DSI-3211)</li>
+                                      <li>b     = Belarus update</li>
+                                      <li>C     = Environment Canada</li>
+                                      <li>D     = Short time delay US National Weather Service CF6 daily</li>
+                           <li>summaries provided by the High Plains Regional Climate Center</li>
+                                      <li>E     = European Climate Assessment and Dataset (Klein Tank et al., 2002)</li>
+                       <li>F     = U.S. Fort data</li>
+                       <li>G     = Official Global Climate Observing System (GCOS) or other government-supplied data</li>
+                       <li>H     = High Plains Regional Climate Center real-time data</li>
+                       <li>I     = International collection (non U.S. data received through personal contacts)</li>
+                       <li>K     = U.S. Cooperative Summary of the Day data digitized from paper observer forms (from 2011 to present)</li>
+                       <li>M     = Monthly METAR Extract (additional ASOS data)</li>
+                                      <li>f     = Data provided courtesy of the Fiji Met Service</li>
+                       <li>m     = Data from the Mexican National Water Commission (Comision National del Agua -- CONAGUA)</li>
+                                      <li>N     = Community Collaborative Rain, Hail,and Snow (CoCoRaHS)</li>
+                                      <li>Q     = Data from several African countries that had been "quarantined", that is, withheld from public release until permission was granted from the respective meteorological services</li>
+                       <li>R     = NCEI Reference Network Database (Climate Reference Network and Regional Climate Reference Network)</li>
+                                      <li>r     = All-Russian Research Institute of Hydrometeorological Information-World Data Center</li>
+                       <li>S     = Global Summary of the Day (NCDC DSI-9618)</li>
+                               <li>NOTE: "S" values are derived from hourly synoptic reports exchanged on the Global Telecommunications System (GTS). Daily values derived in this fashion may differ significantly from "true" daily data, particularly for precipitation (i.e., use with caution).</li>
+                                      <li>s     = China Meteorological Administration/National Meteorological Information Center/ Climatic Data Center (http://cdc.cma.gov.cn)</li>
+                       <li>T     = SNOwpack TELemtry (SNOTEL) data obtained from the U.S. Department of Agriculture's Natural Resources Conservation Service</li>
+                                      <li>U     = Remote Automatic Weather Station (RAWS) data obtained from the Western Regional Climate Center</li>
+                                      <li>u     = Ukraine update</li>
+                                      <li>W     = WBAN/ASOS Summary of the Day from NCDC's Integrated Surface Data (ISD).</li>
+                       <li>X     = U.S. First-Order Summary of the Day (NCDC DSI-3210)</li>
+                                      <li>Z     = Datzilla official additions or replacements</li>
+                                      <li>z     = Uzbekistan update</li>
+                   </ul>
+               When data are available for the same time from more than one source, the highest priority source is chosen according to the following priority order (from highest to lowest):
+               Z,R,D,0,6,C,X,W,K,7,F,B,M,f,m,r,E,z,u,b,s,a,G,Q,I,A,N,T,U,H,S
+    </dd>
+
+
+    <dt class="col-sm-3">VALUE2</dt>
+    <dd class="col-sm-9">is the value on the second day of the month</dd>
+
+    <dt class="col-sm-3">MFLAG2</dt>
+    <dd class="col-sm-9">is the measurement flag for the second day of the month.</dd>
+
+    <dt class="col-sm-3">QFLAG2</dt>
+    <dd class="col-sm-9">is the quality flag for the second day of the month.</dd>
+
+    <dt class="col-sm-3">SFLAG2</dt>
+    <dd class="col-sm-9">is the source flag for the second day of the month.</dd>
+
+</dl>
+    ... and so on through the 31st day of the month.  Note: If the month has less than 31 days, then the remaining variables are set to missing (e.g., for April, VALUE31 = -9999, MFLAG31 = blank, QFLAG31 = blank, SFLAG31 = blank).
+
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+
+<h1>IV. FORMAT OF "ghcnd-stations.txt"</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Columns</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>ID</td>
+            <td>1-11</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>LATITUDE</td>
+            <td>13-20</td>
+            <td>Real</td>
+        </tr>
+        <tr>
+            <td>LONGITUDE</td>
+            <td>22-30</td>
+            <td>Real</td>
+        </tr>
+        <tr>
+            <td>ELEVATION</td>
+            <td>32-37</td>
+            <td>Real</td>
+        </tr>
+        <tr>
+            <td>STATE</td>
+            <td>39-40</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>NAME</td>
+            <td>42-71</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>GSN FLAG</td>
+            <td>73-75</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>HCN/CRN FLAG</td>
+            <td>77-79</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>WMO ID</td>
+            <td>81-85</td>
+            <td>Character</td>
+        </tr>
+    </tbody>
+
+</table>
+
+<p>These variables have the following definitions:</p>
+<dl  class="row">
+
+    <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9">
+        is the station identification code.  Note that the first two characters denote the FIPS  country code, the third character is a network code that identifies the station numbering system used, and the remaining eight characters contain the actual station ID.
+
+        <p>
+            <br>See "ghcnd-countries.txt" for a complete list of country codes.
+            <br>See "ghcnd-states.txt" for a list of state/province/territory codes.
+        </p>
+
+        <p>The network code  has the following five values:</p>
+
+                   <ul>
+                       <li>0 = unspecified (station identified by up to eight alphanumeric characters)</li>
+                                      <li>1 = Community Collaborative Rain, Hail,and Snow (CoCoRaHS) based identification number. To ensure consistency with with GHCN Daily, all numbers in the original CoCoRaHS IDs have been left-filled to make them all four digits long. In addition, the characters "-" and "_" have been removed to ensure that the IDs do not exceed 11 characters when preceded by "US1". For example, the CoCoRaHS ID "AZ-MR-156" becomes "US1AZMR0156" in GHCN-Daily</li>
+                       <li>C = U.S. Cooperative Network identification number (last six characters of the GHCN-Daily ID)</li>
+                                      <li>E = Identification number used in the ECA&D non-blended dataset</li>
+                                      <li>M = World Meteorological Organization ID (last five characters of the GHCN-Daily ID)</li>
+                                      <li>N = Identification number used in data supplied by a National Meteorological or Hydrological Center</li>
+                       <li>P = "Pre-Coop" (an internal identifier assigned by NCEI for station records collected prior to the establishment of the U.S. Weather Bureau and their management of the U.S. Cooperative (Coop) Observer Program)</li>
+                                      <li>R = U.S. Interagency Remote Automatic Weather Station (RAWS) identifier</li>
+                                      <li>S = U.S. Natural Resources Conservation Service SNOwpack TELemtry (SNOTEL) station identifier</li>
+                       <li>W = WBAN identification number (last five characters of the GHCN-Daily ID)</li>
+                   </ul>
+    </dd>
+
+    <dt class="col-sm-3">LATITUDE</dt>
+    <dd class="col-sm-9">is latitude of the station (in decimal degrees).</dd>
+
+    <dt class="col-sm-3">LONGITUDE</dt>
+    <dd class="col-sm-9">is the longitude of the station (in decimal degrees).</dd>
+
+    <dt class="col-sm-3">ELEVATION</dt>
+    <dd class="col-sm-9">is the elevation of the station (in meters, missing = -999.9).</dd>
+
+
+    <dt class="col-sm-3">STATE</dt>
+    <dd class="col-sm-9">is the U.S. postal code for the state (for U.S. stations only).</dd>
+
+    <dt class="col-sm-3">NAME</dt>
+    <dd class="col-sm-9">is the name of the station.</dd>
+
+    <dt class="col-sm-3">GSN FLAG</dt>
+    <dd class="col-sm-9">
+        is a flag that indicates whether the station is part of the GCOS Surface Network (GSN). The flag is assigned by cross-referencing the number in the WMOID field with the official list of GSN stations.
+
+            <br>There are two possible values:
+            <ul>
+                <li>Blank = non-GSN station or WMO Station number not available</li>
+                <li>GSN   = GSN station</li>
+            </ul>
+
+    </dd>
+
+    <dt class="col-sm-3">HCN/CRN FLAG</dt>
+    <dd class="col-sm-9">
+        is a flag that indicates whether the station is part of the U.S. Historical Climatology Network (HCN) or U.S. Climate Refererence Network (CRN).  There are three possible values:
+                   <ul>
+                       <li>Blank = Not a member of the U.S. Historical Climatology or U.S. Climate Reference Networks</li>
+                       <li>HCN   = U.S. Historical Climatology Network station</li>
+                        <li>CRN   = U.S. Climate Reference Network or U.S. Regional Climate Network Station</li>
+                   </ul>
+    </dd>
+
+    <dt class="col-sm-3">WMO ID</dt>
+    <dd class="col-sm-9">is the World Meteorological Organization (WMO) number for the station.  If the station has no WMO number (or one has not yet been matched to this station), then the field is blank.</dd>
+</dl>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+
+<h1>V. FORMAT OF "ghcnd-countries.txt"</h1>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Columns</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>CODE</td>
+            <td>1-2</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>NAME</td>
+            <td>4-64</td>
+            <td>Character</td>
+        </tr>
+    </tbody>
+
+</table>
+
+These variables have the following definitions:
+
+<dl class="row">
+    <dt class="col-sm-3">CODE</dt>
+    <dd class="col-sm-9">is the FIPS country code of the country where the station is located (from FIPS Publication 10-4 at www.cia.gov/cia/publications/factbook/appendix/appendix-d.html).</dd>
+
+    <dt class="col-sm-3">NAME</dt>
+    <dd class="col-sm-9">is the name of the country.</dd>
+</dl>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+
+<h1>VI. FORMAT OF "ghcnd-states.txt"</h1>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Columns</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>CODE</td>
+            <td>1-2</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>NAME</td>
+            <td>4-50</td>
+            <td>Character</td>
+        </tr>
+    </tbody>
+
+</table>
+
+These variables have the following definitions:
+
+<dl class="row">
+    <dt class="col-sm-3">CODE</dt>
+    <dd class="col-sm-9">is the POSTAL code of the U.S. state/territory or Canadian province where the station is located</dd>
+
+    <dt class="col-sm-3">NAME</dt>
+    <dd class="col-sm-9">is the name of the state, territory or province.</dd>
+</dl>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+
+<h1>VII. FORMAT OF "ghcnd-inventory.txt"</h1>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Columns</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>ID</td>
+            <td>1-11</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>LATITUDE</td>
+            <td>13-20</td>
+            <td>Real</td>
+
+        </tr>
+        <tr>
+            <td>LONGITUDE</td>
+            <td>22-30</td>
+            <td>Real</td>
+
+        </tr>
+        <tr>
+            <td>ELEMENT</td>
+            <td>32-35</td>
+            <td>Character</td>
+
+        </tr>
+        <tr>
+            <td>FIRSTYEAR</td>
+            <td>37-40</td>
+            <td>Integer</td>
+
+        </tr>
+        <tr>
+            <td>LASTYEAR</td>
+            <td>42-45</td>
+            <td>Integer</td>
+
+        </tr>
+
+    </tbody>
+</table>
+
+These variables have the following definitions:
+
+<dl class="row">
+    <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9">is the station identification code.  Please see "ghcnd-stations.txt" for a complete list of stations and their metadata.</dd>
+
+    <dt class="col-sm-3">LATITUDE</dt>
+    <dd class="col-sm-9">is the latitude of the station (in decimal degrees).</dd>
+
+    <dt class="col-sm-3">LONGITUDE</dt>
+    <dd class="col-sm-9">is the longitude of the station (in decimal degrees).</dd>
+
+    <dt class="col-sm-3">ELEMENT</dt>
+    <dd class="col-sm-9">is the element type.  See section III for a definition of elements.</dd>
+
+    <dt class="col-sm-3">FIRSTYEAR</dt>
+    <dd class="col-sm-9">is the first year of unflagged data for the given element.</dd>
+
+    <dt class="col-sm-3">LASTYEAR</dt>
+    <dd class="col-sm-9">is the last year of unflagged data for the given element.</dd>
+</dl>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+<h1>VIII. FORMAT OF "mingle-list.txt"</h1>
+
+<table class="table">
+    
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Column(s)</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>GHCN-Daily Identifier (ID)</td>
+            <td>1-11</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>No of sources assoc. with the station (N)</td>
+            <td>13-14</td>
+            <td>Integer</td>
+        </tr>
+        <tr>
+            <td>Source Code of lowest ranking source</td>
+            <td>16</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>Source Idenfier of lowest ranking source</td>
+            <td>18-28</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>Source Code of next lowest ranking source</td>
+            <td>30</td>
+            <td>Character</td>
+        </tr>
+        <tr>
+            <td>Source Identifier of next lowest ranking source</td>
+            <td colspan="2">32-42</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                .
+                <br>.
+                <br>.
+                <br>Up to Nth (highest ranking) source code and source identifier'
+                <br>[See section III for a definition of source codes]
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- -------------------------------------------------------------------------------- -->
+<hr>
+
+<h1>IX.  REFERENCES</h1>
+
+<p>
+    The journal article describing GHCN-Daily is:
+    Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012:  An overview of the Global Historical Climatology Network-Daily Database.  Journal of Atmospheric and Oceanic Technology, 29, 897-910, doi:10.1175/JTECH-D-11-00103.1.
+</p>
+
+<p>
+    To acknowledge the specific version of the dataset used, please cite:
+    Menne, M.J., I. Durre, B. Korzeniewski, S. McNeal, K. Thomas, X. Yin, S. Anthony, R. Ray,
+    R.S. Vose, B.E.Gleason, and T.G. Houston, 2012: Global Historical Climatology Network -
+    Daily (GHCN-Daily), Version 3. [indicate subset used following decimal,
+    e.g. Version 3.12].
+    NOAA National Climatic Data Center. http://doi.org/10.7289/V5D21VHZ [access date].
+</p>
+
+<p>
+    Klein Tank, A.M.G. and Coauthors, 2002. Daily dataset of 20th-century surface
+    air temperature and precipitation series for the European Climate Assessment.
+    Int. J. of Climatol., 22, 1441-1453.
+    Data and metadata available at http://eca.knmi.nl
+</p>
+
+<p>For additional information, please send an e-mail to ncdc.ghcnd@noaa.gov.</p>
