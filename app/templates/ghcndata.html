@@ -38,4 +38,16 @@
     </form>
 </div>
 
+
+<script>
+    // (On this page only) Adds the dropdown searchability using select2 and Jquery.
+    // Instantiates select2 for the named form object. See forms.py for identifiers 
+    $(document).ready(function() {
+        $('#state').select2();
+        $('#country').select2();
+        $('#station_type').select2();   
+    });
+</script>
+
+
 {% endblock content %}
