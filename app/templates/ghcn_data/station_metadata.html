@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+            <label>GHCN ID: </label>
+        </div>
+        <div class="col-sm">
+            <label>WMO ID: </label> <!--Add a tool tip describing what WMO stnads for-->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label>State: </label>
+        </div>
+        <div class="col-sm">
+            <label>Country: </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label>Longitude: </label>
+        </div>
+        <div class="col-sm">
+            <label>Latitude: </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label>GSN Flag: </label> <!--Define Flag with Tool Tip-->
+        </div>
+        <div class="col-sm">
+            <label>HCN Flag: </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button type="button" class="btn btn-secondary">GHCND Inventory</button>
+        </div>
+        <div class="col">
+            <button type="button" class="btn btn-info">Add/Edit Comment</button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}
