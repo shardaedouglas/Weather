@@ -2,6 +2,8 @@ from flask import Flask
 from config import Config
 from .extensions import mail
 
+from flask import render_template
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -34,8 +36,9 @@ def create_app(config_class=Config):
 
 
 
-    # @app.route('/test')
-    # def enterCorrections():
+    @app.route('/test')
+    def test_page():
         # return '<h1>Test</h1>' # Link html templates here instead..
+        return render_template('test.html')
 
     return app
