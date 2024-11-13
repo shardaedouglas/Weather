@@ -2,26 +2,35 @@
 
 {% block content %}
 
-<div class="container-md">
+<div class="container-md form-container">
     <form class="row g-3 align-items-center">
         <div class="row g-3">
             <div class="col input-group">
-                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                {{ghcnForm.ghcn_id}} <b style="margin-left:9px;">Or</b>
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="GHCN ID" checked="checked">
+                <label for="ghcn-id">GHCN ID</label> {{ghcnForm.ghcn_id}}
+
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{ghcnForm.ghcn_id}}-->
             </div>
             
             <div class="col input-group" style="flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Country</span>
-                {{ghcnForm.country}} <b style="margin:2px;">Or</b>
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="Country" checked="checked">
+                <label for="country-option">Country</label> {{ghcnForm.country}}
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >Country</span>
+                {{ghcnForm.country}}-->
+                
             </div>
             
             <div class="col input-group" style="flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >State</span>
-                {{ghcnForm.state}}
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="State" checked="checked">
+                <label for="state-option">State</label> {{ghcnForm.state}}
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >State</span>
+                {{ghcnForm.state}}-->
+                
             </div>
         </div>
         <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
-            <div class="col input-group">
+            <div class="col input-group" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default">Type</span>
                 {{ghcnForm.station_type}}
             </div>

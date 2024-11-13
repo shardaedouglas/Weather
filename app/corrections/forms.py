@@ -1,7 +1,6 @@
 from wtforms.validators import InputRequired, Length
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-
+from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField
 
 
 #Options for multiple choice fields
@@ -31,4 +30,28 @@ CORRECTION_TYPE = (
 )
 
 
-class CorrectionForm(FlaskForm):
+class DailyCorrections(FlaskForm):
+
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    date = DateField('Date', validators=[InputRequired()])
+    element = SelectField('Element', choices=ELEMENTS)
+    action = SelectField('Action', choices=ACTIONS)
+    o_value = StringField('O-Value')
+    e_value = StringField('E-Value')
+    datzilla_number = StringField('Datzilla #')
+    submit = SubmitField('Submit')
+
+class MonthlyCorrections(FlaskForm):
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    date = DateField('Date', validators=[InputRequired()])
+    submit = SubmitField('Submit')
+
+class RangeCorrections(FlaskForm):
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    begin_date = DateField(validators=[InputRequired()])
+    end_date = DateField(validators=[InputRequired()])
+    element = SelectField('Element', choices=ELEMENTS)
+    action = SelectField('Action', choices=ACTIONS)
+    defaults = BooleanField(default="checked")
+    datzilla_number = StringField('Datzilla #')
+    submit = SubmitField('Submit')

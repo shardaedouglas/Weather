@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("input[name='correction-option']").click(function(){
+    if($("#correction-option-daily").is(":checked")){
+            $("#form-daily").show();
+            $("#form-monthly").hide();
+            $("#form-range").hide();
+        }
+    else if($("#correction-option-monthly").is(":checked")){
+        $("#form-daily").hide();
+        $("#form-monthly").show();
+        $("#form-range").hide();
+    }
+    else if($("#correction-option-range").is(":checked")){
+        $("#form-daily").hide();
+        $("#form-monthly").hide();
+        $("#form-range").show();
+    }
+  });
+});
+</script>
+
+
+
+<div>
+    <div class="row">
+        <div class="col">
+            <input class="form-check-input" type="radio" id="correction-option-daily" name="correction-option" value="Daily Correction" checked="checked">
+            <label for="daily-correction">Daily Correction</label>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <input class="form-check-input" type="radio" id="correction-option-monthly" name="correction-option" value="Monthly Correction">
+            <label for="daily-correction">Monthly Correction</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <input class="form-check-input" type="radio" id="correction-option-range" name="correction-option" value="Monthly Correction">
+            <label for="daily-correction">Ranged Correction</label>
+        </div>
+    </div>
+</div>
+
+<!--Daily Form-->
+<div class="container-md form-container" id="form-daily">
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{daily_form.ghcn_id}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{daily_form.date}}
+            </div>
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
+                {{daily_form.datzilla_number}}
+            </div>
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
+                {{daily_form.element}}
+            </div>
+            <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
+                {{daily_form.action}}
+            </div>
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >O-Value</span>
+                {{daily_form.o_value}}
+            </div>
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >E-Value</span>
+                {{daily_form.e_value}}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary">Compare</button>
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-dark">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--Monthly Form-->
+<div class="container-md form-container" id="form-monthly" style="display:none">
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{monthly_form.ghcn_id}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{monthly_form.date}}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-dark">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--Range Form-->
+<div class="container-md form-container" id="form-range" style="display:none">
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{range_form.ghcn_id}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{range_form.begin_date}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{range_form.end_date}}
+            </div>
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
+                {{range_form.datzilla_number}}
+            </div>
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
+                {{range_form.element}}
+            </div>
+            <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
+                {{range_form.action}}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-dark">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}
