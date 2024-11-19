@@ -1,7 +1,6 @@
 from flask import Flask
 from config import Config
 from .extensions import mail, get_db, close_db
-
 from flask import render_template
 
 def create_app(config_class=Config):
