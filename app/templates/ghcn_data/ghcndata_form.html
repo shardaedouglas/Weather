@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-md form-container">
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col input-group">
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="GHCN ID" checked="checked">
+                <label for="ghcn-id">GHCN ID</label> {{ghcnForm.ghcn_id}}
+
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                {{ghcnForm.ghcn_id}}-->
+            </div>
+            
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="Country" checked="checked">
+                <label for="country-option">Country</label> {{ghcnForm.country}}
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >Country</span>
+                {{ghcnForm.country}}-->
+                
+            </div>
+            
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="State" checked="checked">
+                <label for="state-option">State</label> {{ghcnForm.state}}
+                <!--<span class="input-group-text" id="inputGroup-sizing-default" >State</span>
+                {{ghcnForm.state}}-->
+                
+            </div>
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            <div class="col input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default">Type</span>
+                {{ghcnForm.station_type}}
+            </div>
+            <div class="col input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnForm.date}}
+            </div>
+        </div>
+
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            {{ ghcnForm.submit() }}
+        </div>
+
+    </form>
+</div>
+
+
+<script>
+    // (On this page only) Adds the dropdown searchability using select2 and Jquery.
+    // Instantiates select2 for the named form object. See forms.py for identifiers 
+    $(document).ready(function() {
+        $('#state').select2();
+        $('#country').select2();
+        $('#station_type').select2();   
+    });
+</script>
+
+
+{% endblock content %}

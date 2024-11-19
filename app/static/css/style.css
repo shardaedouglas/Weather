@@ -34,7 +34,7 @@ line-height: 4ex;
 
 
 /* Forms */
-.form-correction {
+.form-container {
     padding: 30px;
     border-color: rgb(182, 181, 181);
     border-width: 1px 1px 1px 1px;
@@ -43,6 +43,14 @@ line-height: 4ex;
     border-left-style: solid;
 }
 #form-daily{
+    width: 50%;
+
+}
+#form-monthly{
+    width: 50%;
+
+}
+#form-range{
     width: 50%;
 
 }
