@@ -2,7 +2,6 @@ from wtforms.validators import InputRequired, Length
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField
 
-
 #Options for multiple choice fields
 
 #Station States
