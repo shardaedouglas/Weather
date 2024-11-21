@@ -98,28 +98,36 @@ $(document).ready(function(){
 </div>
 
 <!--Monthly Form-->
-<div class="container-md form-container" id="form-monthly" style="display:none">
-    <form class="row g-3 align-items-center">
-        <div class="row g-3">
-            <div class="col input-group">
-                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                {{monthly_form.ghcn_id}}
+<div class="container-md" id="form-monthly" style="display:none">
+    <div class="form-container">
+        <form class="row g-3 align-items-center">
+            <div class="row g-3">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                    {{monthly_form.ghcn_id}}
+                </div>
+                <div class="col input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                    {{monthly_form.date}}
+                </div>
             </div>
-            <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                {{monthly_form.date}}
+            <div class="row align-items-center">
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-dark">Clear</button>
+                </div>
             </div>
-        </div>
-        <div class="row align-items-center">
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Submit</button>
-            </div>
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-dark">Clear</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
+
+    <div class="container-md" id="input-monthly-data">
+        Testing something. 
+    </div>
 </div>
+
+
 
 <!--Range Form-->
 <div class="container-md form-container" id="form-range" style="display:none">
