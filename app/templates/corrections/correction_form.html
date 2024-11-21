@@ -8,6 +8,7 @@ $(document).ready(function(){
     if($("#correction-option-daily").is(":checked")){
             $("#form-daily").show();
             $("#form-monthly").hide();
+            //$(Monthly-table).hide;
             $("#form-range").hide();
         }
     else if($("#correction-option-monthly").is(":checked")){
@@ -23,6 +24,7 @@ $(document).ready(function(){
   });
 });
 </script>
+
 
 
 
@@ -49,6 +51,8 @@ $(document).ready(function(){
 </div>
 
 <!--Daily Form-->
+<div class="container-sm justify-content-center form-container" id="form-daily">
+    <form class="row g-3 align-items-center">
 <div class="container-md form-container" id="form-daily">
     <form class="row g-3 align-items-center" method="POST" action="/process_correction">
         <div class="row g-3">
@@ -83,7 +87,8 @@ $(document).ready(function(){
                 {{daily_form.e_value}}
             </div>
         </div>
-        <div class="row align-items-center">
+        
+        <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
                 <button type="submit" class="btn btn-success">Submit</button>
             </div>
@@ -120,6 +125,9 @@ $(document).ready(function(){
         </div>
     </form>
 </div>
+<!--Monthly Table -->
+
+
 
 <!--Range Form-->
 <div class="container-md form-container" id="form-range" style="display:none">
