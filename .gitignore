@@ -163,3 +163,5 @@ cython_debug/
 #.idea/
 app/ghcndata/__pycache__/routes.cpython-39.pyc
 app/resources/__pycache__/routes.cpython-39.pyc
+app/__pycache__/__init__.cpython-39.pyc
+
