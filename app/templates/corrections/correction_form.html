@@ -51,11 +51,9 @@ $(document).ready(function(){
 </div>
 
 <!--Daily Form-->
-<div class="container-sm justify-content-center form-container" id="form-daily">
-    <form class="row g-3 align-items-center">
-<div class="container-md form-container" id="form-daily">
+<div class="container-md justify-content-center form-container" id="form-daily">
     <form class="row g-3 align-items-center" method="POST" action="/process_correction">
-        <div class="row g-3">
+        <div class="row g-3 align-items-center">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
                 {{daily_form.ghcn_id}}
