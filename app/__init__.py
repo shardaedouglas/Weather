@@ -17,22 +17,29 @@ def create_app(config_class=Config):
     @app.teardown_appcontext
     def teardown_db(exception):
         close_db()
-    
-    # Example route
-    # This is just an example for test purposes, and is not meant to be used in the final product.
-    # Any routes that access the db will be set up similar to this:
-    @app.route('/dbTest')
-    def index():
-        try:
-            db = get_db()
-            db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, email TEXT UNIQUE)")
-            db.commit()
-            return "Table created!"
-        except Exception as e:
-            return f"An error occurred: {str(e)}", 500
-    
-    
-    
+        
+        
+    # Initialize the corrections table
+    @app.before_request
+    def initialize_corrections_table():
+        db = get_db()
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS corrections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ghcn_id TEXT NOT NULL,
+            correction_date DATE,
+            begin_date DATE,
+            end_date DATE,
+            element TEXT,
+            action TEXT,
+            o_value TEXT,
+            e_value TEXT,
+            defaults BOOLEAN DEFAULT 1,
+            datzilla_number TEXT
+        )
+        """)
+        db.commit()
+        
     ###### SMTP SETTINGS ######
     app.config['MAIL_SERVER'] = "smtp.gmail.com"
     app.config['MAIL_PORT'] = 587
