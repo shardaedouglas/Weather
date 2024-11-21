@@ -24,16 +24,16 @@
     <div class="row " style="text-align: center">
         <div class="col">
             <div class="table-responsive-sm">
-                <table class="table table-sm table-striped table-bordered" >
+                <table class="table table-sm table-striped table-borderless border" >
                     <thead>
                         <tr>
-                            <th scope="col">day</th>
-                            <th scope="col">TMAX</th>
-                            <th scope="col">TMIN</th>
-                            <th scope="col">TOBS</th>
-                            <th scope="col">PRCP</th>
-                            <th scope="col">SNOW</th>
-                            <th scope="col">SNWD</th>
+                            <th class="ghcn-table-cell" scope="col">day</th>
+                            <th class="ghcn-table-cell" scope="col">TMAX</th>
+                            <th class="ghcn-table-cell" scope="col">TMIN</th>
+                            <th class="ghcn-table-cell" scope="col">TOBS</th>
+                            <th class="ghcn-table-cell" scope="col">PRCP</th>
+                            <th class="ghcn-table-cell" scope="col">SNOW</th>
+                            <th class="ghcn-table-cell" scope="col">SNWD</th>
                             <th scope="col">WTXX</th>
                         </tr>
                     </thead>
@@ -41,13 +41,13 @@
             
                         {% for p in range(31) %}
                             <tr>
-                                <td>{{loop.index}}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td class="ghcn-table-cell">{{loop.index}}</td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
                                 <td></td>
                             </tr>
                         {% endfor %}

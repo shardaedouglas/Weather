@@ -86,3 +86,11 @@ line-height: 4ex;
 body {
     background-color: rgb(255, 255, 255);
 }
+
+
+
+/* GHVN Data View Table cells. 
+Gives a border between the columns of the table. */
+.ghcn-table-cell {
+    border-right: solid 2px grey;
+}
