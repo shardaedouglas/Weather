@@ -41,10 +41,10 @@ line-height: 4ex;
     border-style: solid;
     border-right-style: solid;
     border-left-style: solid;
+    text-align: center;
 }
 #form-daily{
-    width: 50%;
-
+    min-width: 85%;
 }
 #form-monthly{
     width: 50%;
@@ -65,6 +65,32 @@ line-height: 4ex;
     align-items: stretch;
     width: 12%;
 }
+#button-row{
+    margin-top: 15px;
+}
+/* ------------------------Data Displayer Pages -----------------*/
+
+/* View Ghcn Metadata */
+#ghcn-metadata {
+    padding: 30px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+    justify-content: center;
+    text-align: center;
+}
+
+
 body {
     background-color: rgb(255, 255, 255);
+}
+
+
+
+/* GHVN Data View Table cells. 
+Gives a border between the columns of the table. */
+.ghcn-table-cell {
+    border-right: solid 2px grey;
 }

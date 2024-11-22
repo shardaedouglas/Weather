@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container p-4">
+    <!-- Station Data -->
+    <!-- <div class="row ">
+        <div class="col">
+            [Station Location]
+        </div>
+        <div class="col">
+            Date: []
+        </div>
+        <div class="col">
+            Elev: []
+        </div>
+        <div class="col">
+            Lat: []
+        </div>
+        <div class="col">
+            Lon: []
+        </div>
+    </div> -->
+    <!-- Main Data Table -->
+    <div class="row " style="text-align: center">
+        <div class="col">
+            <div class="table-responsive-sm">
+                <table class="table table-sm table-striped table-borderless border" >
+                    <thead>
+                        <tr>
+                            <th class="ghcn-table-cell" scope="col">day</th>
+                            <th class="ghcn-table-cell" scope="col">TMAX</th>
+                            <th class="ghcn-table-cell" scope="col">TMIN</th>
+                            <th class="ghcn-table-cell" scope="col">TOBS</th>
+                            <th class="ghcn-table-cell" scope="col">PRCP</th>
+                            <th class="ghcn-table-cell" scope="col">SNOW</th>
+                            <th class="ghcn-table-cell" scope="col">SNWD</th>
+                            <th scope="col">WTXX</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                        {% for p in range(31) %}
+                            <tr>
+                                <td class="ghcn-table-cell">{{loop.index}}</td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Secondary Data table -->
+    <div class="row border">
+
+        <div class=" col-md-4">
+            <div class="row">
+                <div class="col">
+                    AvMax: [#]
+                </div>
+                <div class="col">
+                    AvMin: [#]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    AvTmp: [#]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    MaxTp: [#]
+                </div>
+                <div class="col">
+                    Day: [#]
+                </div>  
+            </div>
+            <div class="row">
+                <div class="col">
+                    MinTp: [#]
+                </div>
+                <div class="col">
+                    Day: [#]
+                </div> 
+            </div>
+        </div>
+
+
+        <div class="col-md">
+            <div class="row">
+                <div class="col-6 col-md">
+                    TotPcn [#]
+                </div>
+                <div class="col-6 col-md">
+                    Snow [#]
+                </div>
+                <div class="col-sm col-md">
+                    S Depth [#]
+                </div>
+                <div class="col-sm col-md">
+                    HDD [#]
+                </div>
+                <div class="col-sm col-md">
+                    CDD [#]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    Max24Hr: [#]
+                </div>
+                <div class="col-sm-3">
+                    Day: [#]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md">
+                    Number Days With:
+                </div>
+                <div class="col-md">
+                    Pcn >.01: [#]
+                </div>
+                <div class="col-md">
+                    >.10: [#]
+                </div>
+                <div class="col-md">
+                    >1: [#]
+                </div>
+                <div class="col-md">
+                    SF>1=: [#]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md">
+                    MxT>=90: [#]
+                </div>
+                <div class="col-md">
+                    MxT<=32: [#]
+                </div>
+                <div class="col-md">
+                    MnT<=0: [#]
+                </div>
+                <div class="col-md">
+                    SD>=: [#]
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Selection Menu -->
+    <div class="row">
+        <div class="col">
+            Change Yr:
+            <select class="form-select" >
+                <option selected>--Select--</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+        </div>
+        <div class="col">
+            Display: 
+            <select class="form-select">
+                <option selected>--Select--</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+        </div>
+        <div class="col">     
+            <button type="button" class="btn btn-info">Show MS Data</button>
+        </div>
+        <div class="col">
+            
+            <button type="button" class="btn btn-info">Save Data</button>
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                    Split Month? 
+                </label>
+            </div>
+        </div>
+        <div class="col">
+            Units:
+            <select class="form-select">
+                <option selected>--Select--</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+        </div>
+        <div class="col">
+        </div>
+
+        <div class="col">
+            <button type="button" class="btn btn-info">Close</button>
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

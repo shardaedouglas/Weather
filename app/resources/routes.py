@@ -16,4 +16,4 @@ def class_definitions():
 
 @resources_bp.route('/resources/accessibility')
 def accessibility():
-    return '<h1>Accessibility</h1>' # Link html templates here instead..
+    return render_template('resources/accessibility.html')
