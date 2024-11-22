@@ -116,7 +116,7 @@ $(document).ready(function(){
             </div>
             <div class="row align-items-center">
                 <div class="col-sm-3">
-                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="submit" class="btn btn-success" onclick="showMonthTable()">Submit</button>
                 </div>
                 <div class="col-sm-3">
                     <button type="reset" class="btn btn-dark">Clear</button>
@@ -124,13 +124,9 @@ $(document).ready(function(){
             </div>
         </form>
     </div>
-
-    <div class="container-md" id="input-monthly-data">
-        Testing something. 
-    </div>
+    <!--Monthly Table -->
+    {% include "corrections/input_monthly_form.html" %}
 </div>
-<!--Monthly Table -->
-
 
 
 
@@ -177,4 +173,11 @@ $(document).ready(function(){
     </form>
 </div>
 
+
+
+<script>
+    function showMonthTable() {
+       document.getElementById('input-monthly-table').style.display = "block";
+    }
+</script>
 {% endblock content %}
