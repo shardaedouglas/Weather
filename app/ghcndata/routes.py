@@ -20,11 +20,6 @@ def view_ghcn_metadata():
 
     return render_template('/ghcn_data/station_metadata.html')
 
-# Route to Render Station Metadata Page
-@ghcndata_bp.route('/ghcn_data/show')
-def view_ghcn_station_data():
-
-    return render_template('/ghcn_data/ghcn_station_data.html')
 
 
 

@@ -33,14 +33,20 @@
 
         <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Submit</button>
+                <button type="submit" class="btn btn-success" onclick="showGHCNViewTable()">Submit</button>
             </div>
             <div class="col-sm-3">
-                <button type="reset" class="btn btn-dark">Clear</button>
+                <button type="reset" class="btn btn-dark" onclick="hideGHCNViewTable()">Clear</button>
             </div>
         </div>
     </form>
 </div>
+
+<div id="station-data-view" style="display:none;">
+    {% include "ghcn_data/ghcn_station_data.html" %}
+</div>
+
+
 
 
 <script>
@@ -51,7 +57,14 @@
         $('#country').select2();
         $('#station_type').select2();   
     });
-</script>
 
+
+    function showGHCNViewTable() {
+       document.getElementById('station-data-view').style.display = "block";
+    }
+    function hideGHCNViewTable() {
+       document.getElementById('station-data-view').style.display = "none";
+    }
+</script>
 
 {% endblock content %}
