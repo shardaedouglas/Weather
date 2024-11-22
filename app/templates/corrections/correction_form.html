@@ -56,33 +56,33 @@ $(document).ready(function(){
         <div class="row g-3 align-items-center">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                {{daily_form.ghcn_id}}
+                {{daily_form.ghcn_id(class_='form-control')}}
             </div>
             <div class="col input-group" id="date-div">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                {{daily_form.date}}
+                {{daily_form.date(class_='form-control date-picker')}}
             </div>
             <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
-                {{daily_form.datzilla_number}}
+                {{daily_form.datzilla_number(class_='form-control')}}
             </div>
         </div>
         <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
             <div class="col input-group" style="flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
-                {{daily_form.element}}
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" >Element</span>
+                {{daily_form.element(class_='form-select element-select')}}
             </div>
             <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
-                {{daily_form.action}}
+                {{daily_form.action(class_='form-select action-select')}}
             </div>
             <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >O-Value</span>
-                {{daily_form.o_value}}
+                {{daily_form.o_value(class_='form-control')}}
             </div>
             <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >E-Value</span>
-                {{daily_form.e_value}}
+                {{daily_form.e_value(class_='form-control')}}
             </div>
         </div>
         
@@ -94,27 +94,26 @@ $(document).ready(function(){
                 <button type="submit" class="btn btn-primary">Compare</button>
             </div>
             <div class="col-sm-3">
-                <button type="submit" class="btn btn-dark">Clear</button>
+                <button type="reset" class="btn btn-dark">Clear</button>
             </div>
         </div>
     </form>
 </div>
 
 <!--Monthly Form-->
-<div class="container-md" id="form-monthly" style="display:none">
-    <div class="form-container">
-        <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+<div class="container-md justify-content-center form-container" id="form-monthly" style="display:none">
+        <form class="row g-3 align-items-center" method="POST"> <!--action="/process_correction"-->
             <div class="row g-3">
                 <div class="col input-group">
                     <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                    {{monthly_form.ghcn_id}}
+                    {{monthly_form.ghcn_id(class_='form-control') }}
                 </div>
                 <div class="col input-group" id="date-div">
                     <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                    {{monthly_form.date}}
+                    {{monthly_form.date(class_='form-control date-picker')}}
                 </div>
             </div>
-            <div class="row align-items-center">
+            <div class="row justify-content-center" id="button-row">
                 <div class="col-sm-3">
                     <button type="submit" class="btn btn-success" onclick="showMonthTable()">Submit</button>
                 </div>
@@ -123,46 +122,48 @@ $(document).ready(function(){
                 </div>
             </div>
         </form>
-    </div>
-    <!--Monthly Table -->
-    {% include "corrections/input_monthly_form.html" %}
-</div>
+    
 
+</div>
+<!--Monthly Table -->
+    <div id="monthly-form-table">
+        {% include "corrections/input_monthly_form.html" %}
+    </div>
 
 
 
 <!--Range Form-->
-<div class="container-md form-container" id="form-range" style="display:none">
+<div class="container-md justify-content-center form-container" id="form-range" style="display:none; width:80%;">
     <form class="row g-3 align-items-center" method="POST" action="/process_correction">
         <div class="row g-3">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                {{range_form.ghcn_id}}
+                {{range_form.ghcn_id(class_='form-control')}}
             </div>
             <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                {{range_form.begin_date}}
+                <span class="input-group-text" id="inputGroup-sizing-default" >Begin Date</span>
+                {{range_form.begin_date(class_='form-control date-picker')}}
             </div>
             <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                {{range_form.end_date}}
+                <span class="input-group-text" id="inputGroup-sizing-default" >End Date</span>
+                {{range_form.end_date(class_='form-control date-picker')}}
             </div>
         </div>
         <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
             <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
-                {{range_form.datzilla_number}}
+                {{range_form.datzilla_number(class_='form-control')}}
             </div>
             <div class="col input-group" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
-                {{range_form.element}}
+                {{range_form.element(class_='form-select element-select')}}
             </div>
             <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
-                {{range_form.action}}
+                {{range_form.action(class_='form-select action-select')}}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
                 <button type="submit" class="btn btn-success">Submit</button>
             </div>

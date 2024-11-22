@@ -36,6 +36,7 @@ line-height: 4ex;
 /* Forms */
 .form-container {
     padding: 30px;
+    margin-top: 40px;
     border-color: rgb(182, 181, 181);
     border-width: 1px 1px 1px 1px;
     border-style: solid;
@@ -66,12 +67,45 @@ line-height: 4ex;
     width: 12%;
 }
 #button-row{
-    margin-top: 15px;
+    margin-top: 25px;
 }
-/* ------------------------Data Displayer Pages -----------------*/
+.input-group {
+    justify-content: center;
+}
+#id-option-ghcn {
+    margin-right: 3px;
+    border-top-right-radius: 7px; 
+    border-bottom-right-radius: 7px;
+}
+.element-select{
+    max-width: 165px;
+}
+.action-select{
+    max-width: 90px;
+}
+.type-select {
+    max-width: 160px;
+}
+.country-select {
+    max-width: 380px;
+}
+.state-select {
+    max-width: 340px;
+}
+.date-picker {
+    max-width: 165px;
+}
+/* ------------------------ Data Displayer Pages -----------------*/
 
+/* Monthly Correction Table */
+#monthly-form-table {
+padding-top: 45px;
+}
+#input-monthly-table {
+}
 /* View Ghcn Metadata */
-#ghcn-metadata {
+#ghcn-metadata-div {
+    max-width: 80%;
     padding: 30px;
     border-color: rgb(182, 181, 181);
     border-width: 1px 1px 1px 1px;
@@ -81,7 +115,18 @@ line-height: 4ex;
     justify-content: center;
     text-align: center;
 }
+.form-container-monthly {
+    padding: 30px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
 
+}
+.type-select{
+    max-width: 190px;
+}
 
 body {
     background-color: rgb(255, 255, 255);
@@ -89,7 +134,7 @@ body {
 
 
 
-/* GHVN Data View Table cells. 
+/* GHCN Data View Table cells. 
 Gives a border between the columns of the table. */
 .ghcn-table-cell {
     border-right: solid 2px grey;

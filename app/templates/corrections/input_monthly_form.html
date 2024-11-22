@@ -2,38 +2,42 @@
 
 
 <!-- Nested Grid using Flex-dirction:column -->
-<div class="container-md" id="input-monthly-table" style="display:none">
+<div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
     <div class="row">
+        <div class="row justify-content-center">
+            <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: 123456 </h6>
+        </div>
         <div class="col">
             <div class="row" style="display:flex; flex-direction:column">
+                <div class="col-4">
+                    Datzilla #: {{monthly_form.datzilla_number(class_='form-control')}}
+                </div>
                 <div class="col">
-                    Select Element:
-                    <select class="form-select" >
+                    Element: {{monthly_form.element(class_='form-select element-select')}}
+                  <!-- <select class="form-select" >
                         <option selected>--Select--</option>
                         <option value="1">One</option>
                         <option value="2">Two</option>
                         <option value="3">Three</option>
-                    </select>
+                    </select>--> 
                 </div>
+                
                 <div class="col">
-                    <b>Station ID: [#]</b>
-                </div>
-                <div class="col">
-                    Date (yyyymm): 
-                    <div class="input-group mb-3">
+                    Date:  {{monthly_form.date(class_='form-control date-picker')}}
+                    <!--<div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="yyyymm">
-                      </div>
+                      </div>-->
                 </div>
                 <div class="col">
-                    Class: [#]
-                    <select class="form-select" >
+                    Action: {{monthly_form.action(class_='form-select action-select')}}
+                    <!--<select class="form-select" >
                         <option selected>--Select--</option>
                         <option value="1">One</option>
                         <option value="2">Two</option>
                         <option value="3">Three</option>
-                    </select>
+                    </select>-->
                 </div>
-
+                
             </div>
         </div>
         
@@ -65,8 +69,8 @@
                                 {% endfor %}
 
                                 <!-- Datzilla Number Input -->
-                                <!-- Should this be outside of the table as its own element? -->
-                                <tr>
+                                <!-- Should this be outside of the table as its own element? 
+                                 <tr>
                                     <td>
                                         <b>Datzilla #:</b>
                                     </td>
@@ -75,26 +79,24 @@
                                             <input type="text" class="form-control" placeholder="">
                                           </div>
                                     </td>
-                                </tr>
+                                </tr>-->
+                                
                             </tbody>
                         </table>
+                    </div>
+                    <div class="row justify-content-center" id="button-row">
+                        <div class="col-sm-3">
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="button" class="btn btn-primary">Total</button>
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="button" class="btn btn-dark">Close</button>
+                        </div>
                     </div>
                 </div>
             </div>          
         </div>
     </div>
-
-
-    <div class="row justify-content-center" id="button-row">
-        <div class="col-sm-3">
-            <button type="submit" class="btn btn-success">Submit</button>
-        </div>
-        <div class="col-sm-3">
-            <button type="button" class="btn btn-primary">Total</button>
-        </div>
-        <div class="col-sm-3">
-            <button type="button" class="btn btn-dark">Close</button>
-        </div>
-    </div>
-
 </div>
