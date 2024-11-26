@@ -3,16 +3,78 @@ from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCor
 from flask import render_template, request, jsonify
 from app.extensions import get_db
 from app.corrections.models.corrections import Corrections
+from datetime import datetime
 
 
-# Enter Corrections AKA Home
+
+# # Enter Corrections AKA Home
+# @correction_bp.route('/')
+# def index():
+#     daily_form = DailyCorrections()
+#     monthly_form = MonthlyCorrections()
+#     range_form = RangeCorrections()
+
+#     return render_template('/corrections/correction_form.html', daily_form=daily_form, monthly_form = monthly_form, range_form = range_form)
+       
+       
 @correction_bp.route('/')
 def index():
-    daily_form = DailyCorrections()
-    monthly_form = MonthlyCorrections()
-    range_form = RangeCorrections()
+    # Extract query parameters for default values
+    ghcn_id = request.args.get('ghcn_id', '')
+    correction_date = request.args.get('date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    element = request.args.get('element', '')
+    action = request.args.get('action', '')
+    o_value = request.args.get('o_value', '')
+    e_value = request.args.get('e_value', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
 
-    return render_template('/corrections/correction_form.html', daily_form=daily_form, monthly_form = monthly_form, range_form = range_form)
+    # If correction_date is passed, convert it into a datetime object
+    if correction_date:
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
+    else:
+        correction_date = None  # Default to None if no date is passed
+        
+    if begin_date:
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
+    else:
+        begin_date = None  # Default to None if no date is passed
+        
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
+    else:
+        end_date = None  # Default to None if no date is passed
+
+    # Initialize forms with default data
+    daily_form = DailyCorrections(
+        ghcn_id=ghcn_id,
+        date=correction_date,  # Pass the datetime object
+        datzilla_number=datzilla_number,
+        element=element,
+        action=action,
+        o_value=o_value,
+        e_value=e_value
+    )
+    monthly_form = MonthlyCorrections(
+        ghcn_id=ghcn_id,
+        date=correction_date,  # Pass the datetime object
+    )
+    range_form = RangeCorrections(
+        ghcn_id=ghcn_id,
+        begin_date=begin_date,
+        end_date=end_date,
+        datzilla_number=datzilla_number,
+        element=element,
+        action=action
+    )     # Default initialization
+
+    return render_template(
+        '/corrections/correction_form.html',
+        daily_form=daily_form,
+        monthly_form=monthly_form,
+        range_form=range_form
+    )
        
 @correction_bp.route('/process_correction', methods=['GET'])
 def process_correction():
