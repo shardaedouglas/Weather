@@ -34,18 +34,15 @@ def index():
     if correction_date:
         correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
     else:
-        correction_date = None  # Default to None if no date is passed
-        
+        correction_date = None
     if begin_date:
         begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
     else:
-        begin_date = None  # Default to None if no date is passed
-        
+        begin_date = None  
     if end_date:
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
     else:
-        end_date = None  # Default to None if no date is passed
-
+        end_date = None
     # Initialize forms with default data
     daily_form = DailyCorrections(
         ghcn_id=ghcn_id,
