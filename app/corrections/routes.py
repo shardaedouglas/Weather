@@ -6,20 +6,10 @@ from app.corrections.models.corrections import Corrections
 from datetime import datetime
 
 
-
-# # Enter Corrections AKA Home
-# @correction_bp.route('/')
-# def index():
-#     daily_form = DailyCorrections()
-#     monthly_form = MonthlyCorrections()
-#     range_form = RangeCorrections()
-
-#     return render_template('/corrections/correction_form.html', daily_form=daily_form, monthly_form = monthly_form, range_form = range_form)
-       
-       
 @correction_bp.route('/')
 def index():
     # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
     correction_date = request.args.get('date', '')
     datzilla_number = request.args.get('datzilla_number', '')
@@ -30,23 +20,18 @@ def index():
     begin_date = request.args.get('begin_date', '')
     end_date = request.args.get('end_date', '')
 
-    # If correction_date is passed, convert it into a datetime object
+    # Convert dates if needed
     if correction_date:
-        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
-    else:
-        correction_date = None
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
     if begin_date:
-        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
-    else:
-        begin_date = None  
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
     if end_date:
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()  # or use %Y-%m-%d %H:%M:%S if including time
-    else:
-        end_date = None
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
     # Initialize forms with default data
     daily_form = DailyCorrections(
         ghcn_id=ghcn_id,
-        date=correction_date,  # Pass the datetime object
+        date=correction_date,  
         datzilla_number=datzilla_number,
         element=element,
         action=action,
@@ -55,7 +40,7 @@ def index():
     )
     monthly_form = MonthlyCorrections(
         ghcn_id=ghcn_id,
-        date=correction_date,  # Pass the datetime object
+        date=correction_date,  
     )
     range_form = RangeCorrections(
         ghcn_id=ghcn_id,
@@ -68,6 +53,7 @@ def index():
 
     return render_template(
         '/corrections/correction_form.html',
+        selected_form=selected_form,
         daily_form=daily_form,
         monthly_form=monthly_form,
         range_form=range_form
@@ -87,7 +73,7 @@ def process_correction():
         action = request.args.get('action')
         o_value = request.args.get('o_value')
         e_value = request.args.get('e_value')
-        defaults = request.args.get('defaults') == 'on'  # Checkbox values need to be handled this way
+        defaults = request.args.get('defaults') == 'on' 
         datzilla_number = request.args.get('datzilla_number')
 
         # Create Corrections instance

@@ -3,46 +3,86 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-$(document).ready(function(){
-  $("input[name='correction-option']").click(function(){
-    if($("#correction-option-daily").is(":checked")){
-            $("#form-daily").show();
-            $("#form-monthly").hide();
-            //$(Monthly-table).hide;
-            $("#form-range").hide();
+    $(document).ready(function() {
+        // Get correction_type from the URL query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const correctionType = urlParams.get('correction_type');
+        
+        // Set the selected radio button based on the correction_type from the URL
+        if (correctionType) {
+            if (correctionType === 'daily-correction') {
+                $('#correction-option-daily').prop('checked', true);
+            } else if (correctionType === 'monthly-correction') {
+                $('#correction-option-monthly').prop('checked', true);
+            } else if (correctionType === 'ranged-correction') {
+                $('#correction-option-range').prop('checked', true);
+            }
         }
-    else if($("#correction-option-monthly").is(":checked")){
-        $("#form-daily").hide();
-        $("#form-monthly").show();
-        $("#form-range").hide();
-    }
-    else if($("#correction-option-range").is(":checked")){
-        $("#form-daily").hide();
-        $("#form-monthly").hide();
-        $("#form-range").show();
-    }
-  });
-});
-</script>
+        
+        // Show the corresponding form based on the selected radio button
+        function showSelectedForm() {
+            if ($("#correction-option-daily").is(":checked")) {
+                $("#form-daily").show();
+                $("#form-monthly").hide();
+                $("#form-range").hide();
+            } else if ($("#correction-option-monthly").is(":checked")) {
+                $("#form-daily").hide();
+                $("#form-monthly").show();
+                $("#form-range").hide();
+            } else if ($("#correction-option-range").is(":checked")) {
+                $("#form-daily").hide();
+                $("#form-monthly").hide();
+                $("#form-range").show();
+            }
+        }
+    
+        // Show or hide forms based on selected radio button
+        showSelectedForm();
+        
+        //Update URL with correction_type
+        $("form").submit(function(event) {
+            // Get the selected radio button value
+            var selectedCorrectionType = $("input[name='correction-option']:checked").val();
+            
+            if (selectedCorrectionType) {
+                var actionUrl = window.location.pathname + '?correction_type=' + selectedCorrectionType.toLowerCase().replace(' ', '-');
+                
+                // Append other form values to the URL
+                var formData = $(this).serialize();
+                actionUrl += '&' + formData;
+                
+                // Redirect the page to the new URL
+                window.location.href = actionUrl;
+                event.preventDefault();
+            }
+        });
+    
+        // Show or hide forms based on selected radio button
+        $("input[name='correction-option']").click(function() {
+            showSelectedForm();
+        });
+    });
+    </script>
+    
 
 <div>
     <div class="row">
         <div class="col">
-            <input class="form-check-input" type="radio" id="correction-option-daily" name="correction-option" value="Daily Correction" checked="checked">
+            <input class="form-check-input" type="radio" id="correction-option-daily" name="correction-option" value="Daily Correction" {% if selected_form == 'daily' %}checked{% endif %}>
             <label for="daily-correction">Daily Correction</label>
         </div>
     </div>
     
     <div class="row">
         <div class="col">
-            <input class="form-check-input" type="radio" id="correction-option-monthly" name="correction-option" value="Monthly Correction">
-            <label for="daily-correction">Monthly Correction</label>
+            <input class="form-check-input" type="radio" id="correction-option-monthly" name="correction-option" value="Monthly Correction" {% if selected_form == 'monthly' %}checked{% endif %}>
+            <label for="monthly-correction">Monthly Correction</label>
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <input class="form-check-input" type="radio" id="correction-option-range" name="correction-option" value="Monthly Correction">
-            <label for="daily-correction">Ranged Correction</label>
+            <input class="form-check-input" type="radio" id="correction-option-range" name="correction-option" value="Ranged Correction" {% if selected_form == 'range' %}checked{% endif %}>
+            <label for="range-correction">Ranged Correction</label>
         </div>
     </div>
 </div>
