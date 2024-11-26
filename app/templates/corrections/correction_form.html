@@ -25,9 +25,6 @@ $(document).ready(function(){
 });
 </script>
 
-
-
-
 <div>
     <div class="row">
         <div class="col">
@@ -52,7 +49,7 @@ $(document).ready(function(){
 
 <!--Daily Form-->
 <div class="container-md justify-content-center form-container" id="form-daily">
-    <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+    <form class="row g-3 align-items-center">
         <div class="row g-3 align-items-center">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
@@ -102,7 +99,7 @@ $(document).ready(function(){
 
 <!--Monthly Form-->
 <div class="container-md justify-content-center form-container" id="form-monthly" style="display:none">
-        <form class="row g-3 align-items-center" method="POST"> <!--action="/process_correction"-->
+        <form class="row g-3 align-items-center">
             <div class="row g-3">
                 <div class="col input-group">
                     <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
@@ -123,18 +120,15 @@ $(document).ready(function(){
             </div>
         </form>
     
-
 </div>
 <!--Monthly Table -->
     <div id="monthly-form-table">
         {% include "corrections/input_monthly_form.html" %}
     </div>
 
-
-
 <!--Range Form-->
 <div class="container-md justify-content-center form-container" id="form-range" style="display:none; width:80%;">
-    <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+    <form class="row g-3 align-items-center">
         <div class="row g-3">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>

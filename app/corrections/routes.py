@@ -13,24 +13,23 @@ def index():
     range_form = RangeCorrections()
 
     return render_template('/corrections/correction_form.html', daily_form=daily_form, monthly_form = monthly_form, range_form = range_form)
-
-
-@correction_bp.route('/process_correction', methods=['POST'])
+       
+@correction_bp.route('/process_correction', methods=['GET'])
 def process_correction():
     try:
-        # Extract form data
-        # correction_type = request.form.get('correction_type')
+        # Extract query parameters from the URL
+        # correction_type = request.args.get('correction_type')
         correction_type = "daily"
-        ghcn_id = request.form.get('ghcn_id')
-        correction_date = request.form.get('date')
-        begin_date = request.form.get('begin_date')
-        end_date = request.form.get('end_date')
-        element = request.form.get('element')
-        action = request.form.get('action')
-        o_value = request.form.get('o_value')
-        e_value = request.form.get('e_value')
-        defaults = request.form.get('defaults') == 'on'
-        datzilla_number = request.form.get('datzilla_number')
+        ghcn_id = request.args.get('ghcn_id')
+        correction_date = request.args.get('date')
+        begin_date = request.args.get('begin_date')
+        end_date = request.args.get('end_date')
+        element = request.args.get('element')
+        action = request.args.get('action')
+        o_value = request.args.get('o_value')
+        e_value = request.args.get('e_value')
+        defaults = request.args.get('defaults') == 'on'  # Checkbox values need to be handled this way
+        datzilla_number = request.args.get('datzilla_number')
 
         # Create Corrections instance
         correction = Corrections(
@@ -52,5 +51,5 @@ def process_correction():
         else:
             return jsonify({"error": "Failed to save correction."}), 500
     except Exception as e:
-        print(f"Error in process_correction: {e}")  # Log error for debugging.
+        print(f"Error in process_correction: {e}")  # Log error for debugging
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
