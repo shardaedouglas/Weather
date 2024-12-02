@@ -32,6 +32,7 @@ CORRECTION_TYPE = (
 
 class DailyCorrections(FlaskForm):
 
+    form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
     date = DateField('Date', validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS)
@@ -42,14 +43,16 @@ class DailyCorrections(FlaskForm):
     submit = SubmitField('Submit')
 
 class MonthlyCorrections(FlaskForm):
+    form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
-    date = DateField('Date', format='%Y-%m') #, validators=[InputRequired()]
+    date = DateField('Date', validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS)
     datzilla_number = StringField('Datzilla #')
     action = SelectField('Action', choices=ACTIONS)
     submit = SubmitField('Submit')
 
 class RangeCorrections(FlaskForm):
+    form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
     begin_date = DateField(validators=[InputRequired()])
     end_date = DateField(validators=[InputRequired()])
