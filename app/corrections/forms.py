@@ -43,7 +43,7 @@ class DailyCorrections(FlaskForm):
 
 class MonthlyCorrections(FlaskForm):
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
-    date = DateField('Date', format='%Y-%m', validators=[InputRequired()])
+    date = DateField('Date', format='%Y-%m') #, validators=[InputRequired()]
     element = SelectField('Element', choices=ELEMENTS)
     datzilla_number = StringField('Datzilla #')
     action = SelectField('Action', choices=ACTIONS)
