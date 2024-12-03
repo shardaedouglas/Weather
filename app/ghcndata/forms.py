@@ -29,7 +29,7 @@ STATION_TYPES = (
 
 class GhcnDataForm(FlaskForm):
     
-    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    ghcn_id = StringField('GHCN ID') # , validators=[InputRequired()]
     date = DateField('Date', validators=[InputRequired()])
     state = SelectField('State', choices=STATES, default ='SELECT')
     country = SelectField('Country', choices=COUNTRIES, default='SELECT')
