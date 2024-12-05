@@ -72,6 +72,7 @@ def create_app(config_class=Config):
             Longitude REAL,
             gsn_flag TEXT,
             hcn_flag TEXT
+            ghcnd_inventory TEXT
         )
         """)
         db.commit()
