@@ -41,6 +41,41 @@ def create_app(config_class=Config):
         """)
         db.commit()
         
+    # Initialize the GHCN data table
+    @app.before_request
+    def initialize_ghcn_data_table():
+        db = get_db()
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS ghcn_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ghcn_id TEXT NOT NULL,
+            country TEXT NOT NULL,
+            state TEXT,
+            date DATE NOT NULL,
+            type TEXT NOT NULL
+        )
+        """)
+        db.commit()
+        
+    # Initialize the GHCN_metadata table
+    @app.before_request
+    def initialize_ghcn_metadata_table():
+        db = get_db()
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS ghcn_metadata (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ghcn_id TEXT NOT NULL,
+            wmo_id TEXT NOT NULL,            
+            state TEXT,
+            country TEXT NOT NULL,
+            Latitude REAL,
+            Longitude REAL,
+            gsn_flag TEXT,
+            hcn_flag TEXT
+        )
+        """)
+        db.commit()
+        
     ###### SMTP SETTINGS ######
     app.config['MAIL_SERVER'] = "smtp.gmail.com"
     app.config['MAIL_PORT'] = 587
