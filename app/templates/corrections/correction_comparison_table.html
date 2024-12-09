@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Distance</th>
+        <th scope="col">Elevation</th>
+        <th scope="col">ID</th>
+        <th scope="col">Day-1</th>
+        <th scope="col">Day</th>
+        <th scope="col">Day+1</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for p in range(10) %} 
+        <!-- Range should be changed to a variable holding the length of the comparison data (number of stations)-->
+        <tr>
+            <td>Distance #</td>
+            
+            <td>Elev</td>
+            <td>ID</td>
+            <td>Day-1</td>
+            <td>Day</td>
+            <td>Day+1</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
