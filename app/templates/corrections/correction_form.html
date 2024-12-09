@@ -88,7 +88,9 @@
 </div>
 
 <!--Daily Form-->
-<div class="container-md justify-content-center form-container" id="form-daily">
+
+<div class="container-md justify-content-center" id="form-daily">
+    <div class="container-md form-container">
     <form class="row g-3 align-items-center">
         <div class="row g-3 align-items-center">
             <div class="col input-group">
@@ -125,7 +127,7 @@
         
         <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Submit</button>
+                <button type="submit" class="btn btn-success" onclick="showComparisonTable()">Submit</button>
             </div>
             <div class="col-sm-3">
                 <button type="submit" class="btn btn-primary">Compare</button>
@@ -135,6 +137,13 @@
             </div>
         </div>
     </form>
+</div>
+
+
+    <div id="correction-comparison-table" style="display:none;">
+        {% include "corrections/correction_comparison_table.html" %}
+    </div>
+
 </div>
 
 <!--Monthly Form-->
@@ -213,6 +222,9 @@
 <script>
     function showMonthTable() {
        document.getElementById('input-monthly-table').style.display = "block";
+    }
+    function showComparisonTable() {
+        document.getElementById('correction-comparison-table').style.display = "block";
     }
 </script>
 {% endblock content %}
