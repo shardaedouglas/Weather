@@ -88,7 +88,9 @@
 </div>
 
 <!--Daily Form-->
-<div class="container-md justify-content-center form-container" id="form-daily">
+
+<div class="container-md justify-content-center" id="form-daily">
+    <div class="container-md form-container">
     <form class="row g-3 align-items-center">
         <div class="row g-3 align-items-center">
             <div class="col input-group">
@@ -125,7 +127,7 @@
         
         <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Submit</button>
+                <button type="submit" class="btn btn-success" onclick="showComparisonTable()">Submit</button>
             </div>
             <div class="col-sm-3">
                 <button type="submit" class="btn btn-primary">Compare</button>
@@ -135,6 +137,13 @@
             </div>
         </div>
     </form>
+</div>
+
+
+    <div id="correction-comparison-table" style="display:none;">
+        {% include "corrections/correction_comparison_table.html" %}
+    </div>
+
 </div>
 
 <!--Monthly Form-->
@@ -162,57 +171,70 @@
     
 </div>
 <!--Monthly Table -->
+<!-- Bug: this shows up when you change to other correction forms once shown. 
+It should be within the form-monthly ID but not in the same container as the input form.  -->
     <div id="monthly-form-table">
         {% include "corrections/input_monthly_form.html" %}
     </div>
 
 <!--Range Form-->
-<div class="container-md justify-content-center form-container" id="form-range" style="display:none; width:80%;">
-    <form class="row g-3 align-items-center">
-        <div class="row g-3">
-            <div class="col input-group">
-                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                {{range_form.ghcn_id(class_='form-control')}}
+<div class="container-md justify-content-center" id="form-range" style="display:none; width:80%;">
+    <div class="container-md form-container">
+        <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+            <div class="row g-3">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                    {{range_form.ghcn_id(class_='form-control')}}
+                </div>
+                <div class="col input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >Begin Date</span>
+                    {{range_form.begin_date(class_='form-control date-picker')}}
+                </div>
+                <div class="col input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >End Date</span>
+                    {{range_form.end_date(class_='form-control date-picker')}}
+                </div>
             </div>
-            <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Begin Date</span>
-                {{range_form.begin_date(class_='form-control date-picker')}}
+            <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
+                    {{range_form.datzilla_number(class_='form-control')}}
+                </div>
+                <div class="col input-group" style="flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
+                    {{range_form.element(class_='form-select element-select')}}
+                </div>
+                <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
+                    {{range_form.action(class_='form-select action-select')}}
+                </div>
             </div>
-            <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >End Date</span>
-                {{range_form.end_date(class_='form-control date-picker')}}
+            <div class="row justify-content-center" id="button-row">
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-success"  onclick="showRangeTable()">Submit</button>
+                </div>
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-dark">Clear</button>
+                </div>
             </div>
-        </div>
-        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
-            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
-                {{range_form.datzilla_number(class_='form-control')}}
-            </div>
-            <div class="col input-group" style="flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
-                {{range_form.element(class_='form-select element-select')}}
-            </div>
-            <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
-                {{range_form.action(class_='form-select action-select')}}
-            </div>
-        </div>
-        <div class="row justify-content-center" id="button-row">
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Submit</button>
-            </div>
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-dark">Clear</button>
-            </div>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
+    <div id="ranged-form-table" style="display:none;">
+        {% include "corrections/input_ranged_form.html" %}
+    </div>
+</div>
 
 
 <script>
     function showMonthTable() {
        document.getElementById('input-monthly-table').style.display = "block";
+    }
+    function showRangeTable() {
+       document.getElementById('ranged-form-table').style.display = "flex";
+    }
+    function showComparisonTable() {
+        document.getElementById('correction-comparison-table').style.display = "block";
     }
 </script>
 {% endblock content %}
