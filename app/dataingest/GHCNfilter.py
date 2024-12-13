@@ -1,5 +1,9 @@
 import polars as pl
-from GHCNreader import parse_fixed_width_file
+# from GHCNreader import parse_fixed_width_file //FOR STANDALONE TESTING
+from  app.dataingest.GHCNreader import parse_fixed_width_file
+
+
+# from app.dataingest.GHCNreader import parse_fixed_width_file
 
 def filter_data(
     df: pl.DataFrame,
@@ -27,6 +31,7 @@ def filter_data(
     Returns:
     pl.DataFrame: The filtered DataFrame.
     """
+    
     # Start with the full DataFrame
     filter_condition = pl.lit(True)  # Neutral condition
 
@@ -68,7 +73,7 @@ def filter_data(
 
 # Usage
 if __name__ == '__main__':
-    file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+    file_path = "../../USW00093991.dly"
     df = parse_fixed_width_file(file_path)
 
     # Filter example: year=2023, month=1, day=15, observation type="PRCP", station_id="US1MOMA0004"

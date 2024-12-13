@@ -4,22 +4,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Get correction_type from the URL query string
-        const urlParams = new URLSearchParams(window.location.search);
-        const correctionType = urlParams.get('correction_type');
-        
-        // Set the selected radio button based on the correction_type from the URL
-        if (correctionType) {
-            if (correctionType === 'daily-correction') {
-                $('#correction-option-daily').prop('checked', true);
-            } else if (correctionType === 'monthly-correction') {
-                $('#correction-option-monthly').prop('checked', true);
-            } else if (correctionType === 'ranged-correction') {
-                $('#correction-option-range').prop('checked', true);
-            }
-        }
-        
-        // Show the corresponding form based on the selected radio button
+        // Function to show or hide forms based on selected correction type
         function showSelectedForm() {
             if ($("#correction-option-daily").is(":checked")) {
                 $("#form-daily").show();
@@ -36,32 +21,85 @@
             }
         }
     
-        // Show or hide forms based on selected radio button
+        // Initially show the form based on the selected correction type
         showSelectedForm();
-        
-        //Update URL with correction_type
-        $("form").submit(function(event) {
-            // Get the selected radio button value
-            var selectedCorrectionType = $("input[name='correction-option']:checked").val();
-            
-            if (selectedCorrectionType) {
-                var actionUrl = window.location.pathname + '?correction_type=' + selectedCorrectionType.toLowerCase().replace(' ', '-');
-                
-                // Append other form values to the URL
-                var formData = $(this).serialize();
-                actionUrl += '&' + formData;
-                
-                // Redirect the page to the new URL
-                window.location.href = actionUrl;
-                event.preventDefault();
-            }
-        });
     
-        // Show or hide forms based on selected radio button
+        // Handle radio button clicks to show the corresponding form
         $("input[name='correction-option']").click(function() {
             showSelectedForm();
         });
+
+        // Handle form submission
+        $("form").submit(function(event) {
+            event.preventDefault();
+
+            // Gets selected correction type
+            var selectedCorrectionType = $("input[name='correction-option']:checked").val();
+
+            // Aend the form data via AJAX
+            if (selectedCorrectionType) {
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    url: '/process_correction',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        //display the appropriate table
+                        console.log("Success:", response);
+                        if (selectedCorrectionType === 'Daily Correction') {
+                            showComparisonTable(response.filtered_data);
+                        } else if (selectedCorrectionType === 'Monthly Correction') {
+                            showMonthTable();
+                        } else if (selectedCorrectionType === 'Ranged Correction') {
+                            showRangeTable();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("There was an error processing your request.");
+                    }
+                });
+            }
+        });
     });
+    
+    function showMonthTable() {
+        document.getElementById('input-monthly-table').style.display = "block";
+     }
+     function showRangeTable() {
+        document.getElementById('ranged-form-table').style.display = "flex";
+     }
+     //DAILY TABLE
+     function showComparisonTable(filteredData) {
+        const tableBody = document.querySelector('#correction-comparison-table tbody');
+        
+        // Clear existing rows in the table
+        tableBody.innerHTML = '';
+                
+        
+        //Add to table data.
+        if (filteredData) {
+            console.log("Data:", filteredData);
+    
+            const newRow = `
+                <tr>
+                    <td>Dist</td>
+                    <td>Elev</td>
+                    <td>${filteredData.station_code}</td>
+                    <td>${filteredData.dayMinus}</td>
+                    <td>${filteredData.day}</td>
+                    <td>${filteredData.dayPlus}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+        }
+
+        // Show the table
+        document.getElementById('correction-comparison-table').style.display = "block";
+    }
+    
+
     </script>
     
 
@@ -171,8 +209,6 @@
     
 </div>
 <!--Monthly Table -->
-<!-- Bug: this shows up when you change to other correction forms once shown. 
-It should be within the form-monthly ID but not in the same container as the input form.  -->
     <div id="monthly-form-table">
         {% include "corrections/input_monthly_form.html" %}
     </div>
@@ -224,17 +260,4 @@ It should be within the form-monthly ID but not in the same container as the inp
         {% include "corrections/input_ranged_form.html" %}
     </div>
 </div>
-
-
-<script>
-    function showMonthTable() {
-       document.getElementById('input-monthly-table').style.display = "block";
-    }
-    function showRangeTable() {
-       document.getElementById('ranged-form-table').style.display = "flex";
-    }
-    function showComparisonTable() {
-        document.getElementById('correction-comparison-table').style.display = "block";
-    }
-</script>
 {% endblock content %}

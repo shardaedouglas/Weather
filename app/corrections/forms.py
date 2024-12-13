@@ -5,8 +5,8 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 
 #Options for multiple choice fields
 ELEMENTS = (
-    ("1", "Max Temp" ),
-    ("2", "Min Temp"),
+    ("TMAX", "Max Temp" ),
+    ("TMIN", "Min Temp"),
     ("3", "TOBS"),
     ("4", "Precipitation"),
     ("5", "Snow"),
