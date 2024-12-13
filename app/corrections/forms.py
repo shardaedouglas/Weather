@@ -7,11 +7,11 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 ELEMENTS = (
     ("TMAX", "Max Temp" ),
     ("TMIN", "Min Temp"),
-    ("3", "TOBS"),
-    ("4", "Precipitation"),
-    ("5", "Snow"),
-    ("6", "SnowD"),
-    ("7", "WT##cd "),
+    ("TOBS", "TOBS"),
+    ("PRCP", "Precipitation"),
+    ("SNOW", "Snow"),
+    ("SNWD", "SnowD"),
+    ("WT**", "WT##cd "),
 )
 ACTIONS = (
     ("1", "1A" ),
