@@ -61,7 +61,7 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
 # Usage
 if __name__ == '__main__':
     
-    file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+    file_path = "../../USW00093991.dly"
     df = parse_fixed_width_file(file_path)
 
     # Show the parsed DataFrame
