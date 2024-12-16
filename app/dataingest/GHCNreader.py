@@ -59,11 +59,11 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
     return df
 
 # Usage
-if __name__ == '__main__':
+# if __name__ == '__main__':
     
-    file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
-    df = parse_fixed_width_file(file_path)
+#     file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+#     df = parse_fixed_width_file(file_path)
 
-    # Show the parsed DataFrame
-    print(df)
-    df.write_csv("test.csv")
+#     # Show the parsed DataFrame
+#     print(df)
+#     df.write_csv("test.csv")

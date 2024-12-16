@@ -44,35 +44,35 @@ def parse_and_filter(
 
     return filtered_df
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    file_path =  "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+#     file_path =  "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
 
-    # Example 1: Filter by year and country code
-    filtered_df = parse_and_filter(
-        file_path=file_path,
-        year=2023,
-        country_code="US"
-    )
+#     # Example 1: Filter by year and country code
+#     filtered_df = parse_and_filter(
+#         file_path=file_path,
+#         year=2023,
+#         country_code="US"
+#     )
 
-    print(filtered_df)
+#     print(filtered_df)
 
-    # Example 2: Filter by month, observation type, and network code
-    filtered_df = parse_and_filter(
-        file_path=file_path,
-        month=1,
-        observation_type="PRCP",
-        network_code="1"
-    )
+#     # Example 2: Filter by month, observation type, and network code
+#     filtered_df = parse_and_filter(
+#         file_path=file_path,
+#         month=1,
+#         observation_type="PRCP",
+#         network_code="1"
+#     )
 
-    print(filtered_df)
+#     print(filtered_df)
 
-    # Example 3: Filter by station code and specific day
-    filtered_df = parse_and_filter(
-        file_path=file_path,
-        station_code="MOMA0004",
-        day=15
-    )
+#     # Example 3: Filter by station code and specific day
+#     filtered_df = parse_and_filter(
+#         file_path=file_path,
+#         station_code="MOMA0004",
+#         day=15
+#     )
 
-    print(filtered_df)
+#     print(filtered_df)
 

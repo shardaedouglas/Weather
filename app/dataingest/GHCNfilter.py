@@ -43,7 +43,7 @@ def filter_data(
         filter_condition &= pl.col("network_code") == network_code
     if station_code is not None:
         filter_condition &= pl.col("station_code") == station_code
-    print(filter_condition)
+
     # Apply the filter condition
     filtered_df = df.filter(filter_condition)
 
@@ -67,13 +67,13 @@ def filter_data(
 
 
 # Usage
-if __name__ == '__main__':
-    file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
-    df = parse_fixed_width_file(file_path)
+# if __name__ == '__main__':
+#     file_path = "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+#     df = parse_fixed_width_file(file_path)
 
-    # Filter example: year=2023, month=1, day=15, observation type="PRCP", station_id="US1MOMA0004"
-    # filtered_df = filter_data(df, year=1929, month=8, day=1, observation_type="PRCP", station_code="00006063")
-    filtered_df = filter_data(df, year=2010, day=21, observation_type="SNOW", station_code="MOMA0004")
+#     # Filter example: year=2023, month=1, day=15, observation type="PRCP", station_id="US1MOMA0004"
+#     # filtered_df = filter_data(df, year=1929, month=8, day=1, observation_type="PRCP", station_code="00006063")
+#     filtered_df = filter_data(df, year=2010, day=21, observation_type="SNOW", station_code="MOMA0004")
 
-    filtered_df.write_csv("test_stuff.csv")
-    print(filtered_df)
+#     filtered_df.write_csv("test_stuff.csv")
+#     print(filtered_df)
