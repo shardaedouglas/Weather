@@ -5,10 +5,92 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <p>
-                <h1> Accessibility Settings </h1>
-            </p>
+            <h1>Accessibility Settings</h1>
+        </div>
+    </div>
+
+    <div class="row" id="button-row">
+        <div class="col">
+            Change Font Size:
+        </div>
+        <div class="col">
+
+            <button type="button" class="btn btn-success" id="decrease-font">Decrease Font Size</button>
+
+        </div>
+        <div class="col">
+
+            <button type="button" class="btn btn-success" id="increase-font">Increase Font Size</button>
+        </div>
+        <div class="col">
+
+            <button type="button" class="btn btn-success" id="reset-font">Reset Font Size</button>
+        </div>
+
+    </div>
+    <div class="row" id="button-row">
+
+        <div class="col">
+            Toggle Light/Dark Mode:
+            <button type="button" class="btn btn-success" id="theme-toggle">Theme Toggle</button>
         </div>
     </div>
 </div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        if (readCookie("font-resize")) {
+            resize = parseInt(readCookie("font-resize"));
+        } else {
+            resize = 0;
+        }
+
+        resize;
+        $("#increase-font").click(function () {
+            resize += 10;
+
+            $("html").css("font-size", function (index, value) {
+
+                return 100 + resize + "%";
+            });
+            createCookie("font-resize", resize, "");
+        });
+
+        // Decrease font size
+        $("#decrease-font").click(function () {
+            resize -= 10;
+            $("html").css("font-size", function (index, value) {
+                return 100 + resize + "%";
+            });
+            createCookie("font-resize", resize, "");
+        });
+
+        // Reset Font Size
+        $("#reset-font").click(function () {
+
+            $("html").css("font-size", function (index, value) {
+
+                return 100 + "%";
+            });
+            eraseCookie("font-resize");
+        });
+
+        //Toggle Dark/Light Mode
+        $("#theme-toggle").click(function () {
+            $("body").toggleClass("dark-mode");
+            $("table").toggleClass("table-dark");
+            if (readCookie("theme") == "dark") {
+                createCookie("theme", "", "");
+            } else {
+                createCookie("theme", "dark", "");
+            }
+
+        });
+
+    });
+
+
+</script>
 {% endblock content %}
