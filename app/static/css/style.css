@@ -130,6 +130,7 @@ padding-top: 45px;
 
 body {
     background-color: rgb(255, 255, 255);
+    font-size: 100%;
 }
 
 
@@ -139,3 +140,29 @@ Gives a border between the columns of the table. */
 .ghcn-table-cell {
     border-right: solid 2px grey;
 }
+
+
+
+
+/* Dark Mode CSS*/
+/* To add more dark mode selectors, use ".dark-mode [tag or id or class etc.]*/
+.dark-mode {
+    background-color: #212529;
+    color: #fff;
+  }
+
+.dark-mode .form-control {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .input-group-text {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .form-select {
+    background-color: #212529;
+    color: #fff;
+}
+
