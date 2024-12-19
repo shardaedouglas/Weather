@@ -1,23 +1,9 @@
 import polars as pl
 
-dtypes = {
-    "date": pl.Datetime,
-    "temperature": pl.Float32,
-    "wind_speed": pl.Float32,
-    "dew_point_temperature": pl.Float32,
-    "wind_direction": pl.Float32,
-    "precipitation": pl.Float32,
-    "wind_gust": pl.Float32,
-    "relative_humidity": pl.Float32,
-    "snow_depth": pl.Float32,
-    "station_level_pressure": pl.Float32
-}
-
-
 def parse(file_path, delimiter='|'):
     # Read CSV file with specified columns and delimiter
     result = pl.read_csv(file_path, separator=delimiter,  infer_schema_length=0)
-# schema_overrides=dtypes,
+
     # Create a datetime column from year, month, day, hour, and minute
     result = result.with_columns(pl.datetime(pl.col('Year'), pl.col('Month'), pl.col('Day'), pl.col('Hour'), pl.col('Minute')).alias('datetime'))
 
@@ -52,5 +38,7 @@ def parse(file_path, delimiter='|'):
     return result, metadata_df
 
 df = parse(file_path='/data/ops/elan.churavtsov/datzilla-flask/GHCNh_AAI0000TNCA_por.psv')[0]
-print (df)
+# print (df)
+for column_name, column_type in df.schema.items():
+    print(f"{column_name}: {column_type}")
 df.write_csv("TEST_PSV.csv")
