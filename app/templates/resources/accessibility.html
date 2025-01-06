@@ -35,6 +35,18 @@
             <button type="button" class="btn btn-success" id="theme-toggle">Theme Toggle</button>
         </div>
     </div>
+
+    <div class="row" id="button-row">
+
+        <div class="col">
+            <div class="form-check form-switch tt" title="Default Tooltip">
+                <input class="form-check-input" type="checkbox" value="" id="tooltipCheckbox">
+                <label class="form-check-label" for="tooltipCheckbox">
+                  Enable Tooltips
+                </label>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -88,6 +100,27 @@
             }
 
         });
+
+        // Tooltips Checkbox
+        $('#tooltipCheckbox').on('change',function(){
+            if(this.checked){
+                enableTooltips(true);
+                createCookie("tooltips", true, "");
+            }
+            else{
+                enableTooltips(false);
+                createCookie("tooltips", false, "");
+            };
+        });
+
+        $(function (){
+        if(readCookie("tooltips") == "true"){           
+            $("#tooltipCheckbox").prop('checked',true);
+        }else{
+            $("#tooltipCheckbox").prop('checked', false);
+        }
+});
+
 
     });
 

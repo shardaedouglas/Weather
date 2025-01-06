@@ -3,6 +3,7 @@
 
 <!-- Nested Grid using Flex-dirction:column -->
 <div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
+    
     <div class="row">
         <div class="row justify-content-center">
             <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: 123456 </h6>
@@ -41,62 +42,69 @@
             </div>
         </div>
         
-        
-        <div class="col">
-            <div class="row" style="display:flex; flex-direction:column">
-                <!-- Month Input Table -->
-                <div class="col">
-                    <div class="table-responsive-sm" style="text-align: center">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Day</th>
-                                    <th scope="col">Value</th>
-        
-                                </tr>
-                            </thead>
-                            <tbody>
-                    
-                                {% for p in range(31) %}
-                                    <tr>
-                                        <td>{{loop.index}}</td>
-                                        <td>
-                                            <div class="input-group mb-3">
-                                                <input type="text" class="form-control" placeholder="">
-                                              </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+    </div>
+    
 
-                                <!-- Datzilla Number Input -->
-                                <!-- Should this be outside of the table as its own element? 
-                                 <tr>
-                                    <td>
-                                        <b>Datzilla #:</b>
-                                    </td>
+    
+    {# Commenting this out: <!-- 31 Inputs for Entry  -->
+
+        <div class="row" style="display:flex; flex-direction:column">
+            <!-- Month Input Table -->
+            <div class="col">
+                <div class="table-responsive-sm" style="text-align: center">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Day</th>
+                                <th scope="col">Value</th>
+    
+                            </tr>
+                        </thead>
+                        <tbody>
+                
+                            {% for p in range(31) %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
                                     <td>
                                         <div class="input-group mb-3">
                                             <input type="text" class="form-control" placeholder="">
                                           </div>
                                     </td>
-                                </tr>-->
-                                
-                            </tbody>
-                        </table>
+                                </tr>
+                            {% endfor %}
+    
+                            <!-- Datzilla Number Input -->
+                            <!-- Should this be outside of the table as its own element? 
+                             <tr>
+                                <td>
+                                    <b>Datzilla #:</b>
+                                </td>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="">
+                                      </div>
+                                </td>
+                            </tr>-->
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-center" id="button-row">
+                    <div class="col-sm-3">
+                        <button type="submit" class="btn btn-success">Submit</button>
                     </div>
-                    <div class="row justify-content-center" id="button-row">
-                        <div class="col-sm-3">
-                            <button type="submit" class="btn btn-success">Submit</button>
-                        </div>
-                        <div class="col-sm-3">
-                            <button type="button" class="btn btn-primary">Total</button>
-                        </div>
-                        <div class="col-sm-3">
-                            <button type="button" class="btn btn-dark">Close</button>
-                        </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-primary">Total</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-dark">Close</button>
                     </div>
                 </div>
-            </div>          
+            </div>
         </div>
-    </div>
+        #}          
 </div>
+
+
+<!-- Move this to a new row or section. -->
+

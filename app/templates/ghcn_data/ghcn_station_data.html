@@ -22,7 +22,7 @@
     <div class="row " style="text-align: center">
         <div class="col">
             <div class="table-responsive-sm">
-                <table class="table table-sm table-striped table-borderless border" >
+                <table class="table table-sm table-striped table-borderless border" id="myTable">
                     <thead>
                         <tr>
                             <th class="ghcn-table-cell" scope="col">Day</th>
@@ -219,3 +219,9 @@
     </div>
 
 </div>
+
+<script>
+    $(document).ready(function(){
+        $('#myTable').dataTable();
+    });
+</script>
