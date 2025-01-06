@@ -10,14 +10,22 @@
                 $("#form-daily").show();
                 $("#form-monthly").hide();
                 $("#form-range").hide();
+                $("#form-hourly").hide();
             } else if ($("#correction-option-monthly").is(":checked")) {
                 $("#form-daily").hide();
                 $("#form-monthly").show();
                 $("#form-range").hide();
+                $("#form-hourly").hide();
             } else if ($("#correction-option-range").is(":checked")) {
                 $("#form-daily").hide();
                 $("#form-monthly").hide();
                 $("#form-range").show();
+                $("#form-hourly").hide();
+            } else if ($("#correction-option-hourly").is(":checked")) {
+                $("#form-daily").hide();
+                $("#form-monthly").hide();
+                $("#form-range").hide();
+                $("#form-hourly").show();
             }
         }
     
@@ -54,6 +62,7 @@
                         } else if (selectedCorrectionType === 'Ranged Correction') {
                             showRangeTable();
                         }
+                        //NOTE: This needs to be updated for hourly.
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
@@ -100,6 +109,7 @@
     }
     
 
+    //NOTE: Probably need a showHourlyTable()
     </script>
     
 
@@ -123,55 +133,80 @@
             <label for="range-correction">Ranged Correction</label>
         </div>
     </div>
+    <div class="row">
+        <div class="col">
+            <input class="form-check-input" type="radio" id="correction-option-hourly" name="correction-option" value="Hourly Correction" {% if selected_form == 'range' %}checked{% endif %}>
+            <label for="hourly-correction">Hourly Correction</label>
+        </div>
+    </div>
 </div>
 
 <!--Daily Form-->
 
 <div class="container-md justify-content-center" id="form-daily">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Daily Correction</h1>
+                <p>This is a brief description of Daily Corrections.</p>
+            </div>
+        </div>
+    </div>
     <div class="container-md form-container">
-    <form class="row g-3 align-items-center">
+    <form class="row g-3 align-items-center ">
         <div class="row g-3 align-items-center">
             <div class="col input-group">
-                <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
                 {{daily_form.ghcn_id(class_='form-control')}}
             </div>
-            <div class="col input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+        </div>
+        <div class="row g-3">
+            <div class="col input-group justify-content-start" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
                 {{daily_form.date(class_='form-control date-picker')}}
             </div>
+        </div>
+        <div class="row g-3" >
             <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Datzilla #</span>
                 {{daily_form.datzilla_number(class_='form-control')}}
             </div>
         </div>
-        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
-            <div class="col input-group" style="flex-wrap: nowrap;">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default" >Element</span>
+        <div class="row g-3" >
+            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
                 {{daily_form.element(class_='form-select element-select')}}
             </div>
-            <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
+            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
                 {{daily_form.action(class_='form-select action-select')}}
             </div>
-            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >O-Value</span>
+        </div>
+        <div class="row g-3">
+
+            <div class="col-md input-group" style=" flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
                 {{daily_form.o_value(class_='form-control')}}
             </div>
-            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" >E-Value</span>
+            <div class="col-md input-group" style=" flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">E-Value</span>
                 {{daily_form.e_value(class_='form-control')}}
             </div>
         </div>
         
-        <div class="row justify-content-center" id="button-row">
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-success" onclick="showComparisonTable()">Submit</button>
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;">Compare</button>
             </div>
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-primary">Compare</button>
+            
+            <div class="col-sm">
+                <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button>
             </div>
-            <div class="col-sm-3">
-                <button type="reset" class="btn btn-dark">Clear</button>
+
+        </div>
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
             </div>
         </div>
     </form>
@@ -185,36 +220,60 @@
 </div>
 
 <!--Monthly Form-->
-<div class="container-md justify-content-center form-container" id="form-monthly" style="display:none">
-        <form class="row g-3 align-items-center">
+<div class="container-md justify-content-center " id="form-monthly" style="display:none">
+<!-- <div class="container-md justify-content-center form-container" id="form-monthly" style="display:none"> -->
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Monthly Correction</h1>
+                <p>This is a brief description of Monthly Corrections.</p>
+            </div>
+        </div>
+    </div>     
+
+    <div class="container-md form-container">
+    <form class="row g-3 align-items-center">
             <div class="row g-3">
                 <div class="col input-group">
                     <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
                     {{monthly_form.ghcn_id(class_='form-control') }}
                 </div>
-                <div class="col input-group" id="date-div">
-                    <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                    {{monthly_form.date(class_='form-control date-picker')}}
+                <div class="row g-3">
+                    <div class="col input-group" id="date-div" style="justify-content: start;">
+                        <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                        {{monthly_form.date(class_='form-control date-picker')}}
+                    </div>
                 </div>
             </div>
-            <div class="row justify-content-center" id="button-row">
-                <div class="col-sm-3">
-                    <button type="submit" class="btn btn-success" onclick="showMonthTable()">Submit</button>
+            <div class="row justify-content-center g-3" id="button-row">
+                <div class="col-sm">
+                    <button type="reset" class="btn btn-dark" style="width:100%;display:block;font-weight: bold;">Clear</button>
                 </div>
-                <div class="col-sm-3">
-                    <button type="reset" class="btn btn-dark">Clear</button>
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-success" onclick="showMonthTable()" style="width:100%;display:block;font-weight: bold;">Next</button>
                 </div>
+                
             </div>
         </form>
+    </div>  
     
-</div>
-<!--Monthly Table -->
-    <div id="monthly-form-table">
+    <!--Monthly Table -->
+    <div id="monthly-form-table" >
         {% include "corrections/input_monthly_form.html" %}
     </div>
+</div>
+
 
 <!--Range Form-->
-<div class="container-md justify-content-center" id="form-range" style="display:none; width:80%;">
+<div class="container-md justify-content-center" id="form-range" style="display:none;">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Ranged Correction</h1>
+                <p>This is a brief description of Ranged Corrections.</p>
+            </div>
+        </div>
+    </div>   
     <div class="container-md form-container">
         <form class="row g-3 align-items-center" method="POST" action="/process_correction">
             <div class="row g-3">
@@ -222,11 +281,14 @@
                     <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
                     {{range_form.ghcn_id(class_='form-control')}}
                 </div>
-                <div class="col input-group" id="date-div">
+                
+            </div>
+            <div class="row g-3">
+                <div class="col-md input-group" id="date-div">
                     <span class="input-group-text" id="inputGroup-sizing-default" >Begin Date</span>
                     {{range_form.begin_date(class_='form-control date-picker')}}
                 </div>
-                <div class="col input-group" id="date-div">
+                <div class="col-md input-group" id="date-div">
                     <span class="input-group-text" id="inputGroup-sizing-default" >End Date</span>
                     {{range_form.end_date(class_='form-control date-picker')}}
                 </div>
@@ -236,22 +298,28 @@
                     <span class="input-group-text" id="inputGroup-sizing-default" >Datzilla #</span>
                     {{range_form.datzilla_number(class_='form-control')}}
                 </div>
+                
+            </div>
+            <div class="row g-3">
                 <div class="col input-group" style="flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default" >Element</span>
                     {{range_form.element(class_='form-select element-select')}}
                 </div>
+            </div>
+            <div class="row g-3">
                 <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default" >Action</span>
                     {{range_form.action(class_='form-select action-select')}}
                 </div>
             </div>
-            <div class="row justify-content-center" id="button-row">
-                <div class="col-sm-3">
-                    <button type="submit" class="btn btn-success"  onclick="showRangeTable()">Submit</button>
+            <div class="row justify-content-center g-3" id="button-row">
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-dark" style="width:100%;display:block;font-weight: bold;">Clear</button>
                 </div>
-                <div class="col-sm-3">
-                    <button type="submit" class="btn btn-dark">Clear</button>
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-success"  onclick="showRangeTable()" style="width:100%;display:block;font-weight: bold;">Next</button>
                 </div>
+                
             </div>
         </form>
     </div>
@@ -260,4 +328,90 @@
         {% include "corrections/input_ranged_form.html" %}
     </div>
 </div>
+
+<!-- Hourly Form -->
+
+<div class="container-md justify-content-center m-5" id="form-hourly">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Hourly Correction</h1>
+                <p>This is a brief description of Hourly Corrections.</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-md form-container">
+        <form class="row g-3 align-items-center ">
+            <div class="row g-3 align-items-center">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">GHCN
+                        ID</span>
+                    <!-- {{daily_form.ghcn_id(class_='form-control')}} -->
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col input-group justify-content-start" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                    <!-- {{daily_form.date(class_='form-control date-picker')}} -->
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Datzilla
+                        #</span>
+                    <!-- {{daily_form.datzilla_number(class_='form-control')}} -->
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm input-group justify-content-start" style="flex-wrap: nowrap;">
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default"
+                        style="font-weight: bold">Element</span>
+                    <!-- {{daily_form.element(class_='form-select element-select')}} -->
+                </div>
+                <div class="col-sm input-group justify-content-start" style="width:7%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default"
+                        style="font-weight: bold">Action</span>
+                    <!-- {{daily_form.action(class_='form-select action-select')}} -->
+                </div>
+            </div>
+            <div class="row g-3">
+
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default"
+                        style="font-weight: bold">O-Value</span>
+                    <!-- {{daily_form.o_value(class_='form-control')}} -->
+                </div>
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default"
+                        style="font-weight: bold">E-Value</span>
+                    <!-- {{daily_form.e_value(class_='form-control')}} -->
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col">
+                    <button type="submit" class="btn button-light"
+                        style="width:100%;display:block;font-weight: bold;">Compare</button>
+                </div>
+
+                <div class="col">
+                    <button type="submit" class="btn btn-success" onclick=""
+                        style="width:100%;display:block;">Submit</button>
+                </div>
+
+            </div>
+            <div class="row g-3">
+                <div class="col-sm">
+                    <button type="reset" class="btn button-dull"
+                        style="width:100%;display:block;font-weight: bold">Clear</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+    <!-- Showing the data table would go here. -->
+
+</div>
+
 {% endblock content %}
