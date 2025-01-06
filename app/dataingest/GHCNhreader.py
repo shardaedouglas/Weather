@@ -10,35 +10,14 @@ def parse(file_path, delimiter='|'):
     # Filter the rows between the full date range, including full years
     # result = result.filter(pl.col('datetime').is_between(start_date, end_date))
 
-    # Changing checks for metadata. These may be removed later but are good to have for now.
-    if result['Station_ID'].n_unique() != 1:
-        print("Station ID has changed in the dataset!")
-    if result['Station_name'].n_unique() != 1:
-        print("Station name has changed in the dataset!")
-    if result['Latitude'].n_unique() != 1:
-        print("Latitude has changed in the dataset!")
-    if result['Longitude'].n_unique() != 1:
-        print("Longitude has changed in the dataset!")
-    if result['Elevation'].n_unique() != 1:
-        print("Elevation has changed in the dataset!")
-            
-
-    # Create metadata from the last entry in the dataset.
-    site_id = result.select(pl.last("Station_ID"))
-    site_name = result.select(pl.last("Station_name"))
-    latitude = result.select(pl.last("Latitude"))
-    longitude = result.select(pl.last("Longitude"))
-    elevation = result.select(pl.last("Elevation"))
-    metadata_df = pl.concat([site_id, site_name, latitude, longitude, elevation], how="horizontal")
-
     # Drop unnecessary columns
     result = result.drop(['Year', 'Month', 'Day', 'Hour', 'Minute'])
-    # result = processGHCNh(result, start_date, end_date)
 
-    return result, metadata_df
+    return result
 
-df = parse(file_path='/data/ops/elan.churavtsov/datzilla-flask/GHCNh_AAI0000TNCA_por.psv')[0]
-# print (df)
-for column_name, column_type in df.schema.items():
-    print(f"{column_name}: {column_type}")
-df.write_csv("TEST_PSV.csv")
+# if __name__ == "__main__":
+    # df = parse(file_path='/data/ops/elan.churavtsov/datzilla-flask/GHCNh_AAI0000TNCA_por.psv')
+    # print (df)
+    # for column_name, column_type in df.schema.items():
+    #     print(f"{column_name}: {column_type}")
+    # df.write_csv("TEST_PSV.csv")
