@@ -2,7 +2,12 @@
 
 /* Navigation Bar */
 #nav-bar{
-    background-color: rgb(1, 1, 90);
+    
+    background-color: #ffffff;
+    width: 100%;
+    font-weight: bold;
+    border-bottom: 3px solid #056FB7;
+    
     
 }
 #dropdownMenuButton{
@@ -14,7 +19,8 @@
 
 }
 #nav-items{
-    color: rgb(255, 255, 255);
+    color: #003087;
+
     padding-right: 10px ;
     display:inline-block;
     border-color: aliceblue;
@@ -29,7 +35,7 @@ transition: all .4s ease;
 line-height: 4ex;
 }
 #dropdownMenuButton{
-    color: white;
+    color: #003087;
 }
 
 
@@ -43,20 +49,21 @@ line-height: 4ex;
     border-right-style: solid;
     border-left-style: solid;
     text-align: center;
+    border-radius: 5px;
 }
 #form-daily{
     min-width: 85%;
 }
 #form-monthly{
-    width: 50%;
+    min-width: 50%;
 
 }
 #form-range{
-    width: 50%;
+    min-width: 50%;
 
 }
 #date-picker{
-    width: max-content;
+    width: 100%;
 }
 
 #date-div {
@@ -64,7 +71,7 @@ line-height: 4ex;
     display: flex;
     flex-wrap: nowrap; 
     align-items: stretch;
-    width: 12%;
+    /* width: 12%; */
 }
 #button-row{
     margin-top: 25px;
@@ -78,22 +85,34 @@ line-height: 4ex;
     border-bottom-right-radius: 7px;
 }
 .element-select{
-    max-width: 165px;
+    /* max-width: 165px; */
 }
 .action-select{
-    max-width: 90px;
+    /* max-width: 90px; */
 }
 .type-select {
-    max-width: 160px;
+    /* max-width: 160px; */
 }
 .country-select {
-    max-width: 380px;
+    /* max-width: 380px; */
 }
 .state-select {
-    max-width: 340px;
+    /* max-width: 340px; */
 }
 .date-picker {
-    max-width: 165px;
+    /* max-width: 165px; */
+}
+.button-light{
+    background-color: #ffffff;
+    border: 2px solid #086313;
+    border-radius: 5px;
+    color: #198754;
+}
+.button-dull{
+    background-color: #DADADA;
+    border: none;
+    border-radius: 5px;
+    color: #292929;
 }
 /* ------------------------ Data Displayer Pages -----------------*/
 
@@ -125,11 +144,12 @@ padding-top: 45px;
 
 }
 .type-select{
-    max-width: 190px;
+    /* max-width: 190px; */
 }
 
 body {
     background-color: rgb(255, 255, 255);
+    font-size: 100%;
 }
 
 
@@ -138,4 +158,39 @@ body {
 Gives a border between the columns of the table. */
 .ghcn-table-cell {
     border-right: solid 2px grey;
+}
+
+
+
+
+/* Dark Mode CSS*/
+/* To add more dark mode selectors, use ".dark-mode [tag or id or class etc.]*/
+.dark-mode {
+    background-color: #212529;
+    color: #fff;
+  }
+
+.dark-mode .form-control {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .input-group-text {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .form-select {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode #nav-bar  {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode #nav-items {
+    /* background-color: #212529; */
+    color: #fff;
 }

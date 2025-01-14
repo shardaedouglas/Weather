@@ -1,8 +1,11 @@
-from GHCNfilter import filter_data
-from GHCNreader import parse_fixed_width_file
+from app.dataingest.GHCNfilter import filter_data
+from  app.dataingest.GHCNreader import parse_fixed_width_file
+
+from datetime import datetime, timedelta
 
 def parse_and_filter(
     file_path: str,
+    correction_type=None,
     year=None,
     month=None,
     day=None,
@@ -25,7 +28,7 @@ def parse_and_filter(
     station_code (str, optional): Station code to filter on.
 
     Returns:
-    pl.DataFrame: The filtered DataFrame.
+    dict: The data for prior, current, and next day in the required format.
     """
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
@@ -41,12 +44,66 @@ def parse_and_filter(
         network_code=network_code,
         station_code=station_code,
     )
+    
+    # If correction_type is "daily", include prior and next day values
+    if correction_type == "daily" and day is not None:
+        prior_day = (datetime(year, month, day) - timedelta(days=1)).day
+        next_day = (datetime(year, month, day) + timedelta(days=1)).day
 
-    return filtered_df
+        prior_day_data = filter_data(
+            df,
+            year=year,
+            month=month,
+            day=prior_day,
+            observation_type=observation_type,
+            country_code=country_code,
+            network_code=network_code,
+            station_code=station_code,
+        )
+
+        next_day_data = filter_data(
+            df,
+            year=year,
+            month=month,
+            day=next_day,
+            observation_type=observation_type,
+            country_code=country_code,
+            network_code=network_code,
+            station_code=station_code,
+        )
+
+        # Extract the relevant values from the DataFrame and prepare the result in the right format
+        daily_data = {
+            'country_code': filtered_df['country_code'][0],
+            'network_code': filtered_df['network_code'][0],
+            'station_code': filtered_df['station_code'][0],
+            'year': filtered_df['year'][0],
+            'month': filtered_df['month'][0],
+            'observation_type': filtered_df['observation_type'][0],
+            'dayMinus': prior_day_data['day_' + str(prior_day)][0] if not prior_day_data.is_empty() else None,
+            'day': filtered_df['day_' + str(day)][0] if not filtered_df.is_empty() else None,
+            'dayPlus': next_day_data['day_' + str(next_day)][0] if not next_day_data.is_empty() else None,
+        }
+
+        # Return the result
+        return daily_data
+
+    # If no correction_type or day is not provided, just return the current day's data
+    return {
+        'country_code': filtered_df['country_code'][0],
+        'network_code': filtered_df['network_code'][0],
+        'station_code': filtered_df['station_code'][0],
+        'year': filtered_df['year'][0],
+        'month': filtered_df['month'][0],
+        'observation_type': filtered_df['observation_type'][0],
+        'day': filtered_df['day_' + str(day)][0] if not filtered_df.is_empty() else None,
+    }
+
+
 
 # if __name__ == "__main__":
 
-#     file_path =  "/data/ops/elan.churavtsov/datzilla-flask/DataFiles/US1MOMA0004.dly"
+    file_path =  "../../USW00093991.dly"
 
 #     # Example 1: Filter by year and country code
 #     filtered_df = parse_and_filter(

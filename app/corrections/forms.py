@@ -5,13 +5,13 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 
 #Options for multiple choice fields
 ELEMENTS = (
-    ("1", "Max Temp" ),
-    ("2", "Min Temp"),
-    ("3", "TOBS"),
-    ("4", "Precipitation"),
-    ("5", "Snow"),
-    ("6", "SnowD"),
-    ("7", "WT##cd "),
+    ("TMAX", "Max Temp" ),
+    ("TMIN", "Min Temp"),
+    ("TOBS", "TOBS"),
+    ("PRCP", "Precipitation"),
+    ("SNOW", "Snow"),
+    ("SNWD", "SnowD"),
+    ("WT**", "WT##cd "),
 )
 ACTIONS = (
     ("1", "1A" ),
