@@ -49,7 +49,9 @@ def parse_and_filter(
     
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
-
+    
+    print("file Path: ", file_path)
+    print("df: ", df)
     # Step 2: Apply filtering using filter_data
     filtered_df = filter_data(
         df,
