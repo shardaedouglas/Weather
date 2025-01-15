@@ -2,9 +2,6 @@ import polars as pl
 # from GHCNreader import parse_fixed_width_file //FOR STANDALONE TESTING
 from  app.dataingest.GHCNreader import parse_fixed_width_file
 
-
-# from app.dataingest.GHCNreader import parse_fixed_width_file
-
 def filter_data(
     df: pl.DataFrame,
     year=None,
@@ -15,6 +12,15 @@ def filter_data(
     network_code=None,
     station_code=None,
 ):
+    
+    print("!year: {year}")
+    print("!month: {month}")
+    print("!day: {day}")
+    print("!observation_type: {observation_type}")
+    print("!country_code: {country_code}")
+    print("!network_code: {network_code}")
+    print("!station_code: {station_code}")
+
     """
     Filters the data based on user input.
 

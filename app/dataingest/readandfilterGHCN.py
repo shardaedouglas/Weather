@@ -1,5 +1,5 @@
 from app.dataingest.GHCNfilter import filter_data
-from  app.dataingest.GHCNreader import parse_fixed_width_file
+from app.dataingest.GHCNreader import parse_fixed_width_file
 
 from datetime import datetime, timedelta
 
@@ -13,6 +13,7 @@ def parse_and_filter(
     country_code=None,
     network_code=None,
     station_code=None,
+    
 ):
     """
     Reads and filters the data from a fixed-width file.
@@ -30,9 +31,15 @@ def parse_and_filter(
     Returns:
     dict: The data for prior, current, and next day in the required format.
     """
+    print(f"file_path: {file_path}")
+    print(f"correction_type: {correction_type}")
+    print(f"year: {year}")
+    print(f"month: {month}")
+    
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
-
+    print("df in readandfilter", df)
+    
     # Step 2: Apply filtering using filter_data
     filtered_df = filter_data(
         df,
@@ -44,7 +51,8 @@ def parse_and_filter(
         network_code=network_code,
         station_code=station_code,
     )
-    
+    print("filtered_df in readandfilter", filtered_df)
+
     # If correction_type is "daily", include prior and next day values
     if correction_type == "daily" and day is not None:
         prior_day = (datetime(year, month, day) - timedelta(days=1)).day
@@ -77,33 +85,50 @@ def parse_and_filter(
             'country_code': filtered_df['country_code'][0],
             'network_code': filtered_df['network_code'][0],
             'station_code': filtered_df['station_code'][0],
-            'year': filtered_df['year'][0],
-            'month': filtered_df['month'][0],
+            'year': filtered_df['year'],
+            'month': filtered_df['month'],
             'observation_type': filtered_df['observation_type'][0],
-            'dayMinus': prior_day_data['day_' + str(prior_day)][0] if not prior_day_data.is_empty() else None,
-            'day': filtered_df['day_' + str(day)][0] if not filtered_df.is_empty() else None,
-            'dayPlus': next_day_data['day_' + str(next_day)][0] if not next_day_data.is_empty() else None,
+            'dayMinus': prior_day_data['day_' + str(prior_day)] if not prior_day_data.is_empty() else None,
+            'day': filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None,
+            'dayPlus': next_day_data['day_' + str(next_day)] if not next_day_data.is_empty() else None,
         }
 
         # Return the result
         return daily_data
+    
+    else:
+            monthly_data = {
+                'country_code': filtered_df['country_code'][0],
+                'network_code': filtered_df['network_code'][0],
+                'station_code': filtered_df['station_code'][0],
+                'year': filtered_df['year'],
+                'month': filtered_df['month'],
+                'observation_type': filtered_df['observation_type'],
+            }
 
-    # If no correction_type or day is not provided, just return the current day's data
-    return {
-        'country_code': filtered_df['country_code'][0],
-        'network_code': filtered_df['network_code'][0],
-        'station_code': filtered_df['station_code'][0],
-        'year': filtered_df['year'][0],
-        'month': filtered_df['month'][0],
-        'observation_type': filtered_df['observation_type'][0],
-        'day': filtered_df['day_' + str(day)][0] if not filtered_df.is_empty() else None,
-    }
+            # Add data for all days in the month
+            for day in range(1, 32):  # Loop through days 1-31
+                monthly_data[f'day_{day}'] = filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None
+
+            return monthly_data
+
+
+    # # If no correction_type or day is not provided, just return the current day's data
+    # return {
+    #     'country_code': filtered_df['country_code'][0],
+    #     'network_code': filtered_df['network_code'][0],
+    #     'station_code': filtered_df['station_code'][0],
+    #     'year': filtered_df['year'],
+    #     'month': filtered_df['month'],
+    #     'observation_type': filtered_df['observation_type'],
+    #     # 'day': filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None,
+    # }
 
 
 
 # if __name__ == "__main__":
 
-    file_path =  "../../USW00093991.dly"
+#     file_path =  "../../USW00093991.dly"
 
 #     # Example 1: Filter by year and country code
 #     filtered_df = parse_and_filter(

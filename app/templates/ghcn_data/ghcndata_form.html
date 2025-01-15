@@ -63,21 +63,102 @@
 
 
 <script>
-    // (On this page only) Adds the dropdown searchability using select2 and Jquery.
-    // Instantiates select2 for the named form object. See forms.py for identifiers 
-    $(document).ready(function() {
-        $('#state').select2();
-        $('#country').select2();
-        $('#station_type').select2();   
-    });
-
-
+    
     function showGHCNViewTable() {
-       document.getElementById('station-data-view').style.display = "block";
+        
+        let queryStringData = getDataFromURL();
+        console.log("queryStringData: ", queryStringData);
+        
+        
+        
+        document.getElementById('station-data-view').style.display = "block";
     }
+    
     function hideGHCNViewTable() {
        document.getElementById('station-data-view').style.display = "none";
     }
-</script>
+
+    function showComparisonTable(data) {
+        const tableBody = document.querySelector("#station-data-view tbody");
+        tableBody.innerHTML = ""; // Clear existing rows
+    
+        // Sort the days numerically
+        const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
+
+        sortedDays.forEach(dayKey => {
+            const dayData = data[dayKey];
+            const row = `
+                <tr>
+                    <td>${dayKey}</td>
+                    <td>${dayData.TMAX || ""}</td>
+                    <td>${dayData.TMIN || ""}</td>
+                    <td>${dayData.TOBS || ""}</td>
+                    <td>${dayData.PRCP || ""}</td>
+                    <td>${dayData.SNOW || ""}</td>
+                    <td>${dayData.SNWD || ""}</td>
+                    <td>${dayData.WTXX || ""}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        document.getElementById("station-data-view").style.display = "block";
+    }
+
+
+    function getDataFromURL() {
+        // Get the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Extract the query parameters
+        const ghcnId = urlParams.get('ghcn_id');
+        //const country = urlParams.get('country');
+        //const idOption = urlParams.get('id-option');
+        //const state = urlParams.get('state');
+        const stationType = urlParams.get('station_type');
+        const date = urlParams.get('date');
+    
+
+        var requestData = {
+            ghcn_id: ghcnId,
+            //country: country,
+            //id_option: idOption,
+            //state: state,
+            //station_type: stationType,
+            date: date
+        };
+
+        // Send the data via AJAX
+        $.ajax({
+            url: '/get_data_for_GHCN_table',  // Your endpoint here
+            method: 'POST',
+            data: $.param(requestData),
+            success: function(response) {
+                console.log("Success:", response);
+        
+                // Access a specific day's data
+                const day1Data = response["Day 1"]; // Access data for "Day 1"
+                console.log("Day 1 Data:", day1Data);
+        
+                // Access specific observations from "Day 1"
+                console.log("TMAX on Day 1:", day1Data.TMAX);
+                console.log("TMIN on Day 1:", day1Data.TMIN);
+        
+                // Test accessing another day
+                const day2Data = response["Day 2"];
+                console.log("TMAX on Day 2:", day2Data.TMAX);
+        
+                // Handle other processing or pass to another function
+                showComparisonTable(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+        }
+    
+
+    </script>
 
 {% endblock content %}

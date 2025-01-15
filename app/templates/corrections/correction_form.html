@@ -37,23 +37,27 @@
             showSelectedForm();
         });
 
+        
+
         // Handle form submission
         $("form").submit(function(event) {
             event.preventDefault();
 
-            // Gets selected correction type
+            // Get the selected correction type
             var selectedCorrectionType = $("input[name='correction-option']:checked").val();
+            console.log("selectedCorrectionType", selectedCorrectionType);
 
-            // Aend the form data via AJAX
             if (selectedCorrectionType) {
-                var formData = $(this).serialize();
-
+                var formData = $(this).serialize(); // Serialize the form data
+                formData += `&correction_type=${encodeURIComponent(selectedCorrectionType)}`;
+                console.log("formData: ", formData);
+                // Send the form data via AJAX
                 $.ajax({
                     url: '/process_correction',
                     method: 'POST',
                     data: formData,
                     success: function(response) {
-                        //display the appropriate table
+                        // Display the appropriate table
                         console.log("Success:", response);
                         if (selectedCorrectionType === 'Daily Correction') {
                             showComparisonTable(response.filtered_data);
@@ -62,7 +66,7 @@
                         } else if (selectedCorrectionType === 'Ranged Correction') {
                             showRangeTable();
                         }
-                        //NOTE: This needs to be updated for hourly.
+                        // NOTE: This needs to be updated for hourly.
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
@@ -71,6 +75,7 @@
                 });
             }
         });
+    
     });
     
     function showMonthTable() {

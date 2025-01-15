@@ -80,6 +80,8 @@ def process_correction():
         defaults = request.form.get('defaults') == 'on'  # Convert 'on' string to boolean
         datzilla_number = request.form.get('datzilla_number')
         
+        print(f"called this route")
+
         print(f"Correction Type: {correction_type}")
         print(f"GHCN ID: {ghcn_id}")
         print(f"Correction Date: {correction_date}")
