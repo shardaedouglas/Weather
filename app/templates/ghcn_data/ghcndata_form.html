@@ -46,7 +46,7 @@
                 <button type="reset" class="btn btn-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
             </div>
             <div class="col-md">
-                <button type="submit" class="btn btn-success" onclick="showGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Submit</button>
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
             </div>
             
         </div>
@@ -60,19 +60,12 @@
 </div>  
 
 
-
-
 <script>
     
-    function showGHCNViewTable() {
-        
+    document.addEventListener("DOMContentLoaded", function () {
         let queryStringData = getDataFromURL();
-        console.log("queryStringData: ", queryStringData);
-        
-        
-        
-        document.getElementById('station-data-view').style.display = "block";
-    }
+        document.getElementById("station-data-view").style.display = "block";
+    });
     
     function hideGHCNViewTable() {
        document.getElementById('station-data-view').style.display = "none";
@@ -104,7 +97,6 @@
 
         document.getElementById("station-data-view").style.display = "block";
     }
-
 
     function getDataFromURL() {
         // Get the URL
