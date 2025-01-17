@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Daily Correction{% endblock %}
+{% block content %}
+<!--Daily Form-->
+
+<div class="container-md justify-content-center" id="form-daily">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Daily Correction</h1>
+                <p>This is a brief description of Daily Corrections.</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-md form-container">
+    <form class="row g-3 align-items-center ">
+        <div class="row g-3 align-items-center">
+            <div class="col input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
+                {{daily_form.ghcn_id(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col input-group justify-content-start" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                {{daily_form.date(class_='form-control date-picker')}}
+            </div>
+        </div>
+        <div class="row g-3" >
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Datzilla #</span>
+                {{daily_form.datzilla_number(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3" >
+            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
+                {{daily_form.element(class_='form-select element-select')}}
+            </div>
+            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
+                {{daily_form.action(class_='form-select action-select')}}
+            </div>
+        </div>
+        <div class="row g-3">
+
+            <div class="col-md input-group" style=" flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
+                {{daily_form.o_value(class_='form-control')}}
+            </div>
+            <div class="col-md input-group" style=" flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">E-Value</span>
+                {{daily_form.e_value(class_='form-control')}}
+            </div>
+        </div>
+        
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;">Compare</button>
+            </div>
+            
+            <div class="col-sm">
+                <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;">Submit</button>
+
+            </div>
+
+        </div>
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+    <div id="correction-comparison-table" style="display:none;">
+        {% include "corrections/data_tables/correction_comparison_table.html" %}
+    </div>
+
+</div>
+
+<script>
+        $(document).ready(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                // console.log(formData);
+                correctionFormHandler(formData, function (output) {
+                    showComparisonTable(output);
+                })
+
+            })
+
+        });
+
+    //DAILY TABLE
+    function showComparisonTable(filteredData) {
+        const tableBody = document.querySelector('#correction-comparison-table tbody');
+        
+        // Clear existing rows in the table
+        tableBody.innerHTML = '';
+                
+        
+        //Add to table data.
+        if (filteredData) {
+            console.log("Data:", filteredData);
+    
+            const newRow = `
+                <tr>
+                    <td>Dist</td>
+                    <td>Elev</td>
+                    <td>${filteredData.station_code}</td>
+                    <td>${filteredData.dayMinus}</td>
+                    <td>${filteredData.day}</td>
+                    <td>${filteredData.dayPlus}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+        }
+
+        // Show the table
+        document.getElementById('correction-comparison-table').style.display = "block";
+    }
+</script>
+
+{% endblock content %}

@@ -123,7 +123,7 @@ def create_app(config_class=Config):
     def test_page():
         # return '<h1>Test</h1>' # Link html templates here instead..
         # return render_template('test.html')
-        return render_template('landing_page.html')
+        return render_template('test.html')
 
 
     return app
