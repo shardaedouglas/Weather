@@ -11,6 +11,10 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
 @correction_bp.route('/')
 def index():
+    return render_template("landing_page.html")
+
+@correction_bp.route('/corrections')
+def corrections():
     # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
@@ -64,6 +68,159 @@ def index():
         range_form=range_form
     )
        
+
+@correction_bp.route('/corrections/daily')
+def daily_corrections():
+
+        # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+    ghcn_id = request.args.get('ghcn_id', '')
+    correction_date = request.args.get('date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    element = request.args.get('element', '')
+    action = request.args.get('action', '')
+    o_value = request.args.get('o_value', '')
+    e_value = request.args.get('e_value', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
+
+    # Convert dates if needed
+    if correction_date:
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+    if begin_date:
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+    # Initialize forms with default data
+    daily_form = DailyCorrections(
+        ghcn_id=ghcn_id,
+        date=correction_date,  
+        datzilla_number=datzilla_number,
+        element=element,
+        action=action,
+        o_value=o_value,
+        e_value=e_value
+    )
+
+    return render_template(
+        '/corrections/forms/daily_correction_form.html',
+        selected_form=selected_form,
+        daily_form=daily_form
+    )
+
+
+
+@correction_bp.route('/corrections/monthly')
+def monthly_corrections():
+    # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+    ghcn_id = request.args.get('ghcn_id', '')
+    correction_date = request.args.get('date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    element = request.args.get('element', '')
+    action = request.args.get('action', '')
+    o_value = request.args.get('o_value', '')
+    e_value = request.args.get('e_value', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
+
+    # Convert dates if needed
+    if correction_date:
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+    if begin_date:
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+    # Initialize forms with default data
+    monthly_form = MonthlyCorrections(
+        ghcn_id=ghcn_id,
+        date=correction_date,  
+    )
+    
+
+    return render_template(
+        '/corrections/forms/monthly_correction_form.html',
+        selected_form=selected_form,
+        monthly_form=monthly_form
+    )
+
+
+
+@correction_bp.route('/corrections/range')
+def range_corrections():
+
+    # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+    ghcn_id = request.args.get('ghcn_id', '')
+    correction_date = request.args.get('date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    element = request.args.get('element', '')
+    action = request.args.get('action', '')
+    o_value = request.args.get('o_value', '')
+    e_value = request.args.get('e_value', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
+
+    # Convert dates if needed
+    if correction_date:
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+    if begin_date:
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+    # Initialize forms with default data    
+    range_form = RangeCorrections(
+        ghcn_id=ghcn_id,
+        begin_date=begin_date,
+        end_date=end_date,
+        datzilla_number=datzilla_number,
+        element=element,
+        action=action
+    )
+
+
+    return render_template(
+        '/corrections/forms/range_correction_form.html',
+        selected_form=selected_form,
+        range_form=range_form
+    )
+
+@correction_bp.route('/corrections/hourly')
+def hourly_corrections():
+
+    # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+    ghcn_id = request.args.get('ghcn_id', '')
+    correction_date = request.args.get('date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    element = request.args.get('element', '')
+    action = request.args.get('action', '')
+    o_value = request.args.get('o_value', '')
+    e_value = request.args.get('e_value', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
+
+    # Convert dates if needed
+    if correction_date:
+        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+    if begin_date:
+        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+    # Initialize forms with default data    
+    hourly_form = {}
+
+
+    return render_template(
+        '/corrections/forms/hourly_correction_form.html',
+        selected_form=selected_form,
+        hourly_form=hourly_form
+    )
+
 @correction_bp.route('/process_correction', methods=['POST'])
 def process_correction():
     try:
@@ -133,3 +290,5 @@ def process_correction():
     except Exception as e:
         print(f"Error in process_correction: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+

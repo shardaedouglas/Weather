@@ -200,7 +200,7 @@
             </div>
             
             <div class="col-sm">
-                <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button>
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;">Submit</button>
             </div>
 
         </div>
@@ -214,7 +214,7 @@
 
 
     <div id="correction-comparison-table" style="display:none;">
-        {% include "corrections/correction_comparison_table.html" %}
+        {% include "corrections/data_tables/correction_comparison_table.html" %}
     </div>
 
 </div>
@@ -259,7 +259,7 @@
     
     <!--Monthly Table -->
     <div id="monthly-form-table" >
-        {% include "corrections/input_monthly_form.html" %}
+        {% include "corrections/data_tables/input_monthly_form.html" %}
     </div>
 </div>
 
@@ -325,7 +325,7 @@
     </div>
 
     <div id="ranged-form-table" style="display:none;">
-        {% include "corrections/input_ranged_form.html" %}
+        {% include "corrections/data_tables/input_ranged_form.html" %}
     </div>
 </div>
 

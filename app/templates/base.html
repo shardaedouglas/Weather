@@ -204,7 +204,25 @@
             }
 
 
-            //
+                function correctionFormHandler(formData, handleData) {
+                        // Aend the form data via AJAX
+                        $.ajax({
+                            url: '/process_correction',
+                            method: 'POST',
+                            data: formData,
+                            success: function (response) {
+                                // function that handles async response at caller
+                                handleData(response)
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Error:", error);
+                                alert("There was an error processing your request.");
+                                // Debugging
+                                handleData()
+                            }
+                        });
+
+                    }
             
         </script>
     </body>

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Range Correction{% endblock %}
+{% block content %}
+
+<!--Range Form-->
+<div class="container-md justify-content-center" id="form-range">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Range Correction</h1>
+                <p>This is a brief description of Range Corrections.</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-md form-container">
+        <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+            <div class="row g-3">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
+                    {{range_form.ghcn_id(class_='form-control')}}
+                </div>
+
+            </div>
+            <div class="row g-3">
+                <div class="col-md input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Begin Date</span>
+                    {{range_form.begin_date(class_='form-control date-picker')}}
+                </div>
+                <div class="col-md input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default">End Date</span>
+                    {{range_form.end_date(class_='form-control date-picker')}}
+                </div>
+            </div>
+            <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Datzilla #</span>
+                    {{range_form.datzilla_number(class_='form-control')}}
+                </div>
+
+            </div>
+            <div class="row g-3">
+                <div class="col input-group" style="flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
+                    {{range_form.element(class_='form-select element-select')}}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
+                    {{range_form.action(class_='form-select action-select')}}
+                </div>
+            </div>
+            <div class="row justify-content-center g-3" id="button-row">
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-dark"
+                        style="width:100%;display:block;font-weight: bold;">Clear</button>
+                </div>
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div id="ranged-form-table" style="display:none;">
+        {% include "corrections/data_tables/input_ranged_form.html" %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            // console.log(formData);
+            correctionFormHandler(formData, function (output) {
+                showRangeTable();
+            })
+
+        })
+
+    });
+
+    function showRangeTable() {
+        document.getElementById('ranged-form-table').style.display = "flex";
+     }
+
+</script>
+
+{% endblock content %}

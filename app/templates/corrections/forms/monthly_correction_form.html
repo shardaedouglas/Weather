@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Monthly Correction{% endblock %}
+{% block content %}
+
+<!--Monthly Form-->
+<div class="container-md justify-content-center " id="form-monthly">
+    <!-- <div class="container-md justify-content-center form-container" id="form-monthly" style="display:none"> -->
+        <div class="container-md">
+            <div class="row g-3">
+                <div class="col g-3">
+                    <h1>Enter a Monthly Correction</h1>
+                    <p>This is a brief description of Monthly Corrections.</p>
+                </div>
+            </div>
+        </div>     
+    
+        <div class="container-md form-container">
+        <form class="row g-3 align-items-center">
+                <div class="row g-3">
+                    <div class="col input-group">
+                        <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                        {{monthly_form.ghcn_id(class_='form-control') }}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col input-group" id="date-div" style="justify-content: start;">
+                            <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                            {{monthly_form.date(class_='form-control date-picker')}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center g-3" id="button-row">
+                    <div class="col-sm">
+                        <button type="reset" class="btn btn-dark" style="width:100%;display:block;font-weight: bold;">Clear</button>
+                    </div>
+                    <div class="col-sm">
+                        <!-- <button type="submit" class="btn btn-success" onclick="showMonthTable()" style="width:100%;display:block;font-weight: bold;">Next</button> -->
+                        <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+
+                    </div>
+                    
+                </div>
+            </form>
+        </div>  
+        
+        <!--Monthly Table -->
+        <div id="monthly-form-table" >
+            {% include "corrections/data_tables/input_monthly_form.html" %}
+            
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                // console.log(formData);
+                correctionFormHandler(formData, function (output) {
+                    showMonthTable();
+                })
+
+            })
+
+        });
+
+        function showMonthTable() {
+            document.getElementById('input-monthly-table').style.display = "block";
+         }
+    </script>
+
+    {% endblock content %}
