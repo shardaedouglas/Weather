@@ -13,13 +13,12 @@ def filter_data(
     station_code=None,
 ):
     
-    print("!year: {year}")
-    print("!month: {month}")
-    print("!day: {day}")
-    print("!observation_type: {observation_type}")
-    print("!country_code: {country_code}")
-    print("!network_code: {network_code}")
-    print("!station_code: {station_code}")
+    # print(f"!year: {year}")
+    # print(f"!month: {month}")
+    # print(f"!day: {day}")
+    # print(f"!observation_type: {observation_type}")
+
+    # print(f"!station_code: {station_code}")
 
     """
     Filters the data based on user input.
@@ -78,9 +77,9 @@ def filter_data(
 
 
 # Usage
-if __name__ == '__main__':
-    file_path = "../../USW00093991.dly"
-    df = parse_fixed_width_file(file_path)
+# if __name__ == '__main__':
+#     file_path = "../../USW00093991.dly"
+#     df = parse_fixed_width_file(file_path)
 
 #     # Filter example: year=2023, month=1, day=15, observation type="PRCP", station_id="US1MOMA0004"
 #     # filtered_df = filter_data(df, year=1929, month=8, day=1, observation_type="PRCP", station_code="00006063")

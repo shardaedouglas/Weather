@@ -31,14 +31,13 @@ def parse_and_filter(
     Returns:
     dict: The data for prior, current, and next day in the required format.
     """
-    print(f"file_path: {file_path}")
-    print(f"correction_type: {correction_type}")
-    print(f"year: {year}")
-    print(f"month: {month}")
     
+    country_code = station_code[:2]
+    network_code = station_code[2]
+    station_id = station_code[3:]
+
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
-    print("df in readandfilter", df)
     
     # Step 2: Apply filtering using filter_data
     filtered_df = filter_data(
@@ -47,55 +46,59 @@ def parse_and_filter(
         month=month,
         day=day,
         observation_type=observation_type,
-        country_code=country_code,
-        network_code=network_code,
-        station_code=station_code,
+        station_code=station_id,
     )
-    print("filtered_df in readandfilter", filtered_df)
+    
+    # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
+    if len(filtered_df) == 0 or filtered_df.shape[0] == 0:
+        # print(f"No data found for station {station_code} with the given filters. Skipping station.")
+        return {'status': 'skip', 'station_code': station_code}
 
-    # If correction_type is "daily", include prior and next day values
-    if correction_type == "daily" and day is not None:
+
+    # If correction_type is "compare", include prior and next day values
+    if correction_type == "compare" and day is not None:
         prior_day = (datetime(year, month, day) - timedelta(days=1)).day
         next_day = (datetime(year, month, day) + timedelta(days=1)).day
 
-        prior_day_data = filter_data(
+        prior_day_filtered_df = filter_data(
             df,
             year=year,
             month=month,
             day=prior_day,
             observation_type=observation_type,
-            country_code=country_code,
-            network_code=network_code,
-            station_code=station_code,
+            station_code=station_id,
         )
-
-        next_day_data = filter_data(
+        
+        next_day_filtered_df = filter_data(
             df,
             year=year,
             month=month,
             day=next_day,
             observation_type=observation_type,
-            country_code=country_code,
-            network_code=network_code,
-            station_code=station_code,
+            station_code=station_id,
         )
+        
 
         # Extract the relevant values from the DataFrame and prepare the result in the right format
         daily_data = {
             'country_code': filtered_df['country_code'][0],
             'network_code': filtered_df['network_code'][0],
             'station_code': filtered_df['station_code'][0],
-            'year': filtered_df['year'],
-            'month': filtered_df['month'],
+            'year': filtered_df['year'][0],
+            'month': filtered_df['month'][0],
             'observation_type': filtered_df['observation_type'][0],
-            'dayMinus': prior_day_data['day_' + str(prior_day)] if not prior_day_data.is_empty() else None,
-            'day': filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None,
-            'dayPlus': next_day_data['day_' + str(next_day)] if not next_day_data.is_empty() else None,
+            'dayMinus': prior_day_filtered_df['day_' + str(prior_day)][0] if not prior_day_filtered_df.is_empty() else None,
+            'day': filtered_df['day_' + str(day)][0] if not filtered_df.is_empty() else None,
+            'dayPlus': next_day_filtered_df['day_' + str(next_day)][0] if not next_day_filtered_df.is_empty() else None,
         }
 
         # Return the result
         return daily_data
     
+    elif correction_type == "daily":
+        
+        print ("DoDailyThingsHere")        
+        
     else:
             monthly_data = {
                 'country_code': filtered_df['country_code'][0],

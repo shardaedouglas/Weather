@@ -86,26 +86,6 @@ def create_app(config_class=Config):
     app.config['MAIL_USE_SSL'] = False
     
     mail.init_app(app)
-    
-    ###### FIND STATIONS EXAMPLE ######
-    base_dir = os.path.dirname(os.path.abspath(__file__))  # Current script's directory
-    file_path = os.path.join(base_dir, '..', 'ghcnd-stations.txt')  # Parent directory path
-    
-    # Parse the station data
-    stations = parse_station_file(file_path)
-    
-    latitude = 25.0  # Center point latitude
-    longitude = 55.5  # Center point longitude
-    search_radius = 200  # Radius in kilometers
-    
-    nearby_stations = find_stations(latitude, longitude, search_radius, stations)
-
-    # Print results
-    print(f"Stations within {search_radius} km of ({latitude}, {longitude}):")
-    for station in nearby_stations:
-        print(f"Station ID: {station[0]}, Latitude: {station[1]}, Longitude: {station[2]}, Distance: {station[3]:.2f} km")
-    
-
     # Register blueprints here
     from app.corrections import correction_bp as corrections_bp
     app.register_blueprint(corrections_bp)

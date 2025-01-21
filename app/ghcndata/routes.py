@@ -4,6 +4,7 @@ from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
+import os
 
 
 # Route to Render GHCN Station Page
@@ -56,9 +57,25 @@ def get_data_for_GHCN_table():
         else:
             correction_year, correction_month, correction_day = None, None, None
         
-        file_path = './USW00093991.dly' # I THINK THIS IS HARD CODED IN THE PARSER STILL
+         # Absolute path to the directory with .dly files
+        file_path = "/data/ops/ghcnd/data/ghcnd_all/"
+        
+        # Validate the directory
+        if not os.path.exists(file_path):
+            return jsonify({"error": f"Directory {file_path} does not exist"}), 500
 
-        # print(file_path)
+        # Find the .dly file in the folder that matches the ghcn_id
+        parsed_file_path = None
+        for filename in os.listdir(file_path):
+            if filename.startswith(ghcn_id) and filename.endswith(".dly"):
+                parsed_file_path = os.path.join(file_path, filename)
+                break  # Stop as soon as the correct file is found
+
+        if not parsed_file_path:
+            return jsonify({"error": f"No .dly file found for GHCN ID: {ghcn_id}"}), 404
+        
+        print("file_path: ", file_path)
+        print("parsed_file_path: ", parsed_file_path)
         # print(f"GHCN ID: {ghcn_id}")
         # print(f"correction_date: {correction_date}")
         # print("correction_year: ", correction_year)
@@ -68,17 +85,16 @@ def get_data_for_GHCN_table():
         # # Run parser with form data
         filtered_df = parse_and_filter(
             # ghcn_id = ghcn_id,
-            file_path=file_path,
+            file_path=parsed_file_path,
             year=correction_year,
             month=correction_month,
-            observation_type = station_type
+            observation_type = station_type,
         )
         
         # # Print results
         print("filtered_df in ghcndata routes",filtered_df)
         
         JSONformatedData = format_as_json(filtered_df)
-        print("JSONformatedData in ghcndata routes",JSONformatedData)
 
         # Return
         return JSONformatedData
@@ -90,6 +106,7 @@ def get_data_for_GHCN_table():
     except Exception as e:
         print(f"Error in process_correction: {e}")
         return jsonify({"error": "Internal server error"}), 500
+    
     
     
 def format_as_json(filtered_df):
