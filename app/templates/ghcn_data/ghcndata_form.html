@@ -15,19 +15,19 @@
     <form class="row g-3 align-items-center">
         <div class="row g-3">
             <div class="col-md input-group">
-                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="GHCN ID" checked="checked">
-                <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span> {{ghcnForm.ghcn_id(class_='form-control')}}
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-ghcn-id" name="id-option" value="GHCN ID" checked="checked" >
+                <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span> {{ghcnForm.ghcn_id(class_='form-control', id='search-option-ghcn-id')}}
             </div>
             
             <div class="col-md input-group" style="flex-wrap: nowrap;">
-                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="Country" checked="checked">
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-country" name="id-option" value="Country">
                 <span class="input-group-text" id="inputGroup-sizing-default">Country</span> 
-                <span class="tt" title="Country Input">{{ghcnForm.country(class_='form-select country-select')}}</span>
+                <span class="tt" title="Country Input">{{ghcnForm.country(class_='form-select country-select', id='search-option-country')}}</span>
             </div>
             
             <div class="col-md input-group" style="flex-wrap: nowrap;">
-                <input class="form-check-input" type="radio" id="id-option-ghcn" name="id-option" value="State" checked="checked">
-                <span class="input-group-text" id="inputGroup-sizing-small">State</span> {{ghcnForm.state(class_='form-select state-select')}}
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-state" name="id-option" value="State">
+                <span class="input-group-text" id="inputGroup-sizing-small">State</span> {{ghcnForm.state(class_='form-select state-select', id='search-option-state')}}
             </div>
         </div>
         <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
@@ -69,6 +69,7 @@
         $('#state').select2();
         $('#country').select2();
         $('#station_type').select2();   
+    
     });
 
 
@@ -78,6 +79,55 @@
     function hideGHCNViewTable() {
        document.getElementById('station-data-view').style.display = "none";
     }
+
+    $(document).ready(function() {
+
+        // Disables other radio options when one is selected.
+        function enableSelectedForm() {
+            if ($("#radio-option-ghcn-id").is(":checked")) {
+                $("#search-option-ghcn-id").removeAttr('disabled');
+                $("#search-option-country").attr('disabled', true);
+                $("#search-option-state").attr('disabled', true);
+
+
+            } else if ($("#radio-option-country").is(":checked")) {
+                $("#search-option-ghcn-id").attr('disabled', true);
+                $("#search-option-country").removeAttr('disabled');
+                $("#search-option-state").attr('disabled', true);
+
+
+            } else if ($("#radio-option-state").is(":checked")) {
+                $("#search-option-ghcn-id").attr('disabled', true);
+                $("#search-option-country").attr('disabled', true);
+                $("#search-option-state").removeAttr('disabled');
+
+
+            }
+
+        }
+    
+        // Initialize radio button disabling
+        enableSelectedForm();
+    
+        // Handle radio button clicks to show the corresponding form
+        $("input[name='id-option']").click(function() {
+            enableSelectedForm();
+        });
+    })
+
+    //Form Submission and Show data table
+    // $(document).ready(function () {
+    //     $("form").submit(function (event) {
+    //         event.preventDefault(); // Prevent the default form submission
+    //         var formData = $(this).serialize(); //Retrieve the form data
+    //         // Send the request to handle the form data. async?
+    //         // Once data is returned, show the populated data table.
+    //         showGHCNViewTable();
+    //     })
+
+    // });
+
+
 </script>
 
 {% endblock content %}

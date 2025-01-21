@@ -6,7 +6,7 @@
     background-color: #ffffff;
     width: 100%;
     font-weight: bold;
-    border-bottom: 3px solid #056FB7;
+    border-bottom: 4px solid #056FB7;
     
     
 }
@@ -20,6 +20,7 @@
 }
 #nav-items{
     color: #003087;
+    text-decoration: underline 1px #003087;
 
     padding-right: 10px ;
     display:inline-block;
@@ -36,6 +37,8 @@ line-height: 4ex;
 }
 #dropdownMenuButton{
     color: #003087;
+    font-weight: bold;
+    text-decoration: underline 1px #003087
 }
 
 
@@ -79,7 +82,7 @@ line-height: 4ex;
 .input-group {
     justify-content: center;
 }
-#id-option-ghcn {
+.id-option-ghcn {
     margin-right: 3px;
     border-top-right-radius: 7px; 
     border-bottom-right-radius: 7px;
@@ -193,4 +196,11 @@ Gives a border between the columns of the table. */
 .dark-mode #nav-items {
     /* background-color: #212529; */
     color: #fff;
+    text-decoration: underline 1px #fff
+}
+
+
+.dark-mode #dropdownMenuButton{
+    color: #fff;
+    text-decoration: underline 1px #fff
 }
