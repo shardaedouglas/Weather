@@ -121,8 +121,6 @@
 
     // });
 
-
-
     function showComparisonTable(data) {
         const tableBody = document.querySelector("#station-data-view tbody");
         tableBody.innerHTML = ""; // Clear existing rows
@@ -152,7 +150,7 @@
 
     function getDataFromURL(urlParams) {
         // Get the URL
-        
+
         // Extract the query parameters
         const ghcnId = urlParams.get('ghcn_id');
         const stationType = urlParams.get('station_type');
@@ -161,6 +159,7 @@
         var requestData = {
             ghcn_id: ghcnId,
             date: date,
+            station_type: stationType
         };
 
         // Send the data via AJAX
@@ -173,6 +172,7 @@
                 
                 // Handle other processing or pass to another function
                 showComparisonTable(response);
+
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);

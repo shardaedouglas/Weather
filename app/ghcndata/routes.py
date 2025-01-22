@@ -35,15 +35,15 @@ def send_email():
     mail.send(msg)
     return "Email sent!"    
 
-
-
-
+    
+    
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
 def get_data_for_GHCN_table():
     try:
-        print("Form Data:", request.form)
+        # print("Form Data:", request.form)
         # Extract form data from the POST request
         ghcn_id = request.form.get('ghcn_id')
+
         # country = request.form.get('country')
         # state = request.form.get('state')
         station_type = request.form.get('station_type')
@@ -57,44 +57,31 @@ def get_data_for_GHCN_table():
         else:
             correction_year, correction_month, correction_day = None, None, None
         
-         # Absolute path to the directory with .dly files
-        file_path = "/data/ops/ghcnd/data/ghcnd_all/"
         
-        # Validate the directory
-        if not os.path.exists(file_path):
-            return jsonify({"error": f"Directory {file_path} does not exist"}), 500
-
-        # Find the .dly file in the folder that matches the ghcn_id
-        parsed_file_path = None
-        for filename in os.listdir(file_path):
-            if filename.startswith(ghcn_id) and filename.endswith(".dly"):
-                parsed_file_path = os.path.join(file_path, filename)
-                break  # Stop as soon as the correct file is found
-
-        if not parsed_file_path:
-            return jsonify({"error": f"No .dly file found for GHCN ID: {ghcn_id}"}), 404
+        file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly" # I THINK THIS IS HARD CODED IN THE PARSER STILL
         
+        # print("ghcn_id:", ghcn_id)
         print("file_path: ", file_path)
-        print("parsed_file_path: ", parsed_file_path)
-        # print(f"GHCN ID: {ghcn_id}")
-        # print(f"correction_date: {correction_date}")
         # print("correction_year: ", correction_year)
         # print("correction_month: ", correction_month)
-        # print(f"station_type: {station_type}")
+        # print("station_type: ", station_type)
+
 
         # # Run parser with form data
         filtered_df = parse_and_filter(
-            # ghcn_id = ghcn_id,
-            file_path=parsed_file_path,
+            station_code = ghcn_id,
+            file_path=file_path,
             year=correction_year,
             month=correction_month,
-            observation_type = station_type,
+            # observation_type = station_type,
+            correction_type=""
         )
         
         # # Print results
-        print("filtered_df in ghcndata routes",filtered_df)
+        # print("filtered_df in ghcndata routes",filtered_df)
         
         JSONformatedData = format_as_json(filtered_df)
+        # print("JSONformatedData in ghcndata routes",JSONformatedData)
 
         # Return
         return JSONformatedData
@@ -104,10 +91,8 @@ def get_data_for_GHCN_table():
         # }), 201
         
     except Exception as e:
-        print(f"Error in process_correction: {e}")
+        print(f"Error in get_data_for_GHCN_table: {e}")
         return jsonify({"error": "Internal server error"}), 500
-    
-    
     
 def format_as_json(filtered_df):
     # Create a dictionary to hold the formatted data
