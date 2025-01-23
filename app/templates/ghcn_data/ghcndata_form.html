@@ -46,7 +46,7 @@
                 <button type="reset" class="btn btn-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
             </div>
             <div class="col-md">
-                <button type="submit" class="btn btn-success" onclick="showGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Submit</button>
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
             </div>
             
         </div>
@@ -59,23 +59,17 @@
 
 </div>  
 
-
-
-
 <script>
-    // (On this page only) Adds the dropdown searchability using select2 and Jquery.
-    // Instantiates select2 for the named form object. See forms.py for identifiers 
-    $(document).ready(function() {
-        $('#state').select2();
-        $('#country').select2();
-        $('#station_type').select2();   
     
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("urlParams", urlParams);
+        if (urlParams.size > 0) {
+            let queryStringData = getDataFromURL(urlParams);
+            document.getElementById("station-data-view").style.display = "block";
+        }        
     });
-
-
-    function showGHCNViewTable() {
-       document.getElementById('station-data-view').style.display = "block";
-    }
+    
     function hideGHCNViewTable() {
        document.getElementById('station-data-view').style.display = "none";
     }
@@ -127,7 +121,67 @@
 
     // });
 
+    function showComparisonTable(data) {
+        const tableBody = document.querySelector("#station-data-view tbody");
+        tableBody.innerHTML = ""; // Clear existing rows
+    
+        // Sort the days numerically
+        const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
 
-</script>
+        sortedDays.forEach(dayKey => {
+            const dayData = data[dayKey];
+            const row = `
+                <tr>
+                    <td>${dayKey}</td>
+                    <td>${dayData.TMAX || ""}</td>
+                    <td>${dayData.TMIN || ""}</td>
+                    <td>${dayData.TOBS || ""}</td>
+                    <td>${dayData.PRCP || ""}</td>
+                    <td>${dayData.SNOW || ""}</td>
+                    <td>${dayData.SNWD || ""}</td>
+                    <td>${dayData.WTXX || ""}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        document.getElementById("station-data-view").style.display = "block";
+    }
+
+    function getDataFromURL(urlParams) {
+        // Get the URL
+
+        // Extract the query parameters
+        const ghcnId = urlParams.get('ghcn_id');
+        const stationType = urlParams.get('station_type');
+        const date = urlParams.get('date');
+
+        var requestData = {
+            ghcn_id: ghcnId,
+            date: date,
+            station_type: stationType
+        };
+
+        // Send the data via AJAX
+        $.ajax({
+            url: '/get_data_for_GHCN_table',  // Your endpoint here
+            method: 'POST',
+            data: $.param(requestData),
+            success: function(response) {
+                console.log("Success:", response);
+                
+                // Handle other processing or pass to another function
+                showComparisonTable(response);
+
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+        }
+    
+
+    </script>
 
 {% endblock content %}

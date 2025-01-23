@@ -37,79 +37,104 @@
             showSelectedForm();
         });
 
-        // Handle form submission
-        $("form").submit(function(event) {
-            event.preventDefault();
+        
+    
+    });
 
-            // Gets selected correction type
-            var selectedCorrectionType = $("input[name='correction-option']:checked").val();
-
-            // Aend the form data via AJAX
-            if (selectedCorrectionType) {
-                var formData = $(this).serialize();
-
-                $.ajax({
-                    url: '/process_correction',
-                    method: 'POST',
-                    data: formData,
-                    success: function(response) {
-                        //display the appropriate table
-                        console.log("Success:", response);
-                        if (selectedCorrectionType === 'Daily Correction') {
-                            showComparisonTable(response.filtered_data);
-                        } else if (selectedCorrectionType === 'Monthly Correction') {
-                            showMonthTable();
-                        } else if (selectedCorrectionType === 'Ranged Correction') {
-                            showRangeTable();
-                        }
-                        //NOTE: This needs to be updated for hourly.
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("There was an error processing your request.");
-                    }
-                });
-            }
-        });
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        //console.log("urlParams", urlParams);
+        if (urlParams.size > 0) {
+            //passes query params and runs code to get table data
+            let queryStringData = getDataforStationsAndShowTable(urlParams);
+        }        
     });
     
+
     function showMonthTable() {
         document.getElementById('input-monthly-table').style.display = "block";
      }
      function showRangeTable() {
         document.getElementById('ranged-form-table').style.display = "flex";
      }
-     //DAILY TABLE
-     function showComparisonTable(filteredData) {
+     
+     //DAILY Comparison table
+     function showDailyComparisonTable(filteredData) {
+        
         const tableBody = document.querySelector('#correction-comparison-table tbody');
         
         // Clear existing rows in the table
         tableBody.innerHTML = '';
                 
         
-        //Add to table data.
-        if (filteredData) {
-            console.log("Data:", filteredData);
-    
-            const newRow = `
-                <tr>
-                    <td>Dist</td>
-                    <td>Elev</td>
-                    <td>${filteredData.station_code}</td>
-                    <td>${filteredData.dayMinus}</td>
-                    <td>${filteredData.day}</td>
-                    <td>${filteredData.dayPlus}</td>
-                </tr>
-            `;
-            tableBody.insertAdjacentHTML('beforeend', newRow);
+        // Check if the returnData array is not empty
+    if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
+        console.log("Data:", filteredData);
+
+        filteredData.returnData.forEach(item => {
+                    const newRow = `
+                        <tr>
+                            <td>${item.distance} km</td>
+                            <td>${item.elevation} ft</td>
+                            <td>${item.station_code}</td>
+                            <td>${item.dayMinus}</td>
+                            <td>${item.day}</td>
+                            <td>${item.dayPlus}</td>
+                        </tr>
+                    `;
+                    tableBody.insertAdjacentHTML('beforeend', newRow);
+                });
+            }
+
+    // Show the table
+    document.getElementById('correction-comparison-table').style.display = "block";
+}
+
+
+    function getDataforStationsAndShowTable(urlParams) {
+
+        // Extract the query parameters
+        const ghcnId = urlParams.get('ghcn_id');
+        const datzillaNumber = urlParams.get('datzilla_number');
+        const element = urlParams.get('element');
+        const action = urlParams.get('action');
+        const oValue = urlParams.get('o_Value');
+        const eValue = urlParams.get('e_Value');
+        const date = urlParams.get('date');
+
+        //set up requestData for /get_data_for_daily_corrections route.
+        var requestData = {
+            ghcn_id: ghcnId,
+            datzillaNumber: datzillaNumber,
+            element: element,
+            action: action,
+            oValue: oValue,
+            eValue: eValue,
+            date: date,
+            correction_type: "compare"
+        };
+
+        //console.log("!DATA: ", requestData);
+
+        // Send the data via AJAX
+        $.ajax({
+            url: '/get_data_for_daily_corrections', 
+            method: 'POST',
+            data: $.param(requestData),
+            success: function(response) {
+                //console.log("Success:", response);
+                
+                // Handle processing
+                showDailyComparisonTable(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
         }
-
-        // Show the table
-        document.getElementById('correction-comparison-table').style.display = "block";
-    }
     
 
-    //NOTE: Probably need a showHourlyTable()
     </script>
     
 
@@ -200,7 +225,7 @@
             </div>
             
             <div class="col-sm">
-                <button type="submit" class="btn btn-success" style="width:100%;display:block;">Submit</button>
+                <button type="submit" class="btn btn-success"  style="width:100%;display:block;">Submit</button>
             </div>
 
         </div>
@@ -408,10 +433,6 @@
             </div>
         </form>
     </div>
-
-
-    <!-- Showing the data table would go here. -->
-
 </div>
 
 {% endblock content %}

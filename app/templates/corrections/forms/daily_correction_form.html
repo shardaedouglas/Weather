@@ -61,7 +61,7 @@
             
             <div class="col-sm">
                 <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="submit" class="btn btn-success" style="width:100%;display:block;">Submit</button>
+                <button type="button" class="btn btn-success" style="width:100%;display:block;">Submit</button>
 
             </div>
 
@@ -86,14 +86,127 @@
             $("form").submit(function (event) {
                 event.preventDefault();
                 var formData = $(this).serialize();
-                // console.log(formData);
-                correctionFormHandler(formData, function (output) {
-                    showComparisonTable(output);
-                })
-
+                console.log('formData', formData);
+                const params = new URLSearchParams(formData);
+                console.log("Params: ", params);
+                getDataforStationsAndShowTable(params);
+                
             })
 
         });
+
+
+     //DAILY Comparison table
+     function showDailyComparisonTable(filteredData) {
+        
+        const tableBody = document.querySelector('#correction-comparison-table tbody');
+        
+        // Clear existing rows in the table
+        tableBody.innerHTML = '';
+                
+        
+        // Check if the returnData array is not empty
+    if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
+        console.log("Data:", filteredData);
+
+        filteredData.returnData.forEach(item => {
+                    const newRow = `
+                        <tr>
+                            <td>${item.distance} km</td>
+                            <td>${item.elevation} ft</td>
+                            <td>${item.station_code}</td>
+                            <td>${item.dayMinus}</td>
+                            <td>${item.day}</td>
+                            <td>${item.dayPlus}</td>
+                        </tr>
+                    `;
+                    tableBody.insertAdjacentHTML('beforeend', newRow);
+                });
+            }
+
+    // Show the table
+    document.getElementById('correction-comparison-table').style.display = "block";
+}
+
+
+    function getDataforStationsAndShowTable(urlParams) {
+
+        // Extract the query parameters
+        const ghcnId = urlParams.get('ghcn_id');
+        const datzillaNumber = urlParams.get('datzilla_number');
+        const element = urlParams.get('element');
+        const action = urlParams.get('action');
+        const oValue = urlParams.get('o_Value');
+        const eValue = urlParams.get('e_Value');
+        const date = urlParams.get('date');
+
+        //set up requestData for /get_data_for_daily_corrections route.
+        var requestData = {
+            ghcn_id: ghcnId,
+            datzillaNumber: datzillaNumber,
+            element: element,
+            action: action,
+            oValue: oValue,
+            eValue: eValue,
+            date: date,
+            correction_type: "compare"
+        };
+
+        //console.log("!DATA: ", requestData);
+
+        // Send the data via AJAX
+        $.ajax({
+            url: '/get_data_for_daily_corrections', 
+            method: 'POST',
+            data: $.param(requestData),
+            success: function(response) {
+                //console.log("Success:", response);
+                
+                // Handle processing
+                showDailyComparisonTable(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+        }
+    
+
+        
+
+    //DAILY Comparison table
+    function showDailyComparisonTable(filteredData) {
+        
+        const tableBody = document.querySelector('#correction-comparison-table tbody');
+        
+        // Clear existing rows in the table
+        tableBody.innerHTML = '';
+                
+        
+        // Check if the returnData array is not empty
+    if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
+        console.log("Data:", filteredData);
+
+        filteredData.returnData.forEach(item => {
+                    const newRow = `
+                        <tr>
+                            <td>${item.distance} km</td>
+                            <td>${item.elevation} ft</td>
+                            <td>${item.station_code}</td>
+                            <td>${item.dayMinus}</td>
+                            <td>${item.day}</td>
+                            <td>${item.dayPlus}</td>
+                        </tr>
+                    `;
+                    tableBody.insertAdjacentHTML('beforeend', newRow);
+                });
+            }
+
+    // Show the table
+    document.getElementById('correction-comparison-table').style.display = "block";
+}
+
 
     //DAILY TABLE
     function showComparisonTable(filteredData) {
