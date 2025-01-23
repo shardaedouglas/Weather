@@ -118,6 +118,11 @@ def create_app(config_class=Config):
 
     from app.utilities import utilities_bp as utilities_bp
     app.register_blueprint(utilities_bp)
+    
+    from app.auth import auth_bp as auth_bp
+    app.register_blueprint(auth_bp)
+
+
 
     @app.route('/test')
     def test_page():
