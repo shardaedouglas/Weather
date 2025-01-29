@@ -409,3 +409,57 @@ def process_correction():
         print(f"Error in process_correction: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
+    
+    
+    
+@correction_bp.route('/get_o_value', methods=['POST'])
+def get_o_value():
+    try:
+        # Extract the data sent in the request body
+        ghcn_id = request.form.get('ghcn_id')
+        correction_date = request.form.get('correction_date')
+        element = request.form.get('element')
+
+
+        if correction_date:
+            correction_year, correction_month, correction_day = correction_date.split('-')
+            correction_year = int(correction_year)
+            correction_month = int(correction_month)
+            correction_day = int(correction_day)
+        else:
+            correction_year, correction_month, correction_day = None, None, None
+            
+        
+        base_file_path = '/data/ops/ghcnd/data/'
+        station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
+        print(f"Station file path: {station_file_path}")
+        print(f"correction_year: {correction_year}")
+        print(f"correction_month: {correction_month}")
+        print(f"correction_day: {correction_day}")
+
+        # Run parser with form data for each station
+        filtered_json = parse_and_filter(
+            correction_type = "o_value",
+            file_path=station_file_path,
+            station_code=ghcn_id,
+            year=correction_year,
+            month=correction_month,
+            observation_type=element,
+            day=correction_day,
+        )
+        
+        print("filtered_json", filtered_json)
+        
+        # Check if 'status' exists in filtered_json and is 'skip'
+        if 'status' in filtered_json and filtered_json['status'] == 'skip':
+            return jsonify({
+                "o_value": "No Value",
+            })
+            
+        # Return a simple response with the data
+        return jsonify({
+            "o_value": filtered_json,
+        })
+    except Exception as e:
+        print(f"Error in get_o_value: {e}")
+        return jsonify({"error": "Internal server error"}), 500

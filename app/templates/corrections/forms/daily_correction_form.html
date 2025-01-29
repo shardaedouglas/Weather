@@ -96,6 +96,56 @@
         });
 
 
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select the form fields
+            const ghcnIdInput = document.querySelector('input[name="ghcn_id"]');
+            const dateInput = document.querySelector('input[name="date"]');
+            const elementSelect = document.querySelector('select[name="element"]');
+            const oValueInput = document.querySelector('[name="o_value"]');  // Correctly target O-Value input field
+
+            // Function to check if all fields have values
+            function checkFields() {
+                if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
+                    console.log('GHCN ID:', ghcnIdInput.value);
+                    console.log('Date:', dateInput.value);
+                    console.log('Element:', elementSelect.value);
+                // Prepare the request data
+                const requestData = {
+                    ghcn_id: ghcnIdInput.value,
+                    correction_date: dateInput.value,
+                    element: elementSelect.value
+                };
+
+                // Send the data via AJAX to the /get_o_value route
+                $.ajax({
+                    url: '/get_o_value', 
+                    method: 'POST',
+                    data: $.param(requestData),
+                    success: function(response) {
+                        // Handle the response here, e.g., show comparison table
+                        console.log("Success:", response.o_value);
+                        // Check if O-Value exists in the response
+                        if (response.o_value) {
+                            oValueInput.value = response.o_value; // Populate the O-Value field
+                        } else {
+                            alert("O-Value not found.");
+                        }
+                    },
+                    
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("There was an error processing your request.");
+                    }
+                });
+            }
+        }
+            // Add event listeners to the fields
+            ghcnIdInput.addEventListener('input', checkFields);
+            dateInput.addEventListener('input', checkFields);
+            elementSelect.addEventListener('change', checkFields);
+        });
+
+
      //DAILY Comparison table
      function showDailyComparisonTable(filteredData) {
         
