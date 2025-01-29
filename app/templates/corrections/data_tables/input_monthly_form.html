@@ -38,7 +38,12 @@
                         <option value="3">Three</option>
                     </select>-->
                 </div>
-                
+                <div class="col">
+                    <div class="range-input-box" style="margin-top:20px">
+                        <textarea id="rangeTextInput" class="form-control" rows="31" placeholder="Paste range data here..."></textarea>
+                        <button type="button" class="btn btn-primary mt-2" onclick="processRangeInput()">Submit</button>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- 31 Inputs for Entry  -->
@@ -102,7 +107,22 @@
         
     </div>
     
+    <script>
+        function processRangeInput() {
+            let inputText = document.getElementById("rangeTextInput").value.trim();
+            
+            // Split input by common delimiters (comma, newline, space, tab)
+            let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
     
+            console.log("Parsed Values:", values);
+    
+            // Fill table with parsed values (up to 31)
+            let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = values[i] || ""; // Set value or empty if less than 31
+            }
+        }
+    </script>
 
 {#
      <!-- 31 Inputs for Entry  -->
