@@ -1,7 +1,44 @@
 <div class="container form-container">
     <div class="row">
         <div class="col">
-            <textarea class="form-control" rows="20"></textarea>
+            {# <textarea class="form-control" rows="20"></textarea> #}
+
+            <div class="row " style="text-align: center">
+                <div class="col">
+                    <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped table-borderless border" id="rangeTable">
+                            <thead>
+                                <tr>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th class="ghcn-table-cell" scope="col">Header</th>
+                                    <th scope="col">Header</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                {% for p in range(31) %}
+                                    <tr>
+                                        <td class="ghcn-table-cell">{{loop.index}}</td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td class="ghcn-table-cell"></td>
+                                        <td></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     <div class="row justify-content-center" id="button-row">
@@ -13,3 +50,9 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+        $('#rangeTable').dataTable();
+    });
+</script>
