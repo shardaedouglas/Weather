@@ -49,8 +49,11 @@ def parse_and_filter(
     
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
-
+    
+    # print("file Path: ", file_path)
+    # print("df: ", df)
     # Step 2: Apply filtering using filter_data
+
     filtered_df = filter_data(
         df,
         year=year,
@@ -153,12 +156,14 @@ def parse_and_filter(
 
 #     file_path =  "../../USW00093991.dly"
 
-#     # Example 1: Filter by year and country code
-#     filtered_df = parse_and_filter(
-#         file_path=file_path,
-#         year=2023,
-#         country_code="US"
-#     )
+    # Example 1: Filter by year and country code
+    filtered_df = parse_and_filter(
+        file_path=file_path,
+        year=2023,
+        country_code="US",
+        day = 10
+    )
+    print(filtered_df)
 
 #     print(filtered_df)
 

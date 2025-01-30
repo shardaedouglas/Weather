@@ -15,9 +15,9 @@ def parse(file_path, delimiter='|'):
 
     return result
 
-# if __name__ == "__main__":
-    # df = parse(file_path='/data/ops/elan.churavtsov/datzilla-flask/GHCNh_AAI0000TNCA_por.psv')
-    # print (df)
-    # for column_name, column_type in df.schema.items():
-    #     print(f"{column_name}: {column_type}")
-    # df.write_csv("TEST_PSV.csv")
+if __name__ == "__main__":
+    df = parse(file_path='/data/ops/ghcnh/2019/GHCNh_USW00013993_2019.psv')
+    print (df)
+    for column_name, column_type in df.schema.items():
+        print(f"{column_name}")
+    df.write_csv("TEST_PSV.csv")
