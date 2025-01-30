@@ -36,9 +36,20 @@ def parse_and_filter(
     network_code = station_code[2]
     station_id = station_code[3:]
 
+    print(f"Incoming parameters:")
+    print(f"file_path: {file_path}")
+    print(f"correction_type: {correction_type}")
+    print(f"year: {year}")
+    print(f"month: {month}")
+    print(f"day: {day}")
+    print(f"observation_type: {observation_type}")
+    print(f"country_code: {country_code}")
+    print(f"network_code: {network_code}")
+    print(f"station_code: {station_code}")
+    
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
-    
+
     # Step 2: Apply filtering using filter_data
     filtered_df = filter_data(
         df,
@@ -48,7 +59,7 @@ def parse_and_filter(
         observation_type=observation_type,
         station_code=station_id,
     )
-    
+    print(filtered_df)    
     # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
     if len(filtered_df) == 0 or filtered_df.shape[0] == 0:
         # print(f"No data found for station {station_code} with the given filters. Skipping station.")
@@ -98,7 +109,16 @@ def parse_and_filter(
     elif correction_type == "daily":
         
         print ("DoDailyThingsHere")        
-        
+    
+    
+    elif correction_type == "o_value":
+        # Filter the data for the specific day
+        o_value = filtered_df['day_' + str(day)][0] # Pull the value for the day column
+        print("O-Value for day:", o_value)
+
+        return o_value
+    
+    
     else:
             monthly_data = {
                 'country_code': filtered_df['country_code'][0],
