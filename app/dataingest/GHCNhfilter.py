@@ -55,11 +55,11 @@ def filter_data(
 
 
 if __name__ == "__main__":
-    df = parse(file_path='/data/ops/elan.churavtsov/datzilla-flask/GHCNh_AAI0000TNCA_por.psv')
+    df = parse(file_path='/data/ops/ghcnh/2019/GHCNh_USW00013993_2019.psv')
 
     columns_to_keep = ["datetime", "temperature", "Station_ID", "Station_name", "Latitude",]
-    start_date = "2023-01-01T00:00"
-    end_date = "2023-01-02T00:00"
-    df = filter_data(df, start_datetime=start_date, end_datetime=end_date, show_first_x_columns=10, show_first_y_rows=20)
+    start_date = "2019-01-01T00:00"
+    end_date = "2019-01-02T00:00"
+    df = filter_data(df, columns_to_keep=columns_to_keep, start_datetime=start_date, end_datetime=end_date, show_first_y_rows=20)
     print(df)
     df.write_csv("TEST_PSV.csv")
