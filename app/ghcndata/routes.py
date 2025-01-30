@@ -5,6 +5,7 @@ from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
 import os
+import re
 
 
 # Route to Render GHCN Station Page
@@ -19,8 +20,61 @@ def view_ghcn_data():
 # Route to Render Station Metadata Page
 @ghcndata_bp.route('/station_metadata')
 def view_ghcn_metadata():
+    
+    ghcn_id = request.args.get('ghcn_id')  # Retrieves 'ghcn_id' from the URL query params
+    
+    station_metadata_file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt' # I THINK THIS IS HARD CODED IN THE PARSER STILL
+    
+    station_data = {
+        'GHCN ID': None,
+        'WMO ID': None,
+        'State': None,
+        'Country': None,
+        'Longitude': None,
+        'Latitude': None,
+        'GSN Flag': None,
+        'HCN Flag': None
+    }
+    
+ # Open the file and read lines
+    with open(station_metadata_file_path, 'r') as file:
+        for line in file:
+            # Check if the line contains the target GHCN ID
+            if ghcn_id in line:
+                # Split the line into components
+                fields = line.split()
+                
+                # GHCN ID is the first part of the line
+                station_data['GHCN ID'] = fields[0]
+                
+                # Country is derived from the first two characters of GHCN ID
+                station_data['Country'] = station_data['GHCN ID'][:2]
+                
+                # Latitude and Longitude are the next two values
+                station_data['Latitude'] = float(fields[1])
+                station_data['Longitude'] = float(fields[2])
+                
+                # State is present only for US/Canadian stations and is the fourth value for those stations
+                if len(fields) > 4 and len(fields[4]) == 2:  # Checks if state code is present
+                    station_data['State'] = fields[4]
+                
+                # WMO ID, GSN Flag, and HCN Flag can be found at the end of the line
+                if len(fields) > 5:
+                    # Check if there's a WMO ID (numeric and 5 digits)
+                    if len(fields[-1]) == 5 and fields[-1].isdigit():
+                        station_data['WMO ID'] = fields[-1]
+                        fields.pop()  # Remove the WMO ID from the list of fields
+                
+                # Look for the GSN and HCN flags in the remaining parts
+                if 'GSN' in fields:
+                    station_data['GSN Flag'] = 'GSN'
+                if 'HCN' in fields or 'CRN' in fields:
+                    station_data['HCN Flag'] = 'HCN' if 'HCN' in fields else 'CRN'
+                
+                return render_template('/ghcn_data/station_metadata.html', station_data=station_data)
 
-    return render_template('/ghcn_data/station_metadata.html')
+    print("GHCN ID not found.")    
+    return render_template('/ghcn_data/station_metadata.html', station_data=None)
 
 
 
