@@ -4,38 +4,46 @@
 
 <div class="container-md justify-content-center" id="ghcn-metadata-div">
     <div class="row">
-        <h5> Station Metadata </h5>
+        <h5>Station Metadata</h5>
     </div>
     <div class="row">
         <div class="col-sm">
-            <label>GHCN ID: </label>
+            <label><b>GHCN ID: </b></label><br>
+            <p>{{ station_data['GHCN ID'] if station_data else 'N/A' }}</p>
         </div>
         <div class="col-sm">
-            <label>WMO ID: </label> <!--Add a tool tip describing what WMO stnads for-->
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm">
-            <label>State: </label>
-        </div>
-        <div class="col-sm">
-            <label>Country: </label>
+            <label><b>WMO ID: </b></label><br>
+            <span data-toggle="tooltip" title="World Meteorological Organization (WMO) ID, used for global station identification.">{{ station_data['WMO ID'] if station_data else 'N/A' }}</span>
         </div>
     </div>
     <div class="row">
         <div class="col-sm">
-            <label>Longitude: </label>
+            <label><b>State: </b></label><br>
+            <p>{{ station_data['State'] if station_data else 'N/A' }}</p>
         </div>
         <div class="col-sm">
-            <label>Latitude: </label>
+            <label><b>Country: </b></label><br>
+            <p>{{ station_data['Country'] if station_data else 'N/A' }}</p>
         </div>
     </div>
     <div class="row">
         <div class="col-sm">
-            <label>GSN Flag: </label> <!--Define Flag with Tool Tip-->
+            <label><b>Longitude: </b></label><br>
+            <p>{{ station_data['Longitude'] if station_data else 'N/A' }}</p>
         </div>
         <div class="col-sm">
-            <label>HCN Flag: </label>
+            <label><b>Latitude: </b></label><br>
+            <p>{{ station_data['Latitude'] if station_data else 'N/A' }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label><b>GSN Flag: </b></label><br>
+            <span data-toggle="tooltip" title="GCOS Surface Network (GSN) Flag indicating if the station is part of the GCOS network.">{{ station_data['GSN Flag'] if station_data else 'N/A' }}</span>
+        </div>
+        <div class="col-sm">
+            <label><b>HCN Flag: </b></label><br>
+            <span data-toggle="tooltip" title="Historical Climatology Network (HCN) or Climate Reference Network (CRN) Flag.">{{ station_data['HCN Flag'] if station_data else 'N/A' }}</span>
         </div>
     </div>
     <div class="row justify-content-center" id="button-row">
@@ -48,5 +56,11 @@
     </div>
 </div>
 
+<!-- Add JavaScript to enable tooltips -->
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
 
 {% endblock content %}
