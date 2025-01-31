@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<h1 class="title">
+    Welcome, {{ name }}!
+  </h1>
+
 <h1>
     This is a 
     <span class="tt" data-bs-placement="auto" title="Accoridng to all known laws of aviation">
@@ -9,5 +14,14 @@
     page!
 </h1>
 
+<div class="row g-3 justify-content-center ">
+    <div class="col-10">
+        <p class="text-center">
+            <a href="{{ url_for('auth.signup') }}">Register</a> |
+            <a href="{{ url_for('auth.login') }}">Login</a> |
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </p>
+    </div>
+</div>
 
 {% endblock content %}
