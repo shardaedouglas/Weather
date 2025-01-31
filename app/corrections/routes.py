@@ -6,10 +6,13 @@ from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
 from datetime import datetime
 import os
+from flask_login import login_required
+
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
 
 @correction_bp.route('/')
+# @login_required
 def index():
     return render_template("landing_page.html")
 

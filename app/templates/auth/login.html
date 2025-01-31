@@ -10,16 +10,26 @@
     </div>
     <div class="row justify-content-center">
         <div class="col-10 col-md-5" >
-            <form>
+            <form method="POST" action="/login">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-warning alert-dismissible show" role="alert">
+                        {{ messages[0] }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                {% endwith %}
+
+                
                 <!-- Email/Username input -->
                 <div class=" mb-4">
-                    <input type="text" id="loginUser" class="form-control" />
+                    <input type="text" id="loginUser" class="form-control" name="username" />
                     <label class="form-label" for="loginUser">Username</label>
                 </div>
 
                 <!-- Password input -->
                 <div class=" mb-4">
-                    <input type="password" id="loginPassword" class="form-control" />
+                    <input type="password" id="loginPassword" class="form-control" name="password"/>
                     <label class="form-label" for="loginPassword">Password</label>
                 </div>
 
@@ -28,20 +38,20 @@
                     <div class="col d-flex justify-content-center">
                         <!-- Checkbox -->
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="loginRemember" checked />
+                            <input class="form-check-input" type="checkbox" value="" id="loginRemember" name="remember" checked />
                             <label class="form-check-label" for="loginRemember"> Remember me </label>
                         </div>
                     </div>
 
-                    <div class="col">
+                    <!-- <div class="col"> -->
                         <!-- Simple link -->
-                        <a href="#!">Forgot password?</a>
-                    </div>
+                        <!-- <a href="#!">Forgot password?</a> -->
+                    <!-- </div> -->
                 </div>
 
                 <!-- Submit button -->
                 <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-primary btn-block mb-4">Sign in</button>
+                    <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
                 </div>
             </form>
 
@@ -51,5 +61,14 @@
 
 </div>
 
+<div class="row g-3 justify-content-center ">
+    <div class="col-10">
+        <p class="text-center">
+            <a href="{{ url_for('auth.signup') }}">Register</a> |
+            <a href="{{ url_for('auth.login') }}">Login</a> |
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </p>
+    </div>
+</div>
 
 {% endblock content %}
