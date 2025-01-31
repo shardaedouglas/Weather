@@ -3,6 +3,11 @@ from config import Config
 from .extensions import mail, get_db, close_db, find_stations, parse_station_file
 from flask import render_template
 import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_required, current_user
+
+# init SQLAlchemy 
+db = SQLAlchemy()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -13,6 +18,22 @@ def create_app(config_class=Config):
     ###### DB SETTINGS ######
     #DB path
     app.config['DATABASE'] = "app.db"
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db' # Can this be the same as the line above? 
+
+    ### SQL Alchemy Database Init
+    db.init_app(app)
+
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+    from .auth.models.auth_models import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        # since the user_id is just the primary key of our user table, use it in the query for the user
+        return User.query.get(int(user_id))
+
 
     # Close the database when the context closes
     @app.teardown_appcontext
@@ -108,7 +129,11 @@ def create_app(config_class=Config):
     def test_page():
         # return '<h1>Test</h1>' # Link html templates here instead..
         # return render_template('test.html')
-        return render_template('test.html')
+        if (current_user.is_anonymous):
+            name = "Guest"
+        else:
+            name = current_user.username
+        return render_template('test.html', name=name)
 
 
     return app

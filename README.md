@@ -34,4 +34,21 @@ https://www.youtube.com/watch?v=WTrW-1JsDYE
 https://getbootstrap.com/docs/4.0/components/tooltips/
 https://getbootstrap.com/docs/5.0/components/tooltips/
 
+# Creating and/or Updating the schema on the database:
 
+NOTE:
+- SQLAlchemy uses the models defined to create tables. 
+- ```app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db' ``` <==== points to the database file.
+- If there's no database file, it will create one.
+- If there is a current database file it will update/add to the db. 
+
+1. Run Python Intepreter in the app directory
+2. Copy Paste these lines:
+```
+from app import db, create_app
+from app.auth.models.auth_models import *
+with create_app().app_context():
+	db.create_all()
+```
+
+This should create a database file in the /instance directory.

@@ -1,7 +1,6 @@
 import polars as pl
 # from GHCNreader import parse_fixed_width_file //FOR STANDALONE TESTING
-from  GHCNreader import parse_fixed_width_file
-from datetime import datetime
+from  .GHCNreader import parse_fixed_width_file
 
 def filter_data(
     df: pl.DataFrame,
