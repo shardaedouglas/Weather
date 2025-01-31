@@ -1,6 +1,6 @@
 from wtforms.validators import InputRequired, Length
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField
+from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField, SelectMultipleField
 
 
 #Options for multiple choice fields
@@ -27,6 +27,10 @@ CORRECTION_TYPE = (
     ("1", "Daily Correction" ),
     ("2", "Monthly Correction"),
     ("3", "Correction Range"),
+)
+
+HOURLY_ELEMENTS = (
+
 )
 
 
@@ -61,3 +65,9 @@ class RangeCorrections(FlaskForm):
     defaults = BooleanField(default="checked")
     datzilla_number = StringField('Datzilla #')
     submit = SubmitField('Submit')
+
+class HourlyCorrections(FlaskForm):
+    form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    date = DateField('Date', validators=[InputRequired()])
+    element = SelectMultipleField('Element')
