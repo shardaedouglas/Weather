@@ -53,6 +53,17 @@ def filter_data(
         filter_condition &= (pl.col("station_code") == station_code)
     
     # If a start_date and end_date are provided, filter based on the combined year-month.
+    # For example, 2023-01 becomes 202301, and 2023-12 becomes 202312.
+    if start_date is not None and end_date is not None:
+        start_val = start_date.year * 100 + start_date.month
+        end_val = end_date.year * 100 + end_date.month
+        # Compute a combined value from the row's year and month and check if it's within range.
+        filter_condition &= ((pl.col("year") * 100 + pl.col("month")).is_between(start_val, end_val))
+    
+    # Apply the filter condition.
+        filter_condition &= (pl.col("station_code") == station_code)
+    
+    # If a start_date and end_date are provided, filter based on the combined year-month.
     if start_date is not None and end_date is not None:
         start_val = start_date.year * 100 + start_date.month
         end_val = end_date.year * 100 + end_date.month
