@@ -155,20 +155,17 @@ def monthly_corrections():
 def range_corrections():
 
     # Extract query parameters for default values
-    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+    selected_form = request.args.get('correction_type', 'range')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
-    correction_date = request.args.get('date', '')
     datzilla_number = request.args.get('datzilla_number', '')
     element = request.args.get('element', '')
     action = request.args.get('action', '')
-    o_value = request.args.get('o_value', '')
-    e_value = request.args.get('e_value', '')
+    # o_value = request.args.get('o_value', '')
+    # e_value = request.args.get('e_value', '')
     begin_date = request.args.get('begin_date', '')
     end_date = request.args.get('end_date', '')
 
-    # Convert dates if needed
-    if correction_date:
-        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+    # Convert dates
     if begin_date:
         begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
     if end_date:
@@ -417,6 +414,7 @@ def process_correction():
     
 @correction_bp.route('/get_o_value', methods=['POST'])
 def get_o_value():
+
     try:
         # Extract the data sent in the request body
         ghcn_id = request.form.get('ghcn_id')
@@ -465,4 +463,71 @@ def get_o_value():
         })
     except Exception as e:
         print(f"Error in get_o_value: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    
+
+
+
+@correction_bp.route('/get_ranged_values', methods=['POST'])
+def get_ranged_values():
+    try:
+        
+        # Extract the data sent in the request body
+        selected_form = request.form.get('correction_type', 'range')  # Default to 'daily'
+        ghcn_id = request.form.get('ghcn_id', '')
+        datzilla_number = request.form.get('datzilla_number', '')
+        element = request.form.get('element', '')
+        action = request.form.get('action', '')
+        # o_value = request.form.get('o_value', '')
+        # e_value = request.form.get('e_value', '')
+        begin_date = request.form.get('begin_date', '')
+        end_date = request.form.get('end_date', '')
+        
+        print("selected_form: ", selected_form)
+        print("ghcn_id: ", ghcn_id)
+        print("datzilla_number: ", datzilla_number)
+        print("element: ", element)
+        print("action: ", action)
+
+
+        # Convert dates
+        if begin_date:
+            begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+        print("begin_date: ", begin_date)
+        print("end_date: ", end_date)
+        
+        base_file_path = '/data/ops/ghcnd/data/'
+        station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
+        print(f"Station file path: {station_file_path}")
+        # print(f"correction_year: {correction_year}")
+        # print(f"correction_month: {correction_month}")
+        # print(f"correction_day: {correction_day}")
+
+        # Run parser with form data for each station
+        filtered_json = parse_and_filter(
+            file_path= station_file_path,
+            correction_type="range",
+            start_date = begin_date,
+            end_date = end_date,
+            observation_type=element,
+            station_code=ghcn_id
+        )
+        
+        print("filtered_json", filtered_json)
+        
+        # Check if 'status' exists in filtered_json and is 'skip'
+        if 'status' in filtered_json and filtered_json['status'] == 'skip':
+            return jsonify({
+                "o_value": "No Value",
+            })
+            
+        # Return a simple response with the data
+        return jsonify({
+            "o_value": filtered_json,
+        })
+    except Exception as e:
+        print(f"Error in get_ranged_values: {e}")
         return jsonify({"error": "Internal server error"}), 500
