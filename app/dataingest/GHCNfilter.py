@@ -8,6 +8,7 @@ def filter_data(
     df: pl.DataFrame,
     year=None,
     month=None,
+    day=None,
     observation_type=None,
     country_code=None,
     network_code=None,
@@ -61,6 +62,23 @@ def filter_data(
     
     # Apply the filter condition.
     filtered_df = df.filter(filter_condition)
+
+    # Select only the relevant day and flag columns
+    if day is not None:
+        day_column = f"day_{day}"
+        flag_column = f"flag_{day}"
+        relevant_columns = [
+            "country_code",
+            "network_code",
+            "station_code",
+            "year",
+            "month",
+            "observation_type",
+            day_column,
+            flag_column,
+        ]
+        filtered_df = filtered_df.select([col for col in relevant_columns if col in filtered_df.columns])
+
     return filtered_df
 
 
@@ -73,7 +91,7 @@ if __name__ == '__main__':
     # Filter example: year=2023, month=1, day=15, observation type="PRCP", station_id="US1MOMA0004"
     # filtered_df = filter_data(df, year=1929, month=8, day=1, observation_type="PRCP", station_code="00006063")
     # Define a date range (filtering only by year and month)
-    start_date = datetime(2023, 1, 1)
+    start_date = datetime(2020, 3, 1)
     end_date = datetime(2023, 12, 31)
 
     filtered_df = filter_data(df, observation_type="PRCP", start_date=start_date, end_date=end_date)
