@@ -50,9 +50,70 @@
         </form>
     </div>
 
-
-    <!-- Showing the data table would go here. -->
-
+    <div class="row my-2" id="hourly-data-table" style="display:none;">
+        <div class="col">
+            {% include "corrections/data_tables/input_hourly_form.html" %}
+        </div>
+    </div>
 </div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $("form").submit(function (event) {
+            event.preventDefault();
+
+            // Grab the Form's data 
+            // var formData = $(this).serialize();
+            // console.log('formData', formData);
+            // const params = new URLSearchParams(formData);
+            // console.log("Params: ", params);
+            
+            // Process the form's data
+            // getDataforStationsAndShowTable(params);
+            showHourlyTable('');
+
+
+
+            
+        })
+
+    });
+
+
+    function showHourlyTable(filteredData) {
+        
+        const tableBody = document.querySelector('#hourly-data-table tbody');
+        
+        // Clear existing rows in the table
+        tableBody.innerHTML = '';
+                
+        
+        // Check if the returnData array is not empty
+        if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
+            console.log("Data:", filteredData);
+
+            filteredData.returnData.forEach(item => {
+                        const newRow = `
+                            <tr>
+                                <td>${item.distance} km</td>
+                                <td>${item.elevation} ft</td>
+                                <td>${item.station_code}</td>
+                                <td>${item.dayMinus}</td>
+                                <td>${item.day}</td>
+                                <td>${item.dayPlus}</td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', newRow);
+                    });
+                }
+
+        // Show the table
+        document.getElementById('hourly-data-table').style.display = "block";
+}
+
+
+</script>
 
 {% endblock content %}
