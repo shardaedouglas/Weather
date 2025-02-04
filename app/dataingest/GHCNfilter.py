@@ -7,7 +7,6 @@ def filter_data(
     df: pl.DataFrame,
     year=None,
     month=None,
-    day=None,
     observation_type=None,
     country_code=None,
     network_code=None,
