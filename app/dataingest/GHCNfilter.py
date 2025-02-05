@@ -1,6 +1,6 @@
 import polars as pl
 # from GHCNreader import parse_fixed_width_file //FOR STANDALONE TESTING
-from  .GHCNreader import parse_fixed_width_file
+from  GHCNreader import parse_fixed_width_file
 from datetime import datetime
 
 def filter_data(
@@ -57,9 +57,6 @@ def filter_data(
         end_val = end_date.year * 100 + end_date.month
         # Compute a combined value from the row's year and month and check if it's within range.
         filter_condition &= ((pl.col("year") * 100 + pl.col("month")).is_between(start_val, end_val))
-    
-    # Apply the filter condition.
-        filter_condition &= (pl.col("station_code") == station_code)
     
     # Apply the filter condition.
     filtered_df = df.filter(filter_condition)
