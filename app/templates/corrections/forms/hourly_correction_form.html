@@ -30,7 +30,7 @@
                 <div class="col-sm input-group justify-content-start" style="flex-wrap: nowrap;">
                     <span class="input-group-text element-select" id="inputGroup-sizing-default"
                         style="font-weight: bold">Element</span>
-                         {{hourly_form.element(class_='form-select element-select')}}
+                         {{hourly_form.element(class_='form-select element-select' , id='hourly-multi-select')}}
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                         style="width:100%;display:block;font-weight: bold">Clear</button>
                 </div>
                 <div class="col">
-                    <button type="submit" class="btn btn-success" onclick=""
+                    <button type="submit" class="btn btn-success"
                         style="width:100%;display:block;">Submit</button>
                 </div>
                 
@@ -61,6 +61,14 @@
 <script>
 
     $(document).ready(function () {
+        $('#hourly-multi-select').select2({
+            allowClear: true,
+            closeOnSelect: false,
+            //placeholder: 'Select Headers',
+            debug: true
+        });
+        
+        
         $("form").submit(function (event) {
             event.preventDefault();
 
@@ -78,6 +86,8 @@
 
             
         })
+
+
 
     });
 
@@ -112,6 +122,9 @@
         // Show the table
         document.getElementById('hourly-data-table').style.display = "block";
 }
+
+
+
 
 
 </script>
