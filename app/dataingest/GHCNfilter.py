@@ -1,13 +1,13 @@
 import polars as pl
 # from GHCNreader import parse_fixed_width_file //FOR STANDALONE TESTING
 from  .GHCNreader import parse_fixed_width_file
-from  GHCNreader import parse_fixed_width_file
 from datetime import datetime
 
 def filter_data(
     df: pl.DataFrame,
     year=None,
     month=None,
+    day=None,
     observation_type=None,
     country_code=None,
     network_code=None,
@@ -62,14 +62,24 @@ def filter_data(
     # Apply the filter condition.
         filter_condition &= (pl.col("station_code") == station_code)
     
-    # If a start_date and end_date are provided, filter based on the combined year-month.
-    if start_date is not None and end_date is not None:
-        start_val = start_date.year * 100 + start_date.month
-        end_val = end_date.year * 100 + end_date.month
-        filter_condition &= ((pl.col("year") * 100 + pl.col("month")).is_between(start_val, end_val))
-    
     # Apply the filter condition.
     filtered_df = df.filter(filter_condition)
+        # Select only the relevant day and flag columns
+    if day is not None:
+        day_column = f"day_{day}"
+        flag_column = f"flag_{day}"
+        relevant_columns = [
+            "country_code",
+            "network_code",
+            "station_code",
+            "year",
+            "month",
+            "observation_type",
+            day_column,
+            flag_column,
+        ]
+        filtered_df = filtered_df.select([col for col in relevant_columns if col in filtered_df.columns])
+
     return filtered_df
 
 
