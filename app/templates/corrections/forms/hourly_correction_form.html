@@ -50,11 +50,6 @@
         </form>
     </div>
 
-    <div class="row my-2" id="hourly-data-table" style="display:none;">
-        <div class="col">
-            {% include "corrections/data_tables/input_hourly_form.html" %}
-        </div>
-    </div>
 </div>
 
 
@@ -69,6 +64,7 @@
         });
         
         
+        // If we wish to override the default form submission
         $("form").submit(function (event) {
             event.preventDefault();
 
@@ -80,48 +76,10 @@
             
             // Process the form's data
             // getDataforStationsAndShowTable(params);
-            showHourlyTable('');
-
-
-
-            
+ 
         })
 
-
-
     });
-
-
-    function showHourlyTable(filteredData) {
-        
-        const tableBody = document.querySelector('#hourly-data-table tbody');
-        
-        // Clear existing rows in the table
-        tableBody.innerHTML = '';
-                
-        
-        // Check if the returnData array is not empty
-        if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
-            console.log("Data:", filteredData);
-
-            filteredData.returnData.forEach(item => {
-                        const newRow = `
-                            <tr>
-                                <td>${item.distance} km</td>
-                                <td>${item.elevation} ft</td>
-                                <td>${item.station_code}</td>
-                                <td>${item.dayMinus}</td>
-                                <td>${item.day}</td>
-                                <td>${item.dayPlus}</td>
-                            </tr>
-                        `;
-                        tableBody.insertAdjacentHTML('beforeend', newRow);
-                    });
-                }
-
-        // Show the table
-        document.getElementById('hourly-data-table').style.display = "block";
-}
 
 
 
