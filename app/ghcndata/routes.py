@@ -158,6 +158,17 @@ def view_ghcn_hourly_data():
     if date:
         date = datetime.strptime(date, '%Y-%m-%d').date()
 
+    # Read the GHCN Hourly header list from file
+    data = []
+    with open("GHCNh_psv_column_names.txt") as load_file:
+        # temp_list = []
+        for line in load_file:
+            temp_list = ['']
+            line = line.split()
+            # print(temp_list + line)
+            data.append(tuple(temp_list + line))
+
+    print(data)
 
     # print("ID{}\ndate{}\nhour{}".format(ghcn_id, date, hour))
     form = GhcnDataHourlyForm(
@@ -166,6 +177,8 @@ def view_ghcn_hourly_data():
         hour=hour
     )
 
+    form.element.choices = data
+    
     return render_template('/ghcn_data/hourly/ghcn_hourly_data.html', ghcnHourlyForm=form)
 
 def format_as_json(filtered_df):

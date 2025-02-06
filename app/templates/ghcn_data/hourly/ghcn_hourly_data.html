@@ -28,6 +28,16 @@
                 {{ghcnHourlyForm.hour(class_='form-control')}}
             </div>
         </div>
+        <div class="row g-3">
+            <div class="col-md input-group" style="flex-wrap: nowrap;">
+                
+                <span class="input-group-text element-select" id="inputGroup-sizing-default"
+                        style="font-weight: bold">Element</span>
+                         {{ghcnHourlyForm.element(class_='form-select element-select' , id='hourly-multi-select')}}
+                </div>
+            </div>
+        </div>
+        
 
         
 
@@ -47,4 +57,19 @@
     </form>
 </div>
 
+<div id="station-data-view" style="display:block;">
+    {% include "ghcn_data/hourly/ghcn_hourly_data_table.html" %}
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#hourly-multi-select').select2({
+        allowClear: true,
+        closeOnSelect: false,
+        //placeholder: 'Select Headers',
+        debug: true
+    });
+
+})
+</script> 
 {% endblock content %}

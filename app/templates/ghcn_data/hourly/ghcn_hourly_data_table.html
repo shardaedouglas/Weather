@@ -1,0 +1,62 @@
+<div class="container p-4" style="margin-top: 20px;">
+    <!-- Station Data -->
+    <!-- <div class="row ">
+        <div class="col">
+            [Station Location]
+        </div>
+        <div class="col">
+            Date: []
+        </div>
+        <div class="col">
+            Elev: []
+        </div>
+        <div class="col">
+            Lat: []
+        </div>
+        <div class="col">
+            Lon: []
+        </div>
+    </div> -->
+    <!-- Main Data Table -->
+    <div class="row " style="text-align: center">
+        <div class="col">
+            <div class="table-responsive-sm">
+                <table class="table table-sm table-striped table-borderless border" id="myTable">
+                    <thead>
+                        <tr>
+                            <th class="ghcn-table-cell" scope="col">Day</th>
+                            <th class="ghcn-table-cell" scope="col">TMAX</th>
+                            <th class="ghcn-table-cell" scope="col">TMIN</th>
+                            <th class="ghcn-table-cell" scope="col">TOBS</th>
+                            <th class="ghcn-table-cell" scope="col">PRCP</th>
+                            <th class="ghcn-table-cell" scope="col">SNOW</th>
+                            <th class="ghcn-table-cell" scope="col">SNWD</th>
+                            <th scope="col">WTXX</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                        {% for p in range(31) %}
+                            <tr>
+                                <td class="ghcn-table-cell">{{loop.index}}</td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td class="ghcn-table-cell"></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $('#myTable').dataTable();
+    });
+</script>
