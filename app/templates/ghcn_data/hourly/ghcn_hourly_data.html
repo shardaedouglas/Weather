@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}View GHCN Hourly {% endblock %}
+{% block content %}
+
+<div class="container-md">
+    <div class="row g-3">
+        <div class="col g-3">
+            <p style="font-size: 260%; font-weight: bold;">View Hourly Data</p>
+            <p>This is a brief description.</p>
+        </div>
+    </div>
+ 
+
+<div class="container-md form-container" >
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col-md input-group">
+                <span class="input-group-text">GHCN ID</span> {{ghcnHourlyForm.ghcn_id(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnHourlyForm.date(class_='form-control date-picker')}}
+            </div>
+            <div class="col-md input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Hour</span>
+                {{ghcnHourlyForm.hour(class_='form-control')}}
+            </div>
+        </div>
+
+        
+
+        
+
+        
+
+        <div class="row justify-content-center" id="button-row">
+            <div class="col-md">
+                <button type="reset" class="btn button-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
+            </div>
+            <div class="col-md">
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
+            </div>
+            
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

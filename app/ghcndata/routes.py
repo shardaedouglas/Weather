@@ -2,8 +2,9 @@ from app.ghcndata import ghcndata_bp
 from flask import render_template, request, jsonify
 from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
-from app.ghcndata.forms import GhcnDataForm
+from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
+from datetime import datetime
 import os
 import re
 
@@ -148,6 +149,25 @@ def get_data_for_GHCN_table():
         print(f"Error in get_data_for_GHCN_table: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
+@ghcndata_bp.route('/ghcn_hourly')
+def view_ghcn_hourly_data(): 
+    ghcn_id = request.args.get('ghcn_id', '')
+    date = request.args.get('date','')
+    hour= request.args.get('hour','')
+
+    if date:
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+
+
+    # print("ID{}\ndate{}\nhour{}".format(ghcn_id, date, hour))
+    form = GhcnDataHourlyForm(
+        ghcn_id=ghcn_id,
+        date=date,
+        hour=hour
+    )
+
+    return render_template('/ghcn_data/hourly/ghcn_hourly_data.html', ghcnHourlyForm=form)
+
 def format_as_json(filtered_df):
     # Create a dictionary to hold the formatted data
     formatted_data = {}
