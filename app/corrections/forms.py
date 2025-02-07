@@ -52,10 +52,10 @@ class MonthlyCorrections(FlaskForm):
     submit = SubmitField('Submit')
 
 class RangeCorrections(FlaskForm):
-    form_type = ghcn_id = StringField('TYPE', validators=[])  #InputRequired()])
-    ghcn_id = StringField('GHCN ID', validators=[]) #InputRequired()])
-    begin_date = DateField(validators=[]) #InputRequired()])
-    end_date = DateField(validators=[]) #InputRequired()])
+    form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    begin_date = DateField(validators=[InputRequired()])
+    end_date = DateField(validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS)
     action = SelectField('Action', choices=ACTIONS)
     defaults = BooleanField(default="checked")
