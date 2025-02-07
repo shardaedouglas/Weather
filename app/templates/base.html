@@ -49,8 +49,20 @@
                     <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="/">Corrections </a>
                     </li>
-                    <li class="nav-item active">
+                    <!-- <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="{{ url_for('ghcndata.view_ghcn_data') }}">View Data </a>
+                    </li> -->
+                    <li class="nav-item dropdown">
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                View Data
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{{ url_for('ghcndata.view_ghcn_data') }}">View GHCN Daily</a>
+                                <a class="dropdown-item" href="{{ url_for('ghcndata.view_ghcn_hourly_data') }}">View GHCN Hourly</a>
+                      
+                            </div>
+                        </div>
                     </li>
                     <li class="nav-item dropdown">
                         <div class="dropdown">
