@@ -224,7 +224,7 @@ def hourly_corrections():
             temp_list = ['']
             line = line.split()
             # print(temp_list + line)
-            data.append(tuple(temp_list + line))
+            data.append(tuple(line + line))
 
     # Initialize forms with default data    
     hourly_form = HourlyCorrections(

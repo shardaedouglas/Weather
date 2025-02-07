@@ -71,5 +71,47 @@ $(document).ready(function () {
     });
 
 })
+
+// URL Query Parameters
+document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.size > 0) {
+            console.log("urlParams", urlParams.getAll('element'));
+            columns = urlParams.getAll('element');
+
+            if(columns.length > 0){
+                createTable(columns);
+            }
+            // console.log("true");
+            // let queryStringData = getDataFromURL(urlParams);
+            // document.getElementById("station-data-view").style.display = "block";
+        }
+        
+        
+        
+        // var values = $('#hourly-multi-select').val();
+        // var values2 = $('#hourly-multi-select').find(':selected');
+        // console.log($(".leaderMultiSelctdropdown").val());
+        // console.log(values2)
+                
+    });
+
+
+function createTable(headers) {
+    let arr=[];
+    headers.forEach(header => {
+        let obj = {"title": header};
+        arr.push(obj);
+    });    
+    console.log(arr);
+
+    $('#myTable').dataTable( {
+        columns: arr
+    });
+}
+    // $(document).ready(function(){
+    //     $('#myTable').dataTable();
+    // });
 </script> 
 {% endblock content %}

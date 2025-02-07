@@ -166,9 +166,9 @@ def view_ghcn_hourly_data():
             temp_list = ['']
             line = line.split()
             # print(temp_list + line)
-            data.append(tuple(temp_list + line))
+            data.append(tuple(line + line))
 
-    print(data)
+    # print(data)
 
     # print("ID{}\ndate{}\nhour{}".format(ghcn_id, date, hour))
     form = GhcnDataHourlyForm(

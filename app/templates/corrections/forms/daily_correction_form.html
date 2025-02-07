@@ -85,8 +85,8 @@
         $(document).ready(function () {
             $("form").submit(function (event) {
                 event.preventDefault();
-                var formData = $(this).serialize();
-                console.log('formData', formData);
+                // var formData = $(this).serialize();
+                // console.log('formData', formData);
                 const params = new URLSearchParams(formData);
                 console.log("Params: ", params);
                 getDataforStationsAndShowTable(params);
