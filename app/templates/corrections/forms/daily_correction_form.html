@@ -93,13 +93,14 @@
                 loadingWheel.style.display = 'block';
 
                 var formData = $(this).serialize();
-                console.log('formData', formData);
+                //console.log('formData', formData);
                 const params = new URLSearchParams(formData);
-                console.log("Params: ", params);
+                //console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
-                //loadingWheel.style.display = 'none';
+                //Disabling the spinner happens in showDailyComparisonTable because this isnt async.
+                
             })
 
         });
@@ -115,9 +116,9 @@
             // Function to check if all fields have values
             function checkFields() {
                 if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
-                    console.log('GHCN ID:', ghcnIdInput.value);
-                    console.log('Date:', dateInput.value);
-                    console.log('Element:', elementSelect.value);
+                    //console.log('GHCN ID:', ghcnIdInput.value);
+                    //console.log('Date:', dateInput.value);
+                    //console.log('Element:', elementSelect.value);
                 // Prepare the request data
                 const requestData = {
                     ghcn_id: ghcnIdInput.value,
@@ -166,7 +167,7 @@
         
         // Check if the returnData array is not empty
     if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
-        console.log("Data:", filteredData);
+        //console.log("Data:", filteredData);
 
         filteredData.returnData.forEach(item => {
                     const newRow = `
@@ -249,7 +250,7 @@
         
         // Check if the returnData array is not empty
     if (filteredData && filteredData.returnData && filteredData.returnData.length > 0) {
-        console.log("Data:", filteredData);
+        //console.log("Data:", filteredData);
 
         filteredData.returnData.forEach(item => {
                     const newRow = `
@@ -281,7 +282,7 @@
         
         //Add to table data.
         if (filteredData) {
-            console.log("Data:", filteredData);
+            //console.log("Data:", filteredData);
     
             const newRow = `
                 <tr>

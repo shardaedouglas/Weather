@@ -7,13 +7,13 @@
     <div class="container-md">
         <div class="row g-3">
             <div class="col g-3">
-                <h1>Enter a Range Correction</h1>
-                <p>This is a brief description of Range Corrections.</p>
+                <h1>Invalidate Range of Data</h1>
+                <p>Use this form to invalidate a range of data between two dates. </p>
             </div>
         </div>
     </div>
     <div class="container-md form-container">
-        <form class="row g-3 align-items-center" method="POST" action="/process_correction">
+        <form class="row g-3 align-items-center" method="POST" action="/corrections/range">
             <div class="row g-3">
                 <div class="col input-group">
                     <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
@@ -63,6 +63,9 @@
         </form>
     </div>
 
+    <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+    </div>
+
     <div id="ranged-form-table" style="display:none;">
         {% include "corrections/data_tables/input_ranged_form.html" %}
     </div>
@@ -72,20 +75,83 @@
     $(document).ready(function () {
         $("form").submit(function (event) {
             event.preventDefault();
+            const loadingWheel = document.querySelector('#spinner');
+            loadingWheel.style.display = 'block';
+
             var formData = $(this).serialize();
-            // console.log(formData);
-            correctionFormHandler(formData, function (output) {
-                showRangeTable();
-            })
+            //console.log("formData: ", formData);
+            
+            
+
+            var tempFormData = {
+                selected_form: 'range',
+                ghcn_id: 'USW00093991',
+                datzilla_number: '123123',
+                element: 'TMAX',
+                action: '1',
+                begin_date: '2022-12-25',
+                end_date: '2023-2-14'
+            };
+
+
+            $.ajax({
+                url: '/get_ranged_values',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    console.log("Success:", response);
+                    
+                    
+                    // Handle other processing or pass to another function
+                    showRangeTable(response);
+                    loadingWheel.style.display = 'none';
+                    
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                }
+            });
 
         })
 
     });
 
-    function showRangeTable() {
-        document.getElementById('ranged-form-table').style.display = "flex";
-     }
+    function showRangeTable(response) {
+        const data = response; // Assuming this is the data object received from the server
+        let tableBody = $('#rangeTable tbody'); // Target the table body
+    
+        // Clear existing rows
+        tableBody.empty();
+        // Extract station data
+        let stationID = data.stationData.stationID;
+        let element = data.stationData.element;
+        let action = data.stationData.action;
+        let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
+        let datzillaNumber = data.stationData.datzilla_number
 
+        // Loop through days_data and populate the table
+        data.days_data.forEach(record => {
+            let row = `<tr>
+                <td>${stationID}</td>
+                <td>${record.date}</td>
+                <td>${element}</td>
+                <td>${action}</td>
+                <td>${record.value}</td>
+                <td>-9999</td>
+                <td>${todayDate}</td>
+                <td>${datzillaNumber}</td>
+
+            </tr>`;
+    
+            tableBody.append(row);
+        });
+
+    
+    
+        // Display the table by making the section visible
+        document.getElementById('ranged-form-table').style.display = "flex";
+    }
 </script>
 
 {% endblock content %}

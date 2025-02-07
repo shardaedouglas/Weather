@@ -1,6 +1,5 @@
 import polars as pl
 from GHCNhreader import parse
-
 from datetime import datetime
 
 def filter_data(
@@ -60,6 +59,7 @@ if __name__ == "__main__":
     columns_to_keep = ["datetime", "temperature", "Station_ID", "Station_name", "Latitude",]
     start_date = "2019-01-01T00:00"
     end_date = "2019-01-02T00:00"
+    print(df)
     df = filter_data(df, columns_to_keep=columns_to_keep, start_datetime=start_date, end_datetime=end_date, show_first_y_rows=20)
     print(df)
     df.write_csv("TEST_PSV.csv")
