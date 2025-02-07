@@ -4,7 +4,8 @@ from flask import render_template, request, jsonify
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
-from datetime import datetime
+from datetime import date, datetime
+import calendar
 import os
 from flask_login import login_required
 
@@ -472,6 +473,7 @@ def get_o_value():
 def get_ranged_values():
     try:
         
+        
         # Extract the data sent in the request body
         selected_form = request.form.get('correction_type', 'range')  # Default to 'daily'
         ghcn_id = request.form.get('ghcn_id', '')
@@ -483,12 +485,6 @@ def get_ranged_values():
         begin_date = request.form.get('begin_date', '')
         end_date = request.form.get('end_date', '')
         
-        print("selected_form: ", selected_form)
-        print("ghcn_id: ", ghcn_id)
-        print("datzilla_number: ", datzilla_number)
-        print("element: ", element)
-        print("action: ", action)
-
 
         # Convert dates
         if begin_date:
@@ -510,24 +506,60 @@ def get_ranged_values():
         filtered_json = parse_and_filter(
             file_path= station_file_path,
             correction_type="range",
-            start_date = begin_date,
+            begin_date = begin_date,
             end_date = end_date,
             observation_type=element,
-            station_code=ghcn_id
+            station_code=ghcn_id,
         )
-        
-        print("filtered_json", filtered_json)
+        print("filtered_json_RANGE", filtered_json)
         
         # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
+            print("SKIPPING")
+
             return jsonify({
                 "o_value": "No Value",
             })
             
+            
+#  # Process data
+        station_data = {
+            "stationID": ghcn_id,
+            "element": element,
+            "action": action,
+            "datzilla_number": datzilla_number
+        }
+
+        days_data = []
+
+        for entry in filtered_json:
+            print("Entry: ", entry)
+            
+            # Extract year, month, and day from the 'Date' field
+            full_date = datetime.strptime(entry['Date'], '%Y-%m-%d').date()
+            year, month, day = full_date.year, full_date.month, full_date.day
+            
+            print("year:", year, "month:", month, "day:", day)
+                    
+            # Filter by date range
+            if begin_date <= full_date <= end_date:
+                days_data.append({
+                    'date': full_date.strftime('%Y-%m-%d'),
+                    'value': entry['Value']
+                })
+                        
+            print("days_data: ", days_data)
+
+        response_data = {
+            "stationData": station_data,
+            "days_data": days_data
+        }
+
+        # print("response_data:", response_data)
+        
         # Return a simple response with the data
-        return jsonify({
-            "o_value": filtered_json,
-        })
+        return response_data
+    
     except Exception as e:
         print(f"Error in get_ranged_values: {e}")
         return jsonify({"error": "Internal server error"}), 500

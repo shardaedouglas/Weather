@@ -3,10 +3,12 @@ import polars as pl
 from  .GHCNreader import parse_fixed_width_file
 from datetime import datetime
 
+
 def filter_data(
     df: pl.DataFrame,
     year=None,
     month=None,
+    day=None,
     observation_type=None,
     country_code=None,
     network_code=None,
@@ -16,6 +18,7 @@ def filter_data(
 ):
     """
     Filters the data based on user input for a dataset where day information is stored horizontally.
+    This version filters only by year and month (ignoring individual day columns).
 
     Parameters:
       df (pl.DataFrame): The Polars DataFrame to filter.
@@ -42,12 +45,9 @@ def filter_data(
         filter_condition &= (pl.col("month") == month)
     if observation_type is not None:
         filter_condition &= (pl.col("observation_type") == observation_type)
-        filter_condition &= (pl.col("observation_type") == observation_type)
     if country_code is not None:
         filter_condition &= (pl.col("country_code") == country_code)
-        filter_condition &= (pl.col("country_code") == country_code)
     if network_code is not None:
-        filter_condition &= (pl.col("network_code") == network_code)
         filter_condition &= (pl.col("network_code") == network_code)
     if station_code is not None:
         filter_condition &= (pl.col("station_code") == station_code)
@@ -61,20 +61,9 @@ def filter_data(
         filter_condition &= ((pl.col("year") * 100 + pl.col("month")).is_between(start_val, end_val))
     
     # Apply the filter condition.
-        filter_condition &= (pl.col("station_code") == station_code)
-    
-    # If a start_date and end_date are provided, filter based on the combined year-month.
-    if start_date is not None and end_date is not None:
-        start_val = start_date.year * 100 + start_date.month
-        end_val = end_date.year * 100 + end_date.month
-        filter_condition &= ((pl.col("year") * 100 + pl.col("month")).is_between(start_val, end_val))
-    
-    # Apply the filter condition.
-        filter_condition &= (pl.col("station_code") == station_code)
-    
-    # Apply the filter condition.
     filtered_df = df.filter(filter_condition)
-        # Select only the relevant day and flag columns
+
+    # Select only the relevant day and flag columns
     if day is not None:
         day_column = f"day_{day}"
         flag_column = f"flag_{day}"
@@ -93,7 +82,6 @@ def filter_data(
     return filtered_df
 
 
-
 # Usage
 if __name__ == '__main__':
     file_path = "USW00093991.dly"
@@ -105,7 +93,7 @@ if __name__ == '__main__':
     start_date = datetime(2020, 3, 1)
     end_date = datetime(2023, 12, 31)
 
-    filtered_df = filter_data(df, observation_type="PRCP", start_date=start_date, end_date=end_date)
+    filtered_df = filter_data(df, observation_type="PRCP", day=20, start_date=start_date, end_date=end_date)
 
     filtered_df.write_csv("test_stuff.csv")
     print(filtered_df)

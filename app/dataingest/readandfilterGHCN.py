@@ -1,5 +1,9 @@
 from app.dataingest.GHCNfilter import filter_data
 from app.dataingest.GHCNreader import parse_fixed_width_file
+import polars as pl
+import json
+import calendar
+
 
 from datetime import datetime, timedelta
 
@@ -13,7 +17,8 @@ def parse_and_filter(
     country_code=None,
     network_code=None,
     station_code=None,
-    
+    begin_date=None,
+    end_date=None
 ):
     """
     Reads and filters the data from a fixed-width file.
@@ -36,17 +41,19 @@ def parse_and_filter(
     network_code = station_code[2]
     station_id = station_code[3:]
 
-    print(f"Incoming parameters:")
-    print(f"file_path: {file_path}")
-    print(f"correction_type: {correction_type}")
-    print(f"year: {year}")
-    print(f"month: {month}")
-    print(f"day: {day}")
-    print(f"observation_type: {observation_type}")
-    print(f"country_code: {country_code}")
-    print(f"network_code: {network_code}")
-    print(f"station_code: {station_code}")
-    
+    print(f"Parser_Incoming parameters:")
+    print(f"Parser_file_path: {file_path}")
+    print(f"Parser_correction_type: {correction_type}")
+    print(f"Parser_year: {year}")
+    print(f"Parser_month: {month}")
+    print(f"Parser_day: {day}")
+    print(f"Parser_observation_type: {observation_type}")
+    print(f"Parser_country_code: {country_code}")
+    print(f"Parser_network_code: {network_code}")
+    print(f"Parser_station_code: {station_code}")
+    print(f"Parser_begin_date: {begin_date}")
+    print(f"Parser_end_date: {end_date}")
+
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
     
@@ -54,20 +61,35 @@ def parse_and_filter(
     # print("df: ", df)
     # Step 2: Apply filtering using filter_data
 
-    filtered_df = filter_data(
-        df,
-        year=year,
-        month=month,
-        day=day,
-        observation_type=observation_type,
-        station_code=station_id,
-    )
-    print(filtered_df)    
-    # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
-    if len(filtered_df) == 0 or filtered_df.shape[0] == 0:
-        # print(f"No data found for station {station_code} with the given filters. Skipping station.")
-        return {'status': 'skip', 'station_code': station_code}
+    filtered_df = None  # Initialize variable outside
 
+    if correction_type != "range":
+        filtered_df = filter_data(
+            df,
+            year=year,
+            month=month,
+            day=day,
+            observation_type=observation_type,
+            station_code=station_id,
+        )
+        print(filtered_df)    
+        # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
+        if len(filtered_df) == 0 or filtered_df.shape[0] == 0:
+            # print(f"No data found for station {station_code} with the given filters. Skipping station.")
+            return {'status': 'skip', 'station_code': station_code}
+    else:
+        filtered_df = filter_data(
+            df,
+            start_date=begin_date,
+            end_date=end_date,
+            observation_type=observation_type,
+            station_code=station_id,
+            country_code=country_code,
+            network_code=network_code,
+        )
+        
+        
+        print("filtered_df_RANGE: ", filtered_df)
 
     # If correction_type is "compare", include prior and next day values
     if correction_type == "compare" and day is not None:
@@ -111,7 +133,58 @@ def parse_and_filter(
     
     elif correction_type == "daily":
         
-        print ("DoDailyThingsHere")        
+        print ("DoDailyThingsHere")     
+        
+    elif correction_type == "range":
+        
+        date_list = get_date_list(begin_date, end_date)
+        print(date_list)
+        formatted_range_data = set_ranged_data(date_list, filtered_df)  # Pass the date_list variable
+        return formatted_range_data
+        
+        # if isinstance(filtered_df, pl.DataFrame):  # Ensure it's a Polars DataFrame
+        #     range_data = filtered_df.to_dicts()  # Convert to a list of dictionaries
+
+        #     formatted_range_data = []
+        #     for entry in range_data:
+        #         print("!!!!!!!!!!!entry!!!!!!!!!!!!!!! ", entry)
+        #         year, month = entry.get("year"), entry.get("month")
+
+        #         # Skip months outside the range
+        #         if (year < begin_date.year or (year == begin_date.year and month < begin_date.month)) or \
+        #         (year > end_date.year or (year == end_date.year and month > end_date.month)):
+        #             continue  
+                
+        #         # Get the correct number of days in this month
+        #         _, days_in_month = calendar.monthrange(year, month)
+
+        #         # Determine valid day range for this month
+        #         start_day = 1 if (year, month) != (begin_date.year, begin_date.month) else begin_date.day
+        #         end_day = min(days_in_month, end_date.day) if (year, month) != (end_date.year, end_date.month) else end_date.day
+
+        #         formatted_entry = {
+        #             "country_code": entry.get("country_code", ""),
+        #             "network_code": entry.get("network_code", ""),
+        #             "station_code": entry.get("station_code", ""),
+        #             "year": year,
+        #             "month": month,
+        #             "observation_type": entry.get("observation_type", ""),
+        #         }
+
+        #         # Include only the valid days within the range
+        #         for day in range(start_day, end_day + 1):
+        #             day_key = f"day_{day}"
+        #             flag_key = f"flag_{day}"
+        #             if day_key in entry:
+        #                 formatted_entry[day_key] = entry[day_key]
+        #                 formatted_entry[flag_key] = entry.get(flag_key, "")
+
+        #         formatted_range_data.append(formatted_entry)
+
+            # print("range_data: ", formatted_range_data)
+        return None 
+            #return formatted_range_data
+
     
     
     elif correction_type == "o_value":
@@ -149,7 +222,65 @@ def parse_and_filter(
     #     'observation_type': filtered_df['observation_type'],
     #     # 'day': filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None,
     # }
+    
+def get_date_list(begin_date, end_date):
+    # Ensure that begin_date and end_date are datetime objects (if they are already, this step is unnecessary)
+    if isinstance(begin_date, datetime):
+        begin_date = begin_date.date()  # Convert to date if it's a datetime object
+    if isinstance(end_date, datetime):
+        end_date = end_date.date()  # Convert to date if it's a datetime object
 
+    # Initialize the list to store dates in the JSON format
+    date_list = []
+
+    # Generate the list of dates within the range
+    current_date = begin_date
+    while current_date <= end_date:
+        date_list.append({"Date": current_date.strftime("%Y-%m-%d")})
+        current_date += timedelta(days=1)
+
+    # Print the final list as a formatted JSON
+    
+    return date_list
+      
+      
+def set_ranged_data(date_list, filtered_df):
+    for date_entry in date_list:
+        # Split the date string into year, month, and day
+        date_str = date_entry.get("Date", "")
+        if date_str:
+            year, month, day = date_str.split("-")
+
+            # Apply filter
+            filtered_row = filtered_df.filter(
+                (pl.col("year") == int(year)) & (pl.col("month") == int(month))
+            )
+
+            # Check if filtered_row is empty
+            if filtered_row.is_empty():
+                print(f"No data found for {year}-{month}-{day}")
+            else:
+                day = str(int(day))
+                day_column_name = f"day_{day}"
+                # Check if the column exists in the dataframe
+                if day_column_name in filtered_row.columns:
+                    # Extract the value for that specific day
+                    value = filtered_row.select(day_column_name)
+
+                    if not value.is_empty():
+                        # Get the first value from the filtered data (assuming it's unique per day)
+                        value = value[0, 0]  # Assuming the value is the first item in the first row
+                        
+                        # Append the date and value to the date_list
+                        date_entry['Value'] = value
+                        # print(f"Appended Value: {value} for {date_str}")
+                    else:
+                        print(f"No data for {year}-{month}-{day} in column {day_column_name}")
+                else:
+                    print(f"Column {day_column_name} does not exist in the dataframe")
+        else:
+            print("Invalid date format or missing 'Date' field")
+    return date_list
 
 
 # if __name__ == "__main__":
