@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}View GHCN Hourly {% endblock %}
+{% block title %}View GHCN Hourly Data{% endblock %}
 {% block content %}
 
 <div class="container-md">
@@ -37,17 +37,10 @@
                 </div>
             </div>
         </div>
-        
-
-        
-
-        
-
-        
-
+ 
         <div class="row justify-content-center" id="button-row">
             <div class="col-md">
-                <button type="reset" class="btn button-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
             </div>
             <div class="col-md">
                 <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
@@ -57,7 +50,7 @@
     </form>
 </div>
 
-<div id="station-data-view" style="display:block;">
+<div id="ghcnh-table-view" style="display:none;">
     {% include "ghcn_data/hourly/ghcn_hourly_data_table.html" %}
 </div>
 
@@ -72,16 +65,16 @@ $(document).ready(function () {
 
 })
 
-// URL Query Parameters
+// Load URL Query Parameters
 document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.size > 0) {
-            console.log("urlParams", urlParams.getAll('element'));
+            
             columns = urlParams.getAll('element');
-
             if(columns.length > 0){
                 createTable(columns);
+                showGHCNHTable();
             }
 
         }
@@ -91,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
     });
 
-
+//Input: array of strings representing column headers.
 function createTable(headers) {
     let arr=[];
     headers.forEach(header => {
@@ -100,15 +93,21 @@ function createTable(headers) {
     });    
     console.log(arr);
 
+    // Initialize Data Table with columns as headers.
     $('#GHCNHTable').dataTable( {
         columns: arr,
         responsive: true
     });
 
+    //Add a test row of data to the table.
     // var table = new DataTable('#GHCNHTable');
     // table.row
     // .add([1,2,3,4,5,6,7,8,9,10])
     // .draw();
+}
+
+function showGHCNHTable() {
+    $("#ghcnh-table-view").show();
 }
 
 </script> 
