@@ -41,18 +41,18 @@ def parse_and_filter(
     network_code = station_code[2]
     station_id = station_code[3:]
 
-    print(f"Parser_Incoming parameters:")
-    print(f"Parser_file_path: {file_path}")
-    print(f"Parser_correction_type: {correction_type}")
-    print(f"Parser_year: {year}")
-    print(f"Parser_month: {month}")
-    print(f"Parser_day: {day}")
-    print(f"Parser_observation_type: {observation_type}")
-    print(f"Parser_country_code: {country_code}")
-    print(f"Parser_network_code: {network_code}")
-    print(f"Parser_station_code: {station_code}")
-    print(f"Parser_begin_date: {begin_date}")
-    print(f"Parser_end_date: {end_date}")
+    # print(f"Parser_Incoming parameters:")
+    # print(f"Parser_file_path: {file_path}")
+    # print(f"Parser_correction_type: {correction_type}")
+    # print(f"Parser_year: {year}")
+    # print(f"Parser_month: {month}")
+    # print(f"Parser_day: {day}")
+    # print(f"Parser_observation_type: {observation_type}")
+    # print(f"Parser_country_code: {country_code}")
+    # print(f"Parser_network_code: {network_code}")
+    # print(f"Parser_station_code: {station_code}")
+    # print(f"Parser_begin_date: {begin_date}")
+    # print(f"Parser_end_date: {end_date}")
 
     # Step 1: Parse the fixed-width file into a DataFrame
     df = parse_fixed_width_file(file_path)
@@ -72,7 +72,7 @@ def parse_and_filter(
             observation_type=observation_type,
             station_code=station_id,
         )
-        print(filtered_df)    
+        # print(filtered_df)    
         # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
         if len(filtered_df) == 0 or filtered_df.shape[0] == 0:
             # print(f"No data found for station {station_code} with the given filters. Skipping station.")
@@ -89,7 +89,7 @@ def parse_and_filter(
         )
         
         
-        print("filtered_df_RANGE: ", filtered_df)
+        # print("filtered_df_RANGE: ", filtered_df)
 
     # If correction_type is "compare", include prior and next day values
     if correction_type == "compare" and day is not None:
@@ -138,7 +138,6 @@ def parse_and_filter(
     elif correction_type == "range":
         
         date_list = get_date_list(begin_date, end_date)
-        print(date_list)
         formatted_range_data = set_ranged_data(date_list, filtered_df)  # Pass the date_list variable
         return formatted_range_data
         

@@ -364,7 +364,7 @@ def process_correction():
 
         # Iterate through each station_code and file_path in nearby_file_paths
         for nearby_station_codes, nearby_paths in nearby_file_paths:
-            print("Checking: ", nearby_station_codes)
+            #print("Checking: ", nearby_station_codes)
 
             # Run parser with form data for each station
             filtered_json = parse_and_filter(
@@ -397,7 +397,7 @@ def process_correction():
 
 
        
-        print(f"results: ", results)
+        #print(f"results: ", results)
         
         # Return
         return jsonify({
@@ -492,12 +492,12 @@ def get_ranged_values():
         if end_date:
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
             
-        print("begin_date: ", begin_date)
-        print("end_date: ", end_date)
+        # print("begin_date: ", begin_date)
+        # print("end_date: ", end_date)
         
         base_file_path = '/data/ops/ghcnd/data/'
         station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
-        print(f"Station file path: {station_file_path}")
+        # print(f"Station file path: {station_file_path}")
         # print(f"correction_year: {correction_year}")
         # print(f"correction_month: {correction_month}")
         # print(f"correction_day: {correction_day}")
@@ -511,7 +511,7 @@ def get_ranged_values():
             observation_type=element,
             station_code=ghcn_id,
         )
-        print("filtered_json_RANGE", filtered_json)
+        # print("filtered_json_RANGE", filtered_json)
         
         # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
@@ -533,13 +533,13 @@ def get_ranged_values():
         days_data = []
 
         for entry in filtered_json:
-            print("Entry: ", entry)
+            # print("Entry: ", entry)
             
             # Extract year, month, and day from the 'Date' field
             full_date = datetime.strptime(entry['Date'], '%Y-%m-%d').date()
             year, month, day = full_date.year, full_date.month, full_date.day
             
-            print("year:", year, "month:", month, "day:", day)
+            # print("year:", year, "month:", month, "day:", day)
                     
             # Filter by date range
             if begin_date <= full_date <= end_date:
@@ -548,7 +548,7 @@ def get_ranged_values():
                     'value': entry['Value']
                 })
                         
-            print("days_data: ", days_data)
+            # print("days_data: ", days_data)
 
         response_data = {
             "stationData": station_data,
