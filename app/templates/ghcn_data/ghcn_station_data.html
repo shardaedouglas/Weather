@@ -1,28 +1,11 @@
 
 <div class="container p-4" style="margin-top: 20px;">
-    <!-- Station Data -->
-    <!-- <div class="row ">
-        <div class="col">
-            [Station Location]
-        </div>
-        <div class="col">
-            Date: []
-        </div>
-        <div class="col">
-            Elev: []
-        </div>
-        <div class="col">
-            Lat: []
-        </div>
-        <div class="col">
-            Lon: []
-        </div>
-    </div> -->
+
     <!-- Main Data Table -->
     <div class="row " style="text-align: center">
         <div class="col">
             <div class="table-responsive-sm">
-                <table class="table table-sm table-striped table-borderless border" id="myTable">
+                <table class="table table-sm table-striped table-borderless border" id="GHCND_Table">
                     <thead>
                         <tr>
                             <th class="ghcn-table-cell" scope="col">Day</th>
@@ -222,6 +205,6 @@
 
 <script>
     $(document).ready(function(){
-        $('#myTable').dataTable();
+        $('#GHCND_Table').dataTable();
     });
 </script>
