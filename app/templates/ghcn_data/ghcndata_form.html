@@ -53,6 +53,9 @@
     </form>
 </div>
 
+<div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+</div>
+
 <div id="station-data-view" style="display:none;">
     {% include "ghcn_data/ghcn_station_data.html" %}
 </div>
@@ -65,8 +68,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         console.log("urlParams", urlParams);
         if (urlParams.size > 0) {
+            
+            const loadingWheel = document.querySelector('#spinner');
+            loadingWheel.style.display = 'block';
+
             let queryStringData = getDataFromURL(urlParams);
             document.getElementById("station-data-view").style.display = "block";
+
+            loadingWheel.style.display = 'none';
+
         }        
     });
     

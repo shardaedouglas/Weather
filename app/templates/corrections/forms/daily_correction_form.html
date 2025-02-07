@@ -74,23 +74,31 @@
     </form>
 </div>
 
+    
+    <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+    </div>
 
     <div id="correction-comparison-table" style="display:none;">
         {% include "corrections/data_tables/correction_comparison_table.html" %}
     </div>
-
 </div>
 
 <script>
         $(document).ready(function () {
             $("form").submit(function (event) {
                 event.preventDefault();
+
+                const loadingWheel = document.querySelector('#spinner');
+                loadingWheel.style.display = 'block';
+
                 // var formData = $(this).serialize();
                 // console.log('formData', formData);
                 const params = new URLSearchParams(formData);
                 console.log("Params: ", params);
+
+
                 getDataforStationsAndShowTable(params);
-                
+                //loadingWheel.style.display = 'none';
             })
 
         });
@@ -214,6 +222,7 @@
                 
                 // Handle processing
                 showDailyComparisonTable(response);
+                
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
@@ -229,9 +238,12 @@
     function showDailyComparisonTable(filteredData) {
         
         const tableBody = document.querySelector('#correction-comparison-table tbody');
+        const loadingWheel = document.querySelector('#spinner');
         
         // Clear existing rows in the table
         tableBody.innerHTML = '';
+        loadingWheel.style.display = 'none';
+
                 
         
         // Check if the returnData array is not empty
