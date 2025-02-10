@@ -11,12 +11,14 @@
     
 }
 #dropdownMenuButton{
-    color: white;
     position: relative;
-    top: 22px
+    top: 22px;
+    color: #003087;
+    font-weight: bold;
+    text-decoration: underline 1px #003087
 }
 #dropdown-menu{
-
+    margin-top: 15px;
 }
 #nav-items{
     color: #003087;
@@ -34,11 +36,6 @@ text-decoration: none;
 -webkit-transition: all .4s ease;
 transition: all .4s ease;
 line-height: 4ex;
-}
-#dropdownMenuButton{
-    color: #003087;
-    font-weight: bold;
-    text-decoration: underline 1px #003087
 }
 
 
@@ -203,4 +200,14 @@ Gives a border between the columns of the table. */
 .dark-mode #dropdownMenuButton{
     color: #fff;
     text-decoration: underline 1px #fff
+}
+
+
+.dark-mode #dropdown-menu{
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .dropdown-item{
+    color: #fff;
 }
