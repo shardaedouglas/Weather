@@ -97,55 +97,7 @@
               </div>
             </div>
           </nav>
-        <!-- <nav class="navbar navbar-expand-lg navbar-light my-5" id="nav-bar">
-            <a href="{{ url_for('ghcndata.view_ghcn_data') }}" style="display:inline-flex">
-                <img src="{{ url_for('static', filename='images/noaa_banner.png') }}" alt="NOAA Banner" width="20%" height="20%">  
-            <br>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarSupportedContent" style="position: absolute; left:30%">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" id="nav-items" href="/" style="text-decoration: underline 1px #003087;">Corrections </a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" id="nav-items" href="{{ url_for('ghcndata.view_ghcn_data') }}" style="text-decoration: underline 1px #003087;">View Data </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <div class="dropdown">
-                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" style="color: #003087;font-weight: bold;text-decoration: underline 1px #003087;" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Utilities
-                            </button>
-                            <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" href="#">Defaults</a>
-                                <a class="dropdown-item" href="#">Send Corrections</a>
-                                <a class="dropdown-item" href="#">Create Monthly Publication</a>
-                                <a class="dropdown-item" href="#">Zip/FTP Monthly Publication</a>
-                                <a class="dropdown-item" href="#">Create Annual Publication</a>
-                                <a class="dropdown-item" href="#">Zip/FTP Annual Publication</a>
-                                <a class="dropdown-item" href="#">Generate Monthly QA Report</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <div class="dropdown">
-                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" style="color: #003087;font-weight: bold;text-decoration: underline 1px #003087;" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Resources
-                            </button>
-                            <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" href="{{ url_for('resources.readme') }}">Read Me</a>
-                                <a class="dropdown-item" href="{{ url_for('resources.country_codes') }}">Country Codes</a>
-                                <a class="dropdown-item" href="{{ url_for('resources.class_definitions') }}">Class Definitions</a>
-                                <a class="dropdown-item" href="{{ url_for('resources.accessibility') }}">Accessibility</a>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </nav> -->
-        {% block content %}{% endblock content %}
+       {% block content %}{% endblock content %}
 
     
         <script>
