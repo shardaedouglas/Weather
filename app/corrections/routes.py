@@ -1,5 +1,5 @@
 from app.corrections import correction_bp
-from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections
+from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections, HourlyCorrections
 from flask import render_template, request, jsonify
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
@@ -8,6 +8,8 @@ from datetime import date, datetime
 import calendar
 import os
 from flask_login import login_required
+from wtforms import SelectMultipleField
+
 
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
@@ -211,9 +213,27 @@ def hourly_corrections():
         begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
     if end_date:
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-        
+
+    # Read the GHCN Hourly header list from file
+    data = []
+    with open("GHCNh_psv_column_names.txt") as load_file:
+        # temp_list = []
+        for line in load_file:
+            temp_list = ['']
+            line = line.split()
+            # print(temp_list + line)
+            data.append(tuple(line + line))
+
     # Initialize forms with default data    
-    hourly_form = {}
+    hourly_form = HourlyCorrections(
+        ghcn_id=ghcn_id,
+        date=correction_date,  
+        datzilla_number=datzilla_number
+        # element=element
+
+    )
+
+    hourly_form.element.choices = data
 
 
     return render_template(

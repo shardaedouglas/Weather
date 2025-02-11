@@ -87,13 +87,11 @@
         $(document).ready(function () {
             $("form").submit(function (event) {
                 event.preventDefault();
-                
-                
+
                 const loadingWheel = document.querySelector('#spinner');
                 loadingWheel.style.display = 'block';
 
                 var formData = $(this).serialize();
-                //console.log('formData', formData);
                 const params = new URLSearchParams(formData);
                 //console.log("Params: ", params);
 

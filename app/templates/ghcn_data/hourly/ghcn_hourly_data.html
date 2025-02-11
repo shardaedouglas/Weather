@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}View GHCN Hourly Data{% endblock %}
+{% block content %}
+
+<div class="container-md">
+    <div class="row g-3">
+        <div class="col g-3">
+            <p style="font-size: 260%; font-weight: bold;">View Hourly Data</p>
+            <p>This is a brief description.</p>
+        </div>
+    </div>
+ 
+
+<div class="container-md form-container" >
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col-md input-group">
+                <span class="input-group-text">GHCN ID</span> {{ghcnHourlyForm.ghcn_id(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnHourlyForm.date(class_='form-control date-picker')}}
+            </div>
+            <div class="col-md input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Hour</span>
+                {{ghcnHourlyForm.hour(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md input-group" style="flex-wrap: nowrap;">
+                
+                <span class="input-group-text element-select" id="inputGroup-sizing-default"
+                        style="font-weight: bold">Element</span>
+                         {{ghcnHourlyForm.element(class_='form-select element-select' , id='hourly-multi-select')}}
+                </div>
+            </div>
+        </div>
+ 
+        <div class="row justify-content-center" id="button-row">
+            <div class="col-md">
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
+            </div>
+            <div class="col-md">
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
+            </div>
+            
+        </div>
+    </form>
+</div>
+
+<div id="ghcnh-table-view" style="display:none;">
+    {% include "ghcn_data/hourly/ghcn_hourly_data_table.html" %}
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#hourly-multi-select').select2({
+        allowClear: true,
+        closeOnSelect: false,
+        placeholder: 'Select Headers',
+        debug: true
+    });
+
+})
+
+// Load URL Query Parameters
+document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.size > 0) {
+            
+            columns = urlParams.getAll('element');
+            if(columns.length > 0){
+                createTable(columns);
+                showGHCNHTable();
+            }
+
+        }
+        
+        
+        
+                
+    });
+
+//Input: array of strings representing column headers.
+function createTable(headers) {
+    let arr=[];
+    headers.forEach(header => {
+        let obj = {"title": header};
+        arr.push(obj);
+    });    
+    console.log(arr);
+
+    // Initialize Data Table with columns as headers.
+    $('#GHCNHTable').dataTable( {
+        columns: arr,
+        responsive: true
+    });
+
+    //Add a test row of data to the table.
+    // var table = new DataTable('#GHCNHTable');
+    // table.row
+    // .add([1,2,3,4,5,6,7,8,9,10])
+    // .draw();
+}
+
+function showGHCNHTable() {
+    $("#ghcnh-table-view").show();
+}
+
+</script> 
+{% endblock content %}

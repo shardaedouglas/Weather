@@ -1,6 +1,6 @@
 from wtforms.validators import InputRequired, Length
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField
+from wtforms import StringField, BooleanField, SubmitField, DateField, SelectField, SelectMultipleField
 
 #Options for multiple choice fields
 
@@ -35,3 +35,9 @@ class GhcnDataForm(FlaskForm):
     country = SelectField('Country', choices=COUNTRIES, default='SELECT')
     station_type = SelectField('Type', choices=STATION_TYPES, default ='1')
     submit = SubmitField('Submit')
+
+class GhcnDataHourlyForm(FlaskForm):
+        ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+        date = DateField('Date', validators=[InputRequired()])
+        hour = SelectField('Hour', choices=[x for x in range(25)], validators=[InputRequired()] )
+        element = SelectMultipleField('Element')
