@@ -141,51 +141,6 @@ def parse_and_filter(
         formatted_range_data = set_ranged_data(date_list, filtered_df)  # Pass the date_list variable
         return formatted_range_data
         
-        # if isinstance(filtered_df, pl.DataFrame):  # Ensure it's a Polars DataFrame
-        #     range_data = filtered_df.to_dicts()  # Convert to a list of dictionaries
-
-        #     formatted_range_data = []
-        #     for entry in range_data:
-        #         print("!!!!!!!!!!!entry!!!!!!!!!!!!!!! ", entry)
-        #         year, month = entry.get("year"), entry.get("month")
-
-        #         # Skip months outside the range
-        #         if (year < begin_date.year or (year == begin_date.year and month < begin_date.month)) or \
-        #         (year > end_date.year or (year == end_date.year and month > end_date.month)):
-        #             continue  
-                
-        #         # Get the correct number of days in this month
-        #         _, days_in_month = calendar.monthrange(year, month)
-
-        #         # Determine valid day range for this month
-        #         start_day = 1 if (year, month) != (begin_date.year, begin_date.month) else begin_date.day
-        #         end_day = min(days_in_month, end_date.day) if (year, month) != (end_date.year, end_date.month) else end_date.day
-
-        #         formatted_entry = {
-        #             "country_code": entry.get("country_code", ""),
-        #             "network_code": entry.get("network_code", ""),
-        #             "station_code": entry.get("station_code", ""),
-        #             "year": year,
-        #             "month": month,
-        #             "observation_type": entry.get("observation_type", ""),
-        #         }
-
-        #         # Include only the valid days within the range
-        #         for day in range(start_day, end_day + 1):
-        #             day_key = f"day_{day}"
-        #             flag_key = f"flag_{day}"
-        #             if day_key in entry:
-        #                 formatted_entry[day_key] = entry[day_key]
-        #                 formatted_entry[flag_key] = entry.get(flag_key, "")
-
-        #         formatted_range_data.append(formatted_entry)
-
-            # print("range_data: ", formatted_range_data)
-        return None 
-            #return formatted_range_data
-
-    
-    
     elif correction_type == "o_value":
         # Filter the data for the specific day
         o_value = filtered_df['day_' + str(day)][0] # Pull the value for the day column
@@ -194,7 +149,7 @@ def parse_and_filter(
         return o_value
     
     
-    else:
+    else:   #correction_type = monthly
             monthly_data = {
                 'country_code': filtered_df['country_code'][0],
                 'network_code': filtered_df['network_code'][0],
@@ -210,17 +165,6 @@ def parse_and_filter(
 
             return monthly_data
 
-
-    # # If no correction_type or day is not provided, just return the current day's data
-    # return {
-    #     'country_code': filtered_df['country_code'][0],
-    #     'network_code': filtered_df['network_code'][0],
-    #     'station_code': filtered_df['station_code'][0],
-    #     'year': filtered_df['year'],
-    #     'month': filtered_df['month'],
-    #     'observation_type': filtered_df['observation_type'],
-    #     # 'day': filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None,
-    # }
     
 def get_date_list(begin_date, end_date):
     # Ensure that begin_date and end_date are datetime objects (if they are already, this step is unnecessary)
@@ -287,13 +231,13 @@ def set_ranged_data(date_list, filtered_df):
 #     file_path =  "../../USW00093991.dly"
 
     # Example 1: Filter by year and country code
-    filtered_df = parse_and_filter(
-        file_path=file_path,
-        year=2023,
-        country_code="US",
-        day = 10
-    )
-    print(filtered_df)
+    # filtered_df = parse_and_filter(
+    #     file_path=file_path,
+    #     year=2023,
+    #     country_code="US",
+    #     day = 10
+    # )
+    # print(filtered_df)
 
 #     print(filtered_df)
 
