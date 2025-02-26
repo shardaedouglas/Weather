@@ -1,7 +1,7 @@
 import unittest
 import polars as pl
 from datetime import datetime
-from GHCNfilter import filter_data
+from app.dataingest.GHCNfilter import filter_data
 
 
 class TestFilterData(unittest.TestCase):
