@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Hourly Correction{% endblock %}
+{% block content %}
+
+<div class="container-md justify-content-center" id="form-hourly">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Enter a Hourly Correction</h1>
+                <p>This is a brief description of Hourly Corrections.</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-md form-container">
+        <form class="row g-3 align-items-center ">
+            <div class="row g-3 align-items-center">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">GHCN
+                        ID</span>
+                     {{hourly_form.ghcn_id(class_='form-control')}}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col input-group justify-content-start" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                    {{hourly_form.date(class_='form-control date-picker')}}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm input-group justify-content-start" style="flex-wrap: nowrap;">
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default"
+                        style="font-weight: bold">Element</span>
+                         {{hourly_form.element(class_='form-select element-select' , id='hourly-multi-select')}}
+                </div>
+            </div>
+
+
+            <div class="row g-3">
+                <div class="col-sm">
+                    <button type="reset" class="btn button-dull"
+                        style="width:100%;display:block;font-weight: bold">Clear</button>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-success"
+                        style="width:100%;display:block;">Submit</button>
+                </div>
+                
+
+            </div>
+        </form>
+    </div>
+
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('#hourly-multi-select').select2({
+            allowClear: true,
+            closeOnSelect: false,
+            //placeholder: 'Select Headers',
+            debug: true
+        });
+        
+        
+        // If we wish to override the default form submission
+        $("form").submit(function (event) {
+            event.preventDefault();
+
+            // Grab the Form's data 
+            // var formData = $(this).serialize();
+            // console.log('formData', formData);
+            // const params = new URLSearchParams(formData);
+            // console.log("Params: ", params);
+            
+            // Process the form's data
+            // getDataforStationsAndShowTable(params);
+ 
+        })
+
+    });
+
+
+
+
+
+</script>
+
+{% endblock content %}

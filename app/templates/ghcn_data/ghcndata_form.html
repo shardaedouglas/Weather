@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}View GHCN Daily Data{% endblock %}
+{% block content %}
+
+<div class="container-md">
+    <div class="row g-3">
+        <div class="col g-3">
+            <p style="font-size: 260%; font-weight: bold;">View Daily Data</p>
+            <p>This is a brief description.</p>
+        </div>
+    </div>
+ 
+
+<div class="container-md form-container" >
+    <form class="row g-3 align-items-center">
+        <div class="row g-3">
+            <div class="col-md input-group">
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-ghcn-id" name="id-option" value="GHCN ID" checked="checked" >
+                <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span> {{ghcnForm.ghcn_id(class_='form-control', id='search-option-ghcn-id')}}
+            </div>
+            
+            <div class="col-md input-group" style="flex-wrap: nowrap;">
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-country" name="id-option" value="Country">
+                <span class="input-group-text" id="inputGroup-sizing-default">Country</span> 
+                <span class="tt" title="Country Input">{{ghcnForm.country(class_='form-select country-select', id='search-option-country')}}</span>
+            </div>
+            
+            <div class="col-md input-group" style="flex-wrap: nowrap;">
+                <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-state" name="id-option" value="State">
+                <span class="input-group-text" id="inputGroup-sizing-small">State</span> {{ghcnForm.state(class_='form-select state-select', id='search-option-state')}}
+            </div>
+        </div>
+        <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            <div class="col-md input-group" style="flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default">Type</span>
+                {{ghcnForm.station_type(class_='form-select type-select')}}
+            </div>
+            <div class="col-md input-group" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnForm.date(class_='form-control date-picker')}}
+            </div>
+        </div>
+
+        <div class="row justify-content-center" id="button-row">
+            <div class="col-md">
+                <button type="reset" class="btn button-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
+            </div>
+            <div class="col-md">
+                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
+            </div>
+            
+        </div>
+    </form>
+</div>
+
+<div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+</div>
+
+<div id="station-data-view" style="display:none;">
+    {% include "ghcn_data/ghcn_station_data.html" %}
+</div>
+
+</div>  
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("urlParams", urlParams);
+        if (urlParams.size > 0) {
+            
+            const loadingWheel = document.querySelector('#spinner');
+            loadingWheel.style.display = 'block';
+
+            let queryStringData = getDataFromURL(urlParams);
+            document.getElementById("station-data-view").style.display = "block";
+
+            loadingWheel.style.display = 'none';
+
+        }        
+    });
+    
+    function hideGHCNViewTable() {
+       document.getElementById('station-data-view').style.display = "none";
+    }
+
+    $(document).ready(function() {
+
+        // Disables other radio options when one is selected.
+        function enableSelectedForm() {
+            if ($("#radio-option-ghcn-id").is(":checked")) {
+                $("#search-option-ghcn-id").removeAttr('disabled');
+                $("#search-option-country").attr('disabled', true);
+                $("#search-option-state").attr('disabled', true);
+
+
+            } else if ($("#radio-option-country").is(":checked")) {
+                $("#search-option-ghcn-id").attr('disabled', true);
+                $("#search-option-country").removeAttr('disabled');
+                $("#search-option-state").attr('disabled', true);
+
+
+            } else if ($("#radio-option-state").is(":checked")) {
+                $("#search-option-ghcn-id").attr('disabled', true);
+                $("#search-option-country").attr('disabled', true);
+                $("#search-option-state").removeAttr('disabled');
+
+
+            }
+
+        }
+    
+        // Initialize radio button disabling
+        enableSelectedForm();
+    
+        // Handle radio button clicks to show the corresponding form
+        $("input[name='id-option']").click(function() {
+            enableSelectedForm();
+        });
+    })
+
+    //Form Submission and Show data table
+    // $(document).ready(function () {
+    //     $("form").submit(function (event) {
+    //         event.preventDefault(); // Prevent the default form submission
+    //         var formData = $(this).serialize(); //Retrieve the form data
+    //         // Send the request to handle the form data. async?
+    //         // Once data is returned, show the populated data table.
+    //         showGHCNViewTable();
+    //     })
+
+    // });
+
+    function showComparisonTable(data) {
+        const tableBody = document.querySelector("#station-data-view tbody");
+        tableBody.innerHTML = ""; // Clear existing rows
+    
+        // Sort the days numerically
+        const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
+
+        sortedDays.forEach(dayKey => {
+            const dayData = data[dayKey];
+            const row = `
+                <tr>
+                    <td>${dayKey}</td>
+                    <td>${dayData.TMAX || ""}</td>
+                    <td>${dayData.TMIN || ""}</td>
+                    <td>${dayData.TOBS || ""}</td>
+                    <td>${dayData.PRCP || ""}</td>
+                    <td>${dayData.SNOW || ""}</td>
+                    <td>${dayData.SNWD || ""}</td>
+                    <td>${dayData.WTXX || ""}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        document.getElementById("station-data-view").style.display = "block";
+    }
+
+    function getDataFromURL(urlParams) {
+        // Get the URL
+
+        // Extract the query parameters
+        const ghcnId = urlParams.get('ghcn_id');
+        const stationType = urlParams.get('station_type');
+        const date = urlParams.get('date');
+
+        var requestData = {
+            ghcn_id: ghcnId,
+            date: date,
+            station_type: stationType
+        };
+
+        // Send the data via AJAX
+        $.ajax({
+            url: '/get_data_for_GHCN_table',  // Your endpoint here
+            method: 'POST',
+            data: $.param(requestData),
+            success: function(response) {
+                console.log("Success:", response);
+                
+                // Handle other processing or pass to another function
+                showComparisonTable(response);
+
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+        }
+    
+
+    </script>
+
+{% endblock content %}

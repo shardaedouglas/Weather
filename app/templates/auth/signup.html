@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row g-3 justify-content-center ">
+        <div class="col-10 g-3">
+            <p class="text-center" style="font-size: 260%; font-weight: bold;">Sign Up</p>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-10 col-md-5" >
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-warning alert-dismissible show" role="alert">
+                        {{ messages[0] }}. Go to <a href="{{ url_for('auth.login') }}">login page</a>.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            <form method="POST" action="/signup">
+                <!-- Email/Username input -->
+                <div class=" mb-4">
+                    <input type="text" id="signUpUser" class="form-control" name="username" />
+                    <label class="form-label" for="signUpUser">Username</label>
+                </div>
+
+                <!-- Password input -->
+                <div class=" mb-4">
+                    <input type="password" id="signUpPassword" class="form-control" name="password"/>
+                    <label class="form-label" for="signUpPassword">Password</label>
+                </div>
+
+
+
+                <!-- Submit button -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-block mb-4">Register</button>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="row g-3 justify-content-center ">
+    <div class="col-10">
+        <p class="text-center">
+            <a href="{{ url_for('auth.signup') }}">Register</a> |
+            <a href="{{ url_for('auth.login') }}">Login</a> |
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </p>
+    </div>
+
+
+{% endblock content %}

@@ -1,0 +1,189 @@
+
+
+
+<!-- Nested Grid using Flex-dirction:column -->
+<div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
+    
+    <div class="row">
+        <div class="row justify-content-center">
+            <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: ###### </h6>
+        </div>
+        <div class="col">
+            <div class="row" style="display:flex; flex-direction:column">
+                <div class="col-4">
+                    Datzilla #: {{monthly_form.datzilla_number(class_='form-control')}}
+                </div>
+                <div class="col">
+                    Element: {{monthly_form.element(class_='form-select element-select')}}
+                  <!-- <select class="form-select" >
+                        <option selected>--Select--</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>--> 
+                </div>
+                
+                <div class="col">
+                    Date:  {{monthly_form.date(class_='form-control date-picker')}}
+                    <!--<div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="yyyymm">
+                      </div>-->
+                </div>
+                <div class="col">
+                    Action: {{monthly_form.action(class_='form-select action-select')}}
+                    <!--<select class="form-select" >
+                        <option selected>--Select--</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>-->
+                </div>
+                <div class="col">
+                    <div class="range-input-box" style="margin-top:20px">
+                        <textarea id="rangeTextInput" class="form-control" rows="31" placeholder="Paste range data here..."></textarea>
+                        <button type="button" class="btn btn-primary mt-2" onclick="processRangeInput()">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 31 Inputs for Entry  -->
+
+        <div class="col">
+        <div class="row" style="display:flex; flex-direction:column">
+            <!-- Month Input Table -->
+            <div class="col">
+                <div class="table-responsive-sm" style="text-align: center">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Day</th>
+                                <th scope="col">Value</th>
+    
+                            </tr>
+                        </thead>
+                        <tbody>
+                
+                            {% for p in range(31) %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
+                                    <td>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" placeholder="">
+                                          </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+    
+                            <!-- Datzilla Number Input -->
+                            <!-- Should this be outside of the table as its own element? 
+                             <tr>
+                                <td>
+                                    <b>Datzilla #:</b>
+                                </td>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="">
+                                      </div>
+                                </td>
+                            </tr>-->
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-center" id="button-row">
+                    <div class="col-sm-3">
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-primary">Total</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-dark">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        
+    </div>
+    
+    <script>
+        function processRangeInput() {
+            let inputText = document.getElementById("rangeTextInput").value.trim();
+            
+            // Split input by common delimiters (comma, newline, space, tab)
+            let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
+    
+            console.log("Parsed Values:", values);
+    
+            // Fill table with parsed values (up to 31)
+            let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = values[i] || ""; // Set value or empty if less than 31
+            }
+        }
+    </script>
+
+{#
+     <!-- 31 Inputs for Entry  -->
+
+        <div class="row" style="display:flex; flex-direction:column">
+            <!-- Month Input Table -->
+            <div class="col">
+                <div class="table-responsive-sm" style="text-align: center">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Day</th>
+                                <th scope="col">Value</th>
+    
+                            </tr>
+                        </thead>
+                        <tbody>
+                
+                            {% for p in range(31) %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
+                                    <td>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" placeholder="">
+                                          </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+    
+                            <!-- Datzilla Number Input -->
+                            <!-- Should this be outside of the table as its own element? 
+                             <tr>
+                                <td>
+                                    <b>Datzilla #:</b>
+                                </td>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="">
+                                      </div>
+                                </td>
+                            </tr>-->
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-center" id="button-row">
+                    <div class="col-sm-3">
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-primary">Total</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-dark">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+                  
+</div>
+
+#}
+<!-- Move this to a new row or section. -->
+

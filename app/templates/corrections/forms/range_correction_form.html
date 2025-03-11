@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Range Correction{% endblock %}
+{% block content %}
+
+<!--Range Form-->
+<div class="container-md justify-content-center" id="form-range">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3">
+                <h1>Invalidate Range of Data</h1>
+                <p>Use this form to invalidate a range of data between two dates. </p>
+            </div>
+        </div>
+    </div>
+    <div class="container-md form-container">
+        <form class="row g-3 align-items-center" method="POST" action="/corrections/range">
+            <div class="row g-3">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
+                    {{range_form.ghcn_id(class_='form-control')}}
+                </div>
+
+            </div>
+            <div class="row g-3">
+                <div class="col-md input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Begin Date</span>
+                    {{range_form.begin_date(class_='form-control date-picker')}}
+                </div>
+                <div class="col-md input-group" id="date-div">
+                    <span class="input-group-text" id="inputGroup-sizing-default">End Date</span>
+                    {{range_form.end_date(class_='form-control date-picker')}}
+                </div>
+            </div>
+            <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Datzilla #</span>
+                    {{range_form.datzilla_number(class_='form-control')}}
+                </div>
+
+            </div>
+            <div class="row g-3">
+                <div class="col input-group" style="flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
+                    {{range_form.element(class_='form-select element-select')}}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
+                    {{range_form.action(class_='form-select action-select')}}
+                </div>
+            </div>
+            <div class="row justify-content-center g-3" id="button-row">
+                <div class="col-sm">
+                    <button type="submit" class="btn button-dull"
+                        style="width:100%;display:block;font-weight: bold;">Clear</button>
+                </div>
+                <div class="col-sm">
+                    <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+    </div>
+
+    <div id="ranged-form-table" style="display:none;">
+        {% include "corrections/data_tables/input_ranged_form.html" %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (event) {
+            event.preventDefault();
+            const loadingWheel = document.querySelector('#spinner');
+            loadingWheel.style.display = 'block';
+
+            var formData = $(this).serialize();
+            //console.log("formData: ", formData);
+            
+            
+
+            var tempFormData = {
+                selected_form: 'range',
+                ghcn_id: 'USW00093991',
+                datzilla_number: '123123',
+                element: 'TMAX',
+                action: '1',
+                begin_date: '2022-12-25',
+                end_date: '2023-2-14'
+            };
+
+
+            $.ajax({
+                url: '/get_ranged_values',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    console.log("Success:", response);
+                    
+                    
+                    // Handle other processing or pass to another function
+                    showRangeTable(response);
+                    loadingWheel.style.display = 'none';
+                    
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                }
+            });
+
+        })
+
+    });
+
+    function showRangeTable(response) {
+        const data = response; // Assuming this is the data object received from the server
+        let tableBody = $('#rangeTable tbody'); // Target the table body
+    
+        // Clear existing rows
+        tableBody.empty();
+        // Extract station data
+        let stationID = data.stationData.stationID;
+        let element = data.stationData.element;
+        let action = data.stationData.action;
+        let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
+        let datzillaNumber = data.stationData.datzilla_number
+
+        // Loop through days_data and populate the table
+        data.days_data.forEach(record => {
+            let row = `<tr>
+                <td>${stationID}</td>
+                <td>${record.date}</td>
+                <td>${element}</td>
+                <td>${action}</td>
+                <td>${record.value}</td>
+                <td>-9999</td>
+                <td>${todayDate}</td>
+                <td>${datzillaNumber}</td>
+
+            </tr>`;
+    
+            tableBody.append(row);
+        });
+
+    
+    
+        // Display the table by making the section visible
+        document.getElementById('ranged-form-table').style.display = "flex";
+    }
+</script>
+
+{% endblock content %}

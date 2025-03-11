@@ -1,0 +1,213 @@
+
+
+/* Navigation Bar */
+#nav-bar{
+    
+    background-color: #ffffff;
+    width: 100%;
+    font-weight: bold;
+    border-bottom: 4px solid #056FB7;
+    
+    
+}
+#dropdownMenuButton{
+    position: relative;
+    top: 22px;
+    color: #003087;
+    font-weight: bold;
+    text-decoration: underline 1px #003087
+}
+#dropdown-menu{
+    margin-top: 15px;
+}
+#nav-items{
+    color: #003087;
+    text-decoration: underline 1px #003087;
+
+    padding-right: 10px ;
+    display:inline-block;
+    border-color: aliceblue;
+    position: relative;
+    top: 20px
+}
+#nav-items a:hover{
+font-family: 'Source Sans Pro',sans-serif;
+text-decoration: none;
+-webkit-transition: all .4s ease;
+transition: all .4s ease;
+line-height: 4ex;
+}
+
+
+/* Forms */
+.form-container {
+    padding: 30px;
+    margin-top: 40px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+    text-align: center;
+    border-radius: 5px;
+}
+#form-daily{
+    min-width: 85%;
+}
+#form-monthly{
+    min-width: 50%;
+
+}
+#form-range{
+    min-width: 50%;
+
+}
+#date-picker{
+    width: 100%;
+}
+
+#date-div {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap; 
+    align-items: stretch;
+    /* width: 12%; */
+}
+#button-row{
+    margin-top: 25px;
+}
+.input-group {
+    justify-content: center;
+}
+.id-option-ghcn {
+    margin-right: 3px;
+    border-top-right-radius: 7px; 
+    border-bottom-right-radius: 7px;
+}
+.element-select{
+    /* max-width: 165px; */
+}
+.action-select{
+    /* max-width: 90px; */
+}
+.type-select {
+    /* max-width: 160px; */
+}
+.country-select {
+    /* max-width: 380px; */
+}
+.state-select {
+    /* max-width: 340px; */
+}
+.date-picker {
+    /* max-width: 165px; */
+}
+.button-light{
+    background-color: #ffffff;
+    border: 2px solid #086313;
+    border-radius: 5px;
+    color: #198754;
+}
+.button-dull{
+    background-color: #DADADA;
+    border: none;
+    border-radius: 5px;
+    color: #292929;
+}
+/* ------------------------ Data Displayer Pages -----------------*/
+
+/* Monthly Correction Table */
+#monthly-form-table {
+padding-top: 45px;
+}
+#input-monthly-table {
+}
+/* View Ghcn Metadata */
+#ghcn-metadata-div {
+    max-width: 80%;
+    padding: 30px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+    justify-content: center;
+    text-align: center;
+}
+.form-container-monthly {
+    padding: 30px;
+    border-color: rgb(182, 181, 181);
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+
+}
+.type-select{
+    /* max-width: 190px; */
+}
+
+body {
+    background-color: rgb(255, 255, 255);
+    font-size: 100%;
+}
+
+
+
+/* GHCN Data View Table cells. 
+Gives a border between the columns of the table. */
+.ghcn-table-cell {
+    border-right: solid 2px grey;
+}
+
+
+
+
+/* Dark Mode CSS*/
+/* To add more dark mode selectors, use ".dark-mode [tag or id or class etc.]*/
+.dark-mode {
+    background-color: #212529;
+    color: #fff;
+  }
+
+.dark-mode .form-control {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .input-group-text {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .form-select {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode #nav-bar  {
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode #nav-items {
+    /* background-color: #212529; */
+    color: #fff;
+    text-decoration: underline 1px #fff
+}
+
+
+.dark-mode #dropdownMenuButton{
+    color: #fff;
+    text-decoration: underline 1px #fff
+}
+
+
+.dark-mode #dropdown-menu{
+    background-color: #212529;
+    color: #fff;
+}
+
+.dark-mode .dropdown-item{
+    color: #fff;
+}

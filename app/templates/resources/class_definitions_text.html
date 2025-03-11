@@ -1,0 +1,94 @@
+<table class="table">
+   <thead>
+      <tr>
+         <th>Class</th>
+         <th>Description</th>
+         <th>Original Value needed in ticket</th>
+         <th>Alternative Value provided in ticket</th>
+         <th>Original Class</th>
+      </tr>
+   </thead>
+
+   <tbody>
+
+
+      <tr>
+         <td>1a</td>
+         <td>Original Value is not correct. It should be flagged as a data error. No alternative is provided.</td>
+         <td>Yes</td>
+         <td>NA (-9999)</td>
+         <td>1</td>
+      </tr>
+
+      <tr>
+         <td>1b*</td>
+         <td>Original Value is not correct. A previously supplied alternative should also be removed.</td>
+         <td>Yes (but need OV not EV for GHCN-D)</td>
+         <td>NA (-9999)</td>
+         <td>10</td>
+      </tr>
+
+      <tr>
+         <td>2a</td>
+         <td>Original Value is not correct. It was miskeyed, erroneously transmitted, etc.  A new �original� value is provided with this ticket.</td>
+         <td>Yes</td>
+         <td>Yes</td>
+         <td>3</td>
+      </tr>
+
+      <tr>
+         <td>2b*</td>
+         <td>Original Value is not correct. A previous alternative value should  also be removed. A rekeyed �original� value is provided with this ticket.</td>
+         <td>Yes (but need OV not EV for GHCN-D)</td>
+         <td>Yes</td>
+         <td>8</td>
+      </tr>
+
+      <tr>
+         <td>3a</td>
+         <td>Original Value is not correct.  This value should not be in the database as an original value and needs to be set to missing.  No alternative is provided.</td>
+         <td>Yes</td>
+         <td>NA (-9999)</td>
+         <td>7</td>
+      </tr>
+
+      <tr>
+         <td>3b</td>
+         <td>Original value is not correct. An alternative value is provided based on independent evidence (e.g., an alternative sensor etc.). The alternative value supersedes the original value.</td>
+         <td>Yes</td>
+         <td>Yes</td>
+         <td>9</td>
+      </tr>
+
+      <tr>
+         <td>4a</td>
+         <td>Original Value is correct and should not be flagged.  It has been flagged by the system at some time in the past, but has been determined to be legitimate.</td>
+         <td>Yes</td>
+         <td>NA (-9999)</td>
+         <td>2</td>
+      </tr>
+
+      <tr>
+         <td>4b</td>
+         <td>Original Value is correct and should not be flagged.  Although not flagged when this ticket was submitted, the value was unusual enough to be investigated as a potential error.   Based on the investigation, the original value is deemed correct.</td>
+         <td>Yes</td>
+         <td>NA (-9999)</td>
+         <td>5</td>
+      </tr>
+
+      <tr>
+         <td>5</td>
+         <td>Original Value was missing.  A newly available original value has been keyed via this ticket.</td>
+         <td>No</td>
+         <td>Yes</td>
+         <td>6</td>
+      </tr>
+   </tbody>
+</table>
+
+
+<p>
+   Station identification number was incorrect and needs to be reassigned
+   <br>Needs to be handled manually.  Original source will be updated.
+   <br>No (but could be -9999)	No (but could be -9999)	4 * Applies only to �historic� tickets.
+</p>

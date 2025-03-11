@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <p style="font-size: 260%; font-weight: bold;">Accessibility Settings</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
+            <div class="row mb-3">
+                <div class="col" style="font-size: 150%;">
+                    Change Font Size:
+                </div>
+        
+            </div>
+            <div class="row my-1">
+                <div class="col mb-1">
+        
+                    <button type="button" class="btn btn-success" id="decrease-font"
+                        style="width:100%;display:block;font-weight: bold">Decrease Font Size</button>
+        
+                </div>
+                <div class="col">
+        
+                    <button type="button" class="btn btn-success" id="increase-font"
+                        style="width:100%;display:block;font-weight: bold">Increase Font Size</button>
+                </div>
+        
+            </div>
+            <div class="row">
+                <div class="col">
+        
+                    <button type="button" class="btn btn-danger" id="reset-font"
+                        style="width:100%;display:block;font-weight: bold">Reset Font Size</button>
+                </div>
+        
+            </div>
+        </div>
+
+
+        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
+            <div class="col">
+                <div class="row mb-3">
+                    <div class="col" style="font-size: 150%;">
+                        Toggle Light/Dark Mode:
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-success" id="theme-toggle" style="width:100%;display:block;font-weight: bold">Theme Toggle</button>
+                    </div>
+
+                </div>
+                
+            </div>
+        </div>
+
+
+        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
+            <div class="col">
+                <div class="row mb-3">
+                    <div class="col" style="font-size: 150%;">
+                        <label class="form-check-label" for="tooltipCheckbox">
+                            Enable Tooltips
+                          </label>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-check form-switch tt" title="Default Tooltip">
+                            <input class="form-check-input" type="checkbox" value="" id="tooltipCheckbox">
+                        </div>
+                    </div>
+
+                </div>
+                
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        if (readCookie("font-resize")) {
+            resize = parseInt(readCookie("font-resize"));
+        } else {
+            resize = 0;
+        }
+
+        resize;
+        $("#increase-font").click(function () {
+            resize += 10;
+
+            $("html").css("font-size", function (index, value) {
+
+                return 100 + resize + "%";
+            });
+            createCookie("font-resize", resize, "");
+        });
+
+        // Decrease font size
+        $("#decrease-font").click(function () {
+            resize -= 10;
+            $("html").css("font-size", function (index, value) {
+                return 100 + resize + "%";
+            });
+            createCookie("font-resize", resize, "");
+        });
+
+        // Reset Font Size
+        $("#reset-font").click(function () {
+
+            $("html").css("font-size", function (index, value) {
+
+                return 100 + "%";
+            });
+            eraseCookie("font-resize");
+        });
+
+        //Toggle Dark/Light Mode
+        $("#theme-toggle").click(function () {
+            $("body").toggleClass("dark-mode");
+            $("table").toggleClass("table-dark");
+            if (readCookie("theme") == "dark") {
+                createCookie("theme", "", "");
+            } else {
+                createCookie("theme", "dark", "");
+            }
+
+        });
+
+        // Tooltips Checkbox
+        $('#tooltipCheckbox').on('change',function(){
+            if(this.checked){
+                enableTooltips(true);
+                createCookie("tooltips", true, "");
+            }
+            else{
+                enableTooltips(false);
+                createCookie("tooltips", false, "");
+            };
+        });
+
+        $(function (){
+        if(readCookie("tooltips") == "true"){           
+            $("#tooltipCheckbox").prop('checked',true);
+        }else{
+            $("#tooltipCheckbox").prop('checked', false);
+        }
+});
+
+
+    });
+
+
+</script>
+{% endblock content %}
