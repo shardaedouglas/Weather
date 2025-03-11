@@ -1,6 +1,6 @@
 import pytest
-# from app import create_app
-from app import app
+from app import create_app
+# from app import app
 
 @pytest.fixture
 def app():
