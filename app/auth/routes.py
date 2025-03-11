@@ -42,7 +42,7 @@ def signup_post():
     name = request.form.get('name')
     password = request.form.get('password')
 
-    print(username + password)
+    # print(username + password)
 
     user = User.query.filter_by(username=username).first() # if this returns a user, then the email already exists in database
 

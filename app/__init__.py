@@ -1,5 +1,5 @@
 from flask import Flask
-from config import Config
+from config import *
 from .extensions import mail, get_db, close_db, find_stations, parse_station_file
 from flask import render_template
 import os
@@ -10,17 +10,17 @@ from flask_login import LoginManager, login_required, current_user
 db = SQLAlchemy()
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
-    app.config['SECRET_KEY'] = '835a34ce875ddfbcb911ac278b03701191c79ee9b0019466160fa498c00c72d1'
-    
-    
-    ###### DB SETTINGS ######
-    #DB path
-    app.config['DATABASE'] = "app.db"
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db' # Can this be the same as the line above? 
+    app = Flask(__name__) 
+    # Load the default config first
+    app.config.from_object(Config)  
+    # Then overwrite with function parameters
+    if type(config_class) is dict:
+        app.config.update(config_class)
+    else: 
+        app.config.from_object(config_class)
 
     ### SQL Alchemy Database Init
+    # DB locations are defined in the config.py file.
     db.init_app(app)
 
     login_manager = LoginManager()

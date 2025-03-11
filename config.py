@@ -8,3 +8,5 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 DEBUG = False
 class Config:
     SECRET_KEY = secret_key
+    DATABASE = "app.db" # Change and test with sqlite:///app.db
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
