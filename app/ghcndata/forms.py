@@ -7,13 +7,13 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 #Station States
 with open('ghcnd-states.txt', 'r') as f:
         STATES = [line.strip() for line in f]
-STATES = [letter[3:] for letter in STATES]
-
+# STATES = [letter[:3] for letter in STATES]
+        STATES = [(line[:2], line[3:]) for line in STATES]
 # Station Countries
 with open('ghcnd-countries.txt', 'r') as f:
         COUNTRIES = [line.strip() for line in f]
-COUNTRIES = [letter[3:] for letter in COUNTRIES]
-
+        COUNTRIES = [(line[:2], line[3:]) for line in COUNTRIES]  # ('US', 'United States')
+        
 # Station Type
 STATION_TYPES = (
     ('1','A-All'),
