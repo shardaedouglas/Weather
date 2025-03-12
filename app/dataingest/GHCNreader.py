@@ -55,7 +55,6 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
 
     # Convert to a Polars DataFrame
     df = pl.DataFrame(rows)
-
     return df
 
 def read_station_list(station_list: list):

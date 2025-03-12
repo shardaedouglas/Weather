@@ -171,12 +171,12 @@
                 var requestData = {
                     state: state,
                     date: date,
-                    station_type: stationType
+                    station_type: stationType,
                 };
         
                 // Send the state-based request
                 $.ajax({
-                    url: '/get_state_for_GHCN_table',
+                    url: '/get_state_for_GHCN_table_df',
                     method: 'POST',
                     data: $.param(requestData),
                     success: function(response) {

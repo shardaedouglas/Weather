@@ -4,7 +4,6 @@ import polars as pl
 import json
 import calendar
 
-
 from datetime import datetime, timedelta
 
 def parse_and_filter(
@@ -58,7 +57,8 @@ def parse_and_filter(
     df = parse_fixed_width_file(file_path)
     
     # print("file Path: ", file_path)
-    # print("df: ", df)
+    print("df: ", df)
+    json_str = json.dumps(df.to_dicts(), indent=2)
     # Step 2: Apply filtering using filter_data
 
     filtered_df = None  # Initialize variable outside
