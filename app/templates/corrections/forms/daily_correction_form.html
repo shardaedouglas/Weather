@@ -92,8 +92,9 @@
                 loadingWheel.style.display = 'block';
 
                 var formData = $(this).serialize();
+                console.log("FORMDATA: ", formData);
                 const params = new URLSearchParams(formData);
-                //console.log("Params: ", params);
+                console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
@@ -188,24 +189,32 @@
 
 
     function getDataforStationsAndShowTable(urlParams) {
-
+        
         // Extract the query parameters
         const ghcnId = urlParams.get('ghcn_id');
         const datzillaNumber = urlParams.get('datzilla_number');
         const element = urlParams.get('element');
         const action = urlParams.get('action');
-        const oValue = urlParams.get('o_Value');
-        const eValue = urlParams.get('e_Value');
+        const oValue = urlParams.get('o_value');
+        const eValue = urlParams.get('e_value');
         const date = urlParams.get('date');
+
+        console.log("GHCN ID:", ghcnId);
+        console.log("Datzilla Number:", datzillaNumber);
+        console.log("Element:", element);
+        console.log("Action:", action);
+        console.log("O-Value:", oValue);
+        console.log("E-Value:", eValue);
+        console.log("Date:", date);
 
         //set up requestData for /get_data_for_daily_corrections route.
         var requestData = {
             ghcn_id: ghcnId,
-            datzillaNumber: datzillaNumber,
+            datzilla_number: datzillaNumber,
             element: element,
             action: action,
-            oValue: oValue,
-            eValue: eValue,
+            o_value: oValue,
+            e_value: eValue,
             date: date,
             correction_type: "compare"
         };

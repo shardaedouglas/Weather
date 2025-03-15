@@ -333,18 +333,18 @@ def process_correction():
         defaults = request.form.get('defaults') == 'on'  # Convert 'on' string to boolean
         datzilla_number = request.form.get('datzilla_number')
         
-        # print(f"called get_data_for_daily_corrections route")
+        print(f"called get_data_for_daily_corrections route")
 
-        # print(f"GHCN ID: {ghcn_id}")
-        # print(f"Correction Date: {correction_date}")
-        # print(f"Begin Date: {begin_date}")
-        # print(f"End Date: {end_date}")
-        # print(f"Element: {element}")
-        # print(f"Action: {action}")
-        # print(f"O-Value: {o_value}")
-        # print(f"E-Value: {e_value}")
-        # print(f"Defaults: {defaults}")
-        # print(f"Datzilla Number: {datzilla_number}")
+        print(f"GHCN ID: {ghcn_id}")
+        print(f"Correction Date: {correction_date}")
+        print(f"Begin Date: {begin_date}")
+        print(f"End Date: {end_date}")
+        print(f"Element: {element}")
+        print(f"Action: {action}")
+        print(f"O-Value: {o_value}")
+        print(f"E-Value: {e_value}")
+        print(f"Defaults: {defaults}")
+        print(f"Datzilla Number: {datzilla_number}")
         
         if correction_date:
             correction_year, correction_month, correction_day = correction_date.split('-')
@@ -355,6 +355,23 @@ def process_correction():
             correction_year, correction_month, correction_day = None, None, None
         
         # print(f"correction_date: ", correction_year, correction_month, correction_day)
+        
+        if correction_date:
+            date_obj = datetime.strptime(correction_date, "%Y-%m-%d")
+            yyyymm = date_obj.strftime("%Y%m")
+            dd = date_obj.strftime("%d")
+        else:
+            yyyymm, dd = "", ""
+
+        # Get today's date in yyyymmdd format
+        todays_date = datetime.today().strftime("%Y%m%d")
+
+        # Prepare the line for the text file
+        line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+
+        # Append to the text file
+        with open("daily_corrections.txt", "a") as file:
+            file.write(line)
 
         base_file_path = '/data/ops/ghcnd/data/'
         stations_list_file_path = base_file_path + 'ghcnd-stations.txt'
