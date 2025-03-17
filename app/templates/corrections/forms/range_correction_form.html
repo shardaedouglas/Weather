@@ -83,15 +83,15 @@
             
             
 
-            var tempFormData = {
-                selected_form: 'range',
-                ghcn_id: 'USW00093991',
-                datzilla_number: '123123',
-                element: 'TMAX',
-                action: '1',
-                begin_date: '2022-12-25',
-                end_date: '2023-2-14'
-            };
+            //var tempFormData = {
+            //    selected_form: 'range',
+            //    ghcn_id: 'USW00093991',
+            //    datzilla_number: '123123',
+            //    element: 'TMAX',
+            //    action: '1',
+            //    begin_date: '2022-12-25',
+            //    end_date: '2023-2-14'
+            //};
 
 
             $.ajax({
@@ -130,6 +130,8 @@
         let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
         let datzillaNumber = data.stationData.datzilla_number
 
+        let tableData = [];
+
         // Loop through days_data and populate the table
         data.days_data.forEach(record => {
             let row = `<tr>
@@ -145,9 +147,21 @@
             </tr>`;
     
             tableBody.append(row);
+
+            // Store each record for later submission
+            tableData.push({
+                stationID,
+                date: record.date,
+                element,
+                action,
+                value: record.value,
+                newValue: -9999,  // Assuming you handle the new value
+                todayDate,
+                datzillaNumber
+            });
         });
 
-    
+        $('#correctionData').val(JSON.stringify(tableData));
     
         // Display the table by making the section visible
         document.getElementById('ranged-form-table').style.display = "flex";

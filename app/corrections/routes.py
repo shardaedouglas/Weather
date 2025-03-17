@@ -333,18 +333,18 @@ def process_correction():
         defaults = request.form.get('defaults') == 'on'  # Convert 'on' string to boolean
         datzilla_number = request.form.get('datzilla_number')
         
-        print(f"called get_data_for_daily_corrections route")
+        # print(f"called get_data_for_daily_corrections route")
 
-        print(f"GHCN ID: {ghcn_id}")
-        print(f"Correction Date: {correction_date}")
-        print(f"Begin Date: {begin_date}")
-        print(f"End Date: {end_date}")
-        print(f"Element: {element}")
-        print(f"Action: {action}")
-        print(f"O-Value: {o_value}")
-        print(f"E-Value: {e_value}")
-        print(f"Defaults: {defaults}")
-        print(f"Datzilla Number: {datzilla_number}")
+        # print(f"GHCN ID: {ghcn_id}")
+        # print(f"Correction Date: {correction_date}")
+        # print(f"Begin Date: {begin_date}")
+        # print(f"End Date: {end_date}")
+        # print(f"Element: {element}")
+        # print(f"Action: {action}")
+        # print(f"O-Value: {o_value}")
+        # print(f"E-Value: {e_value}")
+        # print(f"Defaults: {defaults}")
+        # print(f"Datzilla Number: {datzilla_number}")
         
         if correction_date:
             correction_year, correction_month, correction_day = correction_date.split('-')
@@ -355,23 +355,6 @@ def process_correction():
             correction_year, correction_month, correction_day = None, None, None
         
         # print(f"correction_date: ", correction_year, correction_month, correction_day)
-        
-        if correction_date:
-            date_obj = datetime.strptime(correction_date, "%Y-%m-%d")
-            yyyymm = date_obj.strftime("%Y%m")
-            dd = date_obj.strftime("%d")
-        else:
-            yyyymm, dd = "", ""
-
-        # Get today's date in yyyymmdd format
-        todays_date = datetime.today().strftime("%Y%m%d")
-
-        # Prepare the line for the text file
-        line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
-
-        # Append to the text file
-        with open("daily_corrections.txt", "a") as file:
-            file.write(line)
 
         base_file_path = '/data/ops/ghcnd/data/'
         stations_list_file_path = base_file_path + 'ghcnd-stations.txt'
@@ -447,9 +430,6 @@ def process_correction():
         print(f"Error in process_correction: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
-    
-    
-    
 @correction_bp.route('/get_o_value', methods=['POST'])
 def get_o_value():
 
@@ -471,10 +451,10 @@ def get_o_value():
         
         base_file_path = '/data/ops/ghcnd/data/'
         station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
-        print(f"Station file path: {station_file_path}")
-        print(f"correction_year: {correction_year}")
-        print(f"correction_month: {correction_month}")
-        print(f"correction_day: {correction_day}")
+        # print(f"Station file path: {station_file_path}")
+        # print(f"correction_year: {correction_year}")
+        # print(f"correction_month: {correction_month}")
+        # print(f"correction_day: {correction_day}")
 
         # Run parser with form data for each station
         filtered_json = parse_and_filter(
@@ -487,7 +467,7 @@ def get_o_value():
             day=correction_day,
         )
         
-        print("filtered_json", filtered_json)
+        # print("filtered_json", filtered_json)
         
         # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
@@ -503,6 +483,64 @@ def get_o_value():
         print(f"Error in get_o_value: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
+
+@correction_bp.route('/submit_daily_corrections', methods=['POST'])
+def submit_daily_corrections():
+    try:
+        correction_type = request.form.get('correction_type') 
+        # print(f"Correction Type: {correction_type}")
+        ghcn_id = request.form.get('ghcn_id')
+        correction_date = request.form.get('date')
+        begin_date = request.form.get('begin_date')
+        end_date = request.form.get('end_date')
+        element = request.form.get('element')
+        action = request.form.get('action')
+        o_value = request.form.get('o_value')
+        e_value = request.form.get('e_value')
+        defaults = request.form.get('defaults') == 'on'  # Convert 'on' string to boolean
+        datzilla_number = request.form.get('datzilla_number')
+
+        # print(f"Submitting daily correction for GHCN ID: {ghcn_id}")
+        # print(f"Correction Date: {correction_date}")
+        # print(f"Begin Date: {begin_date}")
+        # print(f"End Date: {end_date}")
+        # print(f"Element: {element}")
+        # print(f"Action: {action}")
+        # print(f"O-Value: {o_value}")
+        # print(f"E-Value: {e_value}")
+        # print(f"Defaults: {defaults}")
+        # print(f"Datzilla Number: {datzilla_number}")
+
+        if correction_date:
+            correction_year, correction_month, correction_day = correction_date.split('-')
+        else:
+            correction_year, correction_month, correction_day = None, None, None
+
+        if correction_date:
+            date_obj = datetime.strptime(correction_date, "%Y-%m-%d")
+            yyyymm = date_obj.strftime("%Y%m")
+            dd = date_obj.strftime("%d")
+        else:
+            yyyymm, dd = "", ""
+
+        # Get today's date in yyyymmdd format
+        todays_date = datetime.today().strftime("%Y%m%d")
+
+        # Prepare the line for the text file
+        line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+
+        # Append to the text file
+        with open("daily_corrections.txt", "a") as file:
+            file.write(line)
+
+        print("Correction successfully written to daily_corrections.txt")
+
+        return jsonify({"message": "Daily correction submitted successfully!"}), 201
+
+    except Exception as e:
+        print(f"Error in submit_daily_corrections: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 
 
 
@@ -599,4 +637,69 @@ def get_ranged_values():
     
     except Exception as e:
         print(f"Error in get_ranged_values: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    
+
+@correction_bp.route('/submit_ranged_corrections', methods=['POST'])
+def submit_ranged_corrections():
+    try:
+        # Extract JSON data from the request body
+        data = request.get_json()  # Get the parsed JSON data
+
+        # Extract the list of corrections from the JSON data
+        correction_data = data.get('correction_data', [])
+
+        # Print out the correction data for logging
+        # print(f"Submitting corrections for {len(correction_data)} records")
+
+        # Process each correction entry
+        for correction in correction_data:
+            # Extract relevant fields for each record
+            ghcn_id = correction.get('stationID')
+            correction_date = correction.get('date')
+            element = correction.get('element')
+            action = correction.get('action')
+            o_value = correction.get('value')
+            e_value = correction.get('newValue')
+            datzilla_number = correction.get('datzillaNumber')
+            today_date = correction.get('todayDate')
+
+            # print(f"Submitting correction for GHCN ID: {ghcn_id}")
+            # print(f"Correction Date: {correction_date}")
+            # print(f"Element: {element}")
+            # print(f"Action: {action}")
+            # print(f"O-Value: {o_value}")
+            # print(f"E-Value: {e_value}")
+            # print(f"Datzilla Number: {datzilla_number}")
+
+            # Parse the correction date into year, month, and day
+            if correction_date:
+                correction_year, correction_month, correction_day = correction_date.split('-')
+            else:
+                correction_year, correction_month, correction_day = None, None, None
+
+            if correction_date:
+                date_obj = datetime.strptime(correction_date, "%Y-%m-%d")
+                yyyymm = date_obj.strftime("%Y%m")
+                dd = date_obj.strftime("%d")
+            else:
+                yyyymm, dd = "", ""
+
+            # Get today's date in yyyymmdd format
+            todays_date = datetime.today().strftime("%Y%m%d")
+            
+            # Prepare the line for the text file
+            line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+
+            # Append to the text file for each correction
+            with open("daily_corrections.txt", "a") as file:
+                file.write(line)
+
+            print(f"Correction for {ghcn_id} on {correction_date} successfully written to daily_corrections.txt")
+
+        # Respond with success
+        return jsonify({"message": f"{len(correction_data)} corrections submitted successfully!"}), 201
+
+    except Exception as e:
+        print(f"Error in submit_ranged_corrections: {e}")
         return jsonify({"error": "Internal server error"}), 500
