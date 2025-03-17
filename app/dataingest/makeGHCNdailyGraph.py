@@ -85,15 +85,17 @@ def make_yearly_per_month_graph(df, observation, selected_month):
 # Usage
 if __name__ == '__main__':
     import time
+    from readandfilterGHCN import get_state_for_ghcn_data
 
-    station_list = ["US1CALA0014.dly", "US1CALA0068.dly", "US1MAMD0185.dly", "USC00106705.dly", "USW00093991.dly"]
-
-    df = read_station_list(station_list)
+    # station_list = ["US1CALA0014.dly", "US1CALA0068.dly", "US1MAMD0185.dly", "USC00106705.dly", "USW00093991.dly"]
+    start_time = time.time()  # Start timer
+    # df = read_station_list(station_list)
+    df = get_state_for_ghcn_data("TX")
     # df = parse_fixed_width_file("US1CALA0014.dly")
 
     observation = "PRCP"
     selected_month = 12
-    start_time = time.time()  # Start timer
+    
     df = make_yearly_per_month_graph(df, observation, selected_month)
     end_time = time.time()  # End timer
     # print(df)
