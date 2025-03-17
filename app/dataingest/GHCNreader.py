@@ -34,7 +34,7 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
                     day_data = line[position:position + day_data_length].strip()
                     position += day_data_length
                     
-                    day_flag = line[position:position + flag_length].strip()
+                    day_flag = line[position:position + flag_length]
                     position += flag_length
 
                     # Append data and flag
