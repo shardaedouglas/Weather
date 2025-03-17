@@ -1,5 +1,7 @@
 from app.dataingest.GHCNfilter import filter_data
 from app.dataingest.GHCNreader import parse_fixed_width_file
+# from GHCNfilter import filter_data
+# from GHCNreader import parse_fixed_width_file
 import polars as pl
 import json
 import calendar
@@ -226,9 +228,6 @@ def set_ranged_data(date_list, filtered_df):
             print("Invalid date format or missing 'Date' field")
     return date_list
 
-import polars as pl
-
-import polars as pl
 
 def get_state_for_ghcn_data(state: str):
     try:
@@ -265,10 +264,10 @@ def get_state_for_ghcn_data(state: str):
         # Combine all DataFrames into one
         if all_dfs:
             combined_df = pl.concat(all_dfs, how="vertical")
-            print("FINAL FRAME: ", combined_df[-1])
-            print(f"Length of the DataFrame: {len(combined_df)}")
+            print("FINAL FRAME: ", combined_df)
+            # print(f"Length of the DataFrame: {len(combined_df)}")
             specific_station_df = combined_df.filter(pl.col("station_code") == "FLHM0006")
-            print("specific_station_df: ", specific_station_df)
+            # print("specific_station_df: ", specific_station_df)
 
             return combined_df
         else:
