@@ -61,7 +61,7 @@
             
             <div class="col-sm">
                 <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="button" class="btn btn-success" style="width:100%;display:block;">Submit</button>
+                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;">Submit</button>
 
             </div>
 
@@ -92,8 +92,9 @@
                 loadingWheel.style.display = 'block';
 
                 var formData = $(this).serialize();
+                // console.log("FORMDATA: ", formData);
                 const params = new URLSearchParams(formData);
-                //console.log("Params: ", params);
+                // console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
@@ -101,6 +102,19 @@
                 
             })
 
+        });
+
+
+        $(".btn-submit").click(function () {
+            //const loadingWheel = document.querySelector('#spinner');
+            //loadingWheel.style.display = 'block';
+
+            var formData = $("form").serialize();
+            // console.log("SUBMIT FORMDATA: ", formData);
+            const params = new URLSearchParams(formData);
+            // console.log("SUBMIT Params: ", params);
+
+            submitCorrections(params); // Call the submit function separately
         });
 
 
@@ -188,24 +202,32 @@
 
 
     function getDataforStationsAndShowTable(urlParams) {
-
+        
         // Extract the query parameters
         const ghcnId = urlParams.get('ghcn_id');
         const datzillaNumber = urlParams.get('datzilla_number');
         const element = urlParams.get('element');
         const action = urlParams.get('action');
-        const oValue = urlParams.get('o_Value');
-        const eValue = urlParams.get('e_Value');
+        const oValue = urlParams.get('o_value');
+        const eValue = urlParams.get('e_value');
         const date = urlParams.get('date');
+
+        // console.log("GHCN ID:", ghcnId);
+        // console.log("Datzilla Number:", datzillaNumber);
+        // console.log("Element:", element);
+        // console.log("Action:", action);
+        // console.log("O-Value:", oValue);
+        // console.log("E-Value:", eValue);
+        // console.log("Date:", date);
 
         //set up requestData for /get_data_for_daily_corrections route.
         var requestData = {
             ghcn_id: ghcnId,
-            datzillaNumber: datzillaNumber,
+            datzilla_number: datzillaNumber,
             element: element,
             action: action,
-            oValue: oValue,
-            eValue: eValue,
+            o_value: oValue,
+            e_value: eValue,
             date: date,
             correction_type: "compare"
         };
@@ -298,6 +320,32 @@
         // Show the table
         document.getElementById('correction-comparison-table').style.display = "block";
     }
+
+
+
+    function submitCorrections(correctionData) {
+        console.log("Submitting correction data:", JSON.stringify(correctionData));
+    
+        // Send the data via AJAX
+        $.ajax({
+            url: '/submit_ranged_Corrections',
+            method: 'POST',
+            contentType: 'application/json', // Set content type to JSON
+            data: JSON.stringify(correctionData), // Convert array to JSON string
+            success: function(response) {
+                // Handle processing
+                alert("Corrections Submitted Successfully");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+    }
+    
+    
+
+
 </script>
 
 {% endblock content %}
