@@ -1,4 +1,5 @@
 <div class="container form-container">
+    <input type="hidden" id="correctionData" name="correctionData">
     <div class="row">
         <div class="col">
             {# <textarea class="form-control" rows="20"></textarea> #}
@@ -28,10 +29,10 @@
     </div>
     <div class="row justify-content-center" id="button-row">
         <div class="col-sm">
-            <button type="submit" class="btn btn-success" >Save</button>
+            <button type="submit" class="btn btn-success btn-submit" >Save</button>
         </div>
         <div class="col-sm">
-            <button type="button" class="btn btn-dark">Cancel</button>
+            <button type="button" class="btn btn-dark ">Cancel</button>
         </div>
     </div>
 </div>
@@ -40,4 +41,29 @@
     $(document).ready(function(){
         $('#rangeTable').dataTable();
     });
+
+    $(".btn-submit").click(function () {
+        // Get the stored table data
+        const correctionData = JSON.parse($('#correctionData').val());
+        submitCorrections(correctionData); // Call the submit function separately
+    });
+
+
+    function submitCorrections(correctionData) {
+        // Send the correctionData directly in the request
+        $.ajax({
+            url: '/submit_ranged_corrections',
+            method: 'POST',
+            contentType: 'application/json',  // Ensure the server handles the data as JSON
+            data: JSON.stringify({ correction_data: correctionData }),  // Send data as JSON
+            success: function(response) {
+                // Handle processing
+                alert("Daily Correction Submitted Successfully");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+            }
+        });
+    }
 </script>
