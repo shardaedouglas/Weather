@@ -108,7 +108,7 @@ def daily_corrections():
         o_value=o_value,
         e_value=e_value
     )
-
+    
     return render_template(
         '/corrections/forms/daily_correction_form.html',
         selected_form=selected_form,

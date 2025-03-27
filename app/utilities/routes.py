@@ -1,5 +1,5 @@
 from app.utilities import utilities_bp
-
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import *
 
 # Enter utilities AKA Home
 @utilities_bp.route('/utilities')
