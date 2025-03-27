@@ -34,7 +34,7 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
                     day_data = line[position:position + day_data_length].strip()
                     position += day_data_length
                     
-                    day_flag = line[position:position + flag_length].strip()
+                    day_flag = line[position:position + flag_length]
                     position += flag_length
 
                     # Append data and flag
@@ -57,8 +57,16 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
     df = pl.DataFrame(rows)
     return df
 
-# # Usage
-# if __name__ == '__main__':
+def read_station_list(station_list: list):
+    df_list = []
+    # Call parser for each file
+    for file in station_list:
+        df_list.append(parse_fixed_width_file(file))
+    # Concatenate a list of dataframes
+    return pl.concat(df_list)
+
+# Usage
+if __name__ == '__main__':
     
 #     file_path = "../../USW00093991.dly"
 #     df = parse_fixed_width_file(file_path)
@@ -66,3 +74,10 @@ def parse_fixed_width_file(file_path: str) -> pl.DataFrame:
 # #     # Show the parsed DataFrame
 #     print(df)
 #     df.write_csv("test.csv")
+    # Example station list
+    station_list = ["US1CALA0014.dly", "US1CALA0068.dly", "US1MAMD0185.dly", "USC00106705.dly", "USW00093991.dly"]
+
+    df = read_station_list(station_list)
+
+    print(df)
+    df.write_csv("test.csv")
