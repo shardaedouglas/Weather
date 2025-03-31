@@ -1,108 +1,119 @@
-def get_state_for_GHCN_table_df():
-    try:
-        # Extract form data from the POST request
-        state = request.form.get('state')  # Expecting 'FL', 'TX', etc.
-        station_type = request.form.get('station_type')  # Observation type (e.g., TMAX, TMIN, etc.)
-        correction_date = request.form.get('date')
+# def get_state_for_GHCN_table_df():
+#     try:
+#         # Extract form data from the POST request
+#         state = request.form.get('state')  # Expecting 'FL', 'TX', etc.
+#         station_type = request.form.get('station_type')  # Observation type (e.g., TMAX, TMIN, etc.)
+#         correction_date = request.form.get('date')
 
-        # Parse the date into components
-        if correction_date:
-            correction_year, correction_month, correction_day = map(int, correction_date.split('-'))
-        else:
-            correction_year, correction_month, correction_day = None, None, None
+#         # Parse the date into components
+#         if correction_date:
+#             correction_year, correction_month, correction_day = map(int, correction_date.split('-'))
+#         else:
+#             correction_year, correction_month, correction_day = None, None, None
         
-        file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
-        matching_stations = []
+#         file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
+#         matching_stations = []
 
-        # Read and filter stations by state
-        with open(file_path, 'r') as f:
-            for line in f:
-                parts = line.strip().split()  # Splitting by whitespace
-                if len(parts) < 5:
-                    continue  # Skip malformed lines
+#         # Read and filter stations by state
+#         with open(file_path, 'r') as f:
+#             for line in f:
+#                 parts = line.strip().split()  # Splitting by whitespace
+#                 if len(parts) < 5:
+#                     continue  # Skip malformed lines
                 
-                ghcn_id = parts[0]  # First column is the station ID
-                state_code = parts[4]  # Fifth column is the state code
+#                 ghcn_id = parts[0]  # First column is the station ID
+#                 state_code = parts[4]  # Fifth column is the state code
                 
-                if state_code == state:
-                    matching_stations.append(line)
+#                 if state_code == state:
+#                     matching_stations.append(line)
 
-        print(f"Found {len(matching_stations)} stations for state {state}")
+#         print(f"Found {len(matching_stations)} stations for state {state}")
         
-        all_filtered_dfs = []  # List to accumulate filtered DataFrames
-        noDataCount = 0
+#         all_filtered_dfs = []  # List to accumulate filtered DataFrames
+#         noDataCount = 0
 
-# Loop through the matching stations and parse their data
-        for station in matching_stations[:100]:  # You can adjust how many you process here
-            parts = station.strip().split()
-            ghcn_id = parts[0]  # Station ID
+# # Loop through the matching stations and parse their data
+#         for station in matching_stations:  # You can adjust how many you process here
+#             parts = station.strip().split()
+#             ghcn_id = parts[0]  # Station ID
             
-            # Build the file path for each station's data
-            station_file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
-            print(f"Processing file for {ghcn_id}: {station_file_path}")
+#             # Build the file path for each station's data
+#             station_file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+#             print(f"Processing file for {ghcn_id}: {station_file_path}")
             
-            # Run the custom parser with the correct observation_type
-            filtered_data = parse_and_filter(
-                station_code=ghcn_id,
-                file_path=station_file_path,
-                correction_type="graph",
-                month=correction_month
-            )
+#             #Run parser and get data for table, (month, year, all types)
+#             filtered_data = parse_and_filter(
+#                 station_code=ghcn_id,
+#                 file_path=station_file_path,
+#                 correction_type="graph",
+#                 month=correction_month,
+#                 year=correction_year
+#             )
             
-            # Ensure the filtered_data is converted to a Polars DataFrame (if it's not already one)
-            if isinstance(filtered_data, dict):
-                # If it's a dictionary, we should convert it to a Polars DataFrame
-                filtered_df = pl.DataFrame(filtered_data)
-            else:
-                # Otherwise, assume it's already a Polars DataFrame
-                filtered_df = filtered_data
+#             # Ensure the filtered_data is converted to a Polars DataFrame (if it's not already one)
+#             if isinstance(filtered_data, dict):
+#                 # If it's a dictionary, we should convert it to a Polars DataFrame
+#                 filtered_df = pl.DataFrame(filtered_data)
+#             else:
+#                 # Otherwise, assume it's already a Polars DataFrame
+#                 filtered_df = filtered_data
 
-            # Check if the filtered DataFrame is empty
-            if filtered_df.is_empty():
-                print(f"Skipping station {ghcn_id} due to no data.")
-                noDataCount += 1
-                continue  # Skip this station and move to the next
+#             # Check if the filtered DataFrame is empty
+#             if filtered_df.is_empty():
+#                 print(f"Skipping station {ghcn_id} due to no data.")
+#                 noDataCount += 1
+#                 continue  # Skip this station and move to the next
             
-            # Align columns by adding missing columns to the DataFrame
-            if all_filtered_dfs:
-                # Get the columns of the first DataFrame
-                existing_columns = all_filtered_dfs[0].columns
-                current_columns = filtered_df.columns
+#             # Align columns by adding missing columns to the DataFrame
+#             if all_filtered_dfs:
+#                 # Get the columns of the first DataFrame
+#                 existing_columns = all_filtered_dfs[0].columns
+#                 current_columns = filtered_df.columns
 
-                # Add missing columns to current DataFrame, with None values
-                missing_columns = set(existing_columns) - set(current_columns)
-                for col in missing_columns:
-                    filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+#                 # Add missing columns to current DataFrame, with None values
+#                 missing_columns = set(existing_columns) - set(current_columns)
+#                 for col in missing_columns:
+#                     filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
 
-                # Ensure columns are in the same order
-                filtered_df = filtered_df.select(existing_columns)
+#                 # Ensure columns are in the same order
+#                 filtered_df = filtered_df.select(existing_columns)
             
-            # Append to list of DataFrames
-            all_filtered_dfs.append(filtered_df)
+#             # Append to list of DataFrames
+#             all_filtered_dfs.append(filtered_df)
         
+        
+#         save_path_limited = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{correction_month}/{state}_combined_data.json"
+#         save_path_limited_parquet = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{correction_month}/{state}_combined_data.parquet"
 
-            save_path_limited = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{month}/{state}_combined_data.json"
-            save_path_limited_parquet = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{month}/{state}_combined_data.parquet"
+#         # Ensure directories exist
+#         os.makedirs(os.path.dirname(save_path_limited), exist_ok=True)
 
-            # Ensure directories exist
-            os.makedirs(os.path.dirname(save_path_limited), exist_ok=True)
+#         if all_filtered_dfs:
+#             combined_df = pl.concat(all_filtered_dfs, how="vertical")
+#             print("Combined DataFrame: ", combined_df)
 
-            if all_filtered_dfs:
-                combined_df = pl.concat(all_filtered_dfs, how="vertical")
-                print("Combined DataFrame: ", combined_df)
+#             # Save JSON
+#             combined_df.write_json(save_path_limited)
 
-                # Save JSON
-                combined_df.write_json(save_path_limited)
+#             # Save Parquet
+#             combined_df.write_parquet(save_path_limited_parquet)
 
-                # Save Parquet
-                combined_df.write_parquet(save_path_limited_parquet)
-        else:
-            return jsonify({"error": "No data available for the requested stations."}), 404
+#             return jsonify(combined_df.to_dicts())  # Convert to a list of dictionaries for JSON serialization
+#         else:
+#             return jsonify({"error": "No data available for the requested stations."}), 404
 
-    except Exception as e:
-        print(f"Error in get_state_for_GHCN_table_df: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+#     except Exception as e:
+#         print(f"Error in get_state_for_GHCN_table_df: {e}")
+#         return jsonify({"error": "Internal server error"}), 500
     
+    
+# @ghcndata_bp.route('/test_monthlyPub')
+# def test_monthlyPub():
+#     try:
+#         generateMonthlyPub()
+#         return jsonify({"message": "generateMonthlyPub() executed successfully!"})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500  
     
 import polars as pl
 
