@@ -4,6 +4,7 @@ from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub
 from datetime import datetime
 import os
 import re
@@ -279,8 +280,8 @@ def get_state_for_GHCN_table_df():
         all_filtered_dfs = []  # List to accumulate filtered DataFrames
         noDataCount = 0
 
-        # Loop through the matching stations and parse their data
-        for station in matching_stations[:10]:  # You can adjust how many you process here
+# Loop through the matching stations and parse their data
+        for station in matching_stations:  # You can adjust how many you process here
             parts = station.strip().split()
             ghcn_id = parts[0]  # Station ID
             
@@ -288,13 +289,13 @@ def get_state_for_GHCN_table_df():
             station_file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
             print(f"Processing file for {ghcn_id}: {station_file_path}")
             
-            # Run the custom parser with the correct observation_type
+            #Run parser and get data for table, (month, year, all types)
             filtered_data = parse_and_filter(
                 station_code=ghcn_id,
                 file_path=station_file_path,
-                year=correction_year,
+                correction_type="graph",
                 month=correction_month,
-                correction_type="",
+                year=correction_year
             )
             
             # Ensure the filtered_data is converted to a Polars DataFrame (if it's not already one)
@@ -328,20 +329,39 @@ def get_state_for_GHCN_table_df():
             # Append to list of DataFrames
             all_filtered_dfs.append(filtered_df)
         
+        
+        save_path_limited = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{correction_month}/{state}_combined_data.json"
+        save_path_limited_parquet = f"/data/ops/ghcnd/TestData_pub/limited_data/{state}/{correction_month}/{state}_combined_data.parquet"
 
-        # Combine all the filtered DataFrames into a single Polars DataFrame
+        # Ensure directories exist
+        os.makedirs(os.path.dirname(save_path_limited), exist_ok=True)
+
         if all_filtered_dfs:
             combined_df = pl.concat(all_filtered_dfs, how="vertical")
             print("Combined DataFrame: ", combined_df)
-            combined_df.write_json("combined_data.json")
 
-            return combined_df.to_dicts()  # Returning the combined DataFrame as JSON
+            # Save JSON
+            combined_df.write_json(save_path_limited)
+
+            # Save Parquet
+            combined_df.write_parquet(save_path_limited_parquet)
+
+            return jsonify(combined_df.to_dicts())  # Convert to a list of dictionaries for JSON serialization
         else:
             return jsonify({"error": "No data available for the requested stations."}), 404
 
     except Exception as e:
         print(f"Error in get_state_for_GHCN_table_df: {e}")
         return jsonify({"error": "Internal server error"}), 500
+    
+    
+@ghcndata_bp.route('/test_monthlyPub')
+def test_monthlyPub():
+    try:
+        generateMonthlyPub()
+        return jsonify({"message": "generateMonthlyPub() executed successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  
 
     
     

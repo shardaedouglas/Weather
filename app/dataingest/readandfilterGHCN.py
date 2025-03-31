@@ -59,13 +59,23 @@ def parse_and_filter(
     df = parse_fixed_width_file(file_path)
     
     # print("file Path: ", file_path)
-    print("df: ", df)
+    # print("df: ", df)
     json_str = json.dumps(df.to_dicts(), indent=2)
     # Step 2: Apply filtering using filter_data
 
     filtered_df = None  # Initialize variable outside
+    print("month: ", month)
+    print("station_id: ", station_id)
 
-    if correction_type != "range":
+    if correction_type == "graph":
+        filtered_df = filter_data(
+            df,
+            station_code=station_id,
+            observation_type="PRCP",
+        )
+        # print("filtered: " ,filtered_df)    
+
+    elif correction_type != "range":
         filtered_df = filter_data(
             df,
             year=year,
@@ -150,7 +160,32 @@ def parse_and_filter(
 
         return o_value
     
+    elif correction_type == "graph":
+        
+        print("GRAPH CORRECTION TYPE!")
+        
+        if filtered_df.is_empty() or filtered_df["year"].is_null().all() or filtered_df["month"].is_null().all():
+            print("No valid data available for the given month.")
+            return {'status': 'skip', 'station_code': station_code}
     
+        graph_data = {
+                'country_code': filtered_df['country_code'][0],
+                'network_code': filtered_df['network_code'][0],
+                'station_code': filtered_df['station_code'][0],
+                'year': filtered_df['year'],
+                'month': filtered_df['month'],
+                'observation_type': filtered_df['observation_type'],
+            }
+        
+        # Add data for all days in the month
+        for day in range(1, 32):  # Loop through days 1-31
+            graph_data[f'day_{day}'] = (
+                filtered_df[f'day_{day}'] if f'day_{day}' in filtered_df.columns else None
+            )
+            
+        return graph_data
+    
+        
     else:   #correction_type = monthly
             monthly_data = {
                 'country_code': filtered_df['country_code'][0],
@@ -164,7 +199,6 @@ def parse_and_filter(
             # Add data for all days in the month
             for day in range(1, 32):  # Loop through days 1-31
                 monthly_data[f'day_{day}'] = filtered_df['day_' + str(day)] if not filtered_df.is_empty() else None
-
             return monthly_data
 
 
@@ -228,10 +262,6 @@ def set_ranged_data(date_list, filtered_df):
             print("Invalid date format or missing 'Date' field")
     return date_list
 
-import polars as pl
-
-import polars as pl
-
 def get_state_for_ghcn_data(state: str):
     try:
         # Define file path for GHCN station list
@@ -279,57 +309,6 @@ def get_state_for_ghcn_data(state: str):
     except Exception as e:
         print(f"Error: {e}")
         return {"error": "Internal server error"}
-
-
-
-def get_state_for_ghcn_data(state: str):
-    try:
-        # Define file path for GHCN station list
-        file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
-        matching_stations = []
-
-        # Read and filter stations by state
-        with open(file_path, 'r') as f:
-            for line in f:
-                parts = line.strip().split()  # Splitting by whitespace
-                if len(parts) < 5:
-                    continue  # Skip malformed lines
-                ghcn_id = parts[0]  # First column is the station ID
-                state_code = parts[4]  # Fifth column is the state code
-                if state_code == state:
-                    matching_stations.append(ghcn_id)
-
-        # List to accumulate DataFrames
-        all_dfs = []
-
-        # Loop through the matching stations and read their data directly
-        for ghcn_id in matching_stations:  # Adjust the number of files to process here
-            print("GHCN_ID: ", ghcn_id)
-            station_file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
-            try:
-                # Read and parse the file into a DataFrame
-                df = parse_fixed_width_file(station_file_path)
-                all_dfs.append(df)
-            except Exception as e:
-                print(f"Error with {ghcn_id}: {e}")
-                continue  # Skip the file if there's an error
-
-        # Combine all DataFrames into one
-        if all_dfs:
-            combined_df = pl.concat(all_dfs, how="vertical")
-            print("FINAL FRAME: ", combined_df)
-            # print(f"Length of the DataFrame: {len(combined_df)}")
-            specific_station_df = combined_df.filter(pl.col("station_code") == "FLHM0006")
-            # print("specific_station_df: ", specific_station_df)
-
-            return combined_df
-        else:
-            return {"error": "No data available."}
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return {"error": "Internal server error"}
-
 
 
 # if __name__ == "__main__":
