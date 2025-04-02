@@ -72,7 +72,7 @@
                             <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item" href="#">Defaults</a>
                                 <a class="dropdown-item" href="#">Send Corrections</a>
-                                <a class="dropdown-item" href="#">Create Monthly Publication</a>
+                                <a class="dropdown-item" onclick="tempGenerateMonthlyPub()" href="#">Create Monthly Publication</a>
                                 <a class="dropdown-item" href="#">Zip/FTP Monthly Publication</a>
                                 <a class="dropdown-item" href="#">Create Annual Publication</a>
                                 <a class="dropdown-item" href="#">Zip/FTP Annual Publication</a>
@@ -193,6 +193,24 @@
                             }
                         });
 
+                    }
+
+
+                    function tempGenerateMonthlyPub() {
+                        console.log("Generating monthly pub...");
+                    
+                        $.ajax({
+                            url: '/test_monthlyPub',  // This matches your Flask route
+                            method: 'GET',
+                            success: function(response) {
+                                console.log("Response:", response);
+                                alert("Monthly pub generated successfully!");
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Error:", error);
+                                alert("Error generating monthly pub.");
+                            }
+                        });
                     }
             
         </script>
