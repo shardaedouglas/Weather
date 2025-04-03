@@ -116,6 +116,7 @@
 #         return jsonify({"error": str(e)}), 500  
     
 import polars as pl
+import json
 
 def makeGraph(df):
     """
@@ -129,6 +130,111 @@ def processDataForTable(date_param=None):
     Placeholder function for chart processing.
     """
     print("Processing chart data!")
+    
+def highestRecordedTemp(df: pl.DataFrame) -> dict:
+    # Filter only TMAX observation type
+    print(df.select("observation_type").unique())
+    
+    tmax_df = df.filter(df["observation_type"] == "TMAX")
+    
+    # If no TMAX data is found, return an empty dict
+    if tmax_df.is_empty():
+        print("EMPTY DATA")
+        return {}
+
+    # Convert day columns to numeric and ignore missing values (-9999)
+    day_columns = [col for col in df.columns if col.startswith("day_")]
+    tmax_df = tmax_df.with_columns([ 
+        pl.col(day_columns).cast(pl.Int64, strict=False).fill_null(-9999)
+    ])
+
+    # Replace missing values (-9999) with nulls so they don't interfere with max calculations
+    tmax_df = tmax_df.with_columns([ 
+        pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col) 
+        for col in day_columns
+    ])
+
+    # Find the highest TMAX for each station and the corresponding date
+    result = {}
+    for row in tmax_df.iter_rows(named=True):
+        station = row["station_code"]
+        country_code = row["country_code"]
+        network_code = row["network_code"]
+        
+        # Combine the codes into one identifier (e.g., US1CAAL0001)
+        combined_station_code = f"{country_code}{network_code}{station}"
+
+        max_temp = -float('inf')  # Initialize to a very low value
+        max_day = None
+        for day_num, col in enumerate(day_columns, start=1):
+            if row[col] is not None and row[col] > max_temp:
+                max_temp = max(row[col] for col in day_columns if row[col] is not None) / 10
+                max_day = day_num
+
+        if max_day is not None:  # Only store if a valid day was found
+            year = row["year"]
+            month = row["month"]
+            date = f"{year}-{month:02d}-{max_day:02d}"  # Format as YYYY-MM-DD
+
+            # Store the result using the combined station code
+            if combined_station_code not in result:
+                result[combined_station_code] = {"value": max_temp, "date": date}
+
+    return result
+
+
+def lowestRecordedTemp(df: pl.DataFrame) -> dict:
+    # Filter only TMIN observation type
+    print(df.select("observation_type").unique())
+    
+    tmin_df = df.filter(df["observation_type"] == "TMIN")
+    
+    # If no TMIN data is found, return an empty dict
+    if tmin_df.is_empty():
+        print("EMPTY DATA")
+        return {}
+
+    # Convert day columns to numeric and ignore missing values (-9999)
+    day_columns = [col for col in df.columns if col.startswith("day_")]
+    tmin_df = tmin_df.with_columns([ 
+        pl.col(day_columns).cast(pl.Int64, strict=False).fill_null(-9999)
+    ])
+
+    # Replace missing values (-9999) with nulls so they don't interfere with min calculations
+    tmin_df = tmin_df.with_columns([ 
+        pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col) 
+        for col in day_columns
+    ])
+
+    # Find the lowest TMIN for each station and the corresponding date
+    result = {}
+    for row in tmin_df.iter_rows(named=True):
+        station = row["station_code"]
+        country_code = row["country_code"]
+        network_code = row["network_code"]
+        
+        # Combine the codes into one identifier (e.g., US1CAAL0001)
+        combined_station_code = f"{country_code}{network_code}{station}"
+
+        min_temp = float('inf')  # Initialize to a very high value
+        min_day = None
+        for day_num, col in enumerate(day_columns, start=1):
+            if row[col] is not None and row[col] < min_temp:
+                min_temp = min(row[col] for col in day_columns if row[col] is not None) / 10
+                min_day = day_num
+
+        if min_day is not None:  # Only store if a valid day was found
+            year = row["year"]
+            month = row["month"]
+            date = f"{year}-{month:02d}-{min_day:02d}"  # Format as YYYY-MM-DD
+
+            # Store the result using the combined station code
+            if combined_station_code not in result:
+                result[combined_station_code] = {"lowest_TMIN": min_temp, "date_of_min": date}
+
+    return result
+
+
 
 def generateMonthlyPub(date_param=None):
     """
@@ -138,17 +244,41 @@ def generateMonthlyPub(date_param=None):
     Args:
         date_param (optional): A date parameter (currently unused).
     """
-    parquet_path = "/data/ops/ghcnd/TestData_pub/limited_data/CA/2/CA_combined_data.parquet"
-
+    parquet_path = "/data/ops/ghcnd/TestData_pub/full_data/CA/2/CA_table_data.parquet"
+    final_data = {}
+    
     try:
         # Load the data lazily using scan_parquet for efficiency
         df = pl.scan_parquet(parquet_path).collect()
+        
+        #Highest Recorded Temperature + Date
+        highestRecordedTempValue = highestRecordedTemp(df)
+        print("highestRecordedTempValue: ", highestRecordedTempValue)
+        # Add the result to final_data
+        for station, temp_data in highestRecordedTempValue.items():
+            if station not in final_data:
+                final_data[station] = {}
+            final_data[station]["highestRecordedTemp"] = temp_data
+        
+        
+        #Lowest Recorded Temperature + Date
+        lowestRecordedTempValue = lowestRecordedTemp(df)
+        print("lowestRecordedTempValue: ", lowestRecordedTempValue)
+        # Add the result to final_data
+        for station, temp_data in lowestRecordedTempValue.items():
+            if station not in final_data:
+                final_data[station] = {}
+            final_data[station]["lowestRecordedTemp"] = temp_data
+        
         
         # Pass data to graphing function
         makeGraph(df)
 
         # Pass data to chart processing function
         processDataForTable()
+        
+        with open("JSONresults.json", "w") as json_file:
+            json.dump(final_data, json_file, indent=4)
 
     except Exception as e:
         print(f"Error reading or processing the Parquet file: {e}")
