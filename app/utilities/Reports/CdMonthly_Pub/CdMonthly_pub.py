@@ -258,7 +258,7 @@ def generateMonthlyPub(date_param=None):
         for station, temp_data in highestRecordedTempValue.items():
             if station not in final_data:
                 final_data[station] = {}
-            final_data[station]["Highest"] = temp_data
+            final_data[station]["HighestTemp"] = temp_data
         
         
         #Lowest Recorded Temperature + Date
@@ -268,7 +268,7 @@ def generateMonthlyPub(date_param=None):
         for station, temp_data in lowestRecordedTempValue.items():
             if station not in final_data:
                 final_data[station] = {}
-            final_data[station]["Lowest"] = temp_data
+            final_data[station]["LowestTemp"] = temp_data
         
         
         # Pass data to graphing function
