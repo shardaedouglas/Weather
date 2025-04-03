@@ -6,7 +6,7 @@ from GHCNfilter import filter_data
 
 pl.Config(tbl_rows=100)
 
-def make_yearly_per_month_graph(df, observation, selected_month):
+def make_yearly_per_month_graph(df, observation, selected_month, state, report_year):
     
     df = filter_data(df, observation_type=observation)
 
@@ -80,7 +80,7 @@ def make_yearly_per_month_graph(df, observation, selected_month):
     fontsize=12  # Adjust text size if needed
     )  
 
-    plt.savefig(f"{observation}_plot.png", bbox_inches="tight")
+    plt.savefig(f"/data/ops/ghcnd/graphs_pub/{state}{report_year}{selected_month}.png", bbox_inches="tight")
 
 # Usage
 if __name__ == '__main__':
@@ -90,13 +90,13 @@ if __name__ == '__main__':
     # station_list = ["US1CALA0014.dly", "US1CALA0068.dly", "US1MAMD0185.dly", "USC00106705.dly", "USW00093991.dly"]
     start_time = time.time()  # Start timer
     # df = read_station_list(station_list)
-    df = get_state_for_ghcn_data("TX")
-    # df = parse_fixed_width_file("US1CALA0014.dly")
+    # df = get_state_for_ghcn_data("FL")
+    df = parse_fixed_width_file("USW00093991.dly")
 
     observation = "PRCP"
     selected_month = 12
     
-    df = make_yearly_per_month_graph(df, observation, selected_month)
+    df = make_yearly_per_month_graph(df, observation, selected_month, "FL", 2022)
     end_time = time.time()  # End timer
     # print(df)
     # df.write_csv("test.csv")
