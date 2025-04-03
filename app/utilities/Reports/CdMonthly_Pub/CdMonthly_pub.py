@@ -178,7 +178,7 @@ def highestRecordedTemp(df: pl.DataFrame) -> dict:
 
             # Store the result using the combined station code
             if combined_station_code not in result:
-                result[combined_station_code] = {"value": max_temp, "date": date}
+                result[combined_station_code] = {"TMAX": max_temp, "date": date}
 
     return result
 
@@ -230,7 +230,7 @@ def lowestRecordedTemp(df: pl.DataFrame) -> dict:
 
             # Store the result using the combined station code
             if combined_station_code not in result:
-                result[combined_station_code] = {"lowest_TMIN": min_temp, "date_of_min": date}
+                result[combined_station_code] = {"TMIN": min_temp, "date": date}
 
     return result
 
@@ -258,7 +258,7 @@ def generateMonthlyPub(date_param=None):
         for station, temp_data in highestRecordedTempValue.items():
             if station not in final_data:
                 final_data[station] = {}
-            final_data[station]["highestRecordedTemp"] = temp_data
+            final_data[station]["Highest"] = temp_data
         
         
         #Lowest Recorded Temperature + Date
@@ -268,7 +268,7 @@ def generateMonthlyPub(date_param=None):
         for station, temp_data in lowestRecordedTempValue.items():
             if station not in final_data:
                 final_data[station] = {}
-            final_data[station]["lowestRecordedTemp"] = temp_data
+            final_data[station]["Lowest"] = temp_data
         
         
         # Pass data to graphing function
