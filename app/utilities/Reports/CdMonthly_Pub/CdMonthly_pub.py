@@ -117,6 +117,8 @@
     
 import polars as pl
 import json
+from app.utilities import get_connection#, close_connection
+import os
 
 def makeGraph(df):
     """
@@ -283,3 +285,26 @@ def generateMonthlyPub(date_param=None):
     except Exception as e:
         print(f"Error reading or processing the Parquet file: {e}")
 
+
+def dbFetchExample():
+    conn = None
+    cursor = None
+    try:
+        # Print environment variable values to verify they are being loaded correctly
+        print("ORACLE_USER:", os.getenv("ORACLE_USER"))
+        print("ORACLE_PASSWORD:", os.getenv("DB_PASS_DEV1"))
+        print("ORACLE_DSN:", os.getenv("ORACLE_DSN"))
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT SYSDATE FROM dual")
+        print("Current date/time from DB:", cursor.fetchone())
+    except Exception as e:
+        print("DB Error:", str(e))  # Helpful debug log
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            print("CLOSING CONNECTION")
+            #close_connection(conn)

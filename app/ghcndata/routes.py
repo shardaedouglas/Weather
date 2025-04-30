@@ -4,7 +4,8 @@ from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
-from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, dbFetchExample
+
 from datetime import datetime
 import os
 import re
@@ -349,7 +350,13 @@ def get_state_for_GHCN_table_df():
 @ghcndata_bp.route('/test_monthlyPub')
 def test_monthlyPub():
     try:
-        generateMonthlyPub()
+        dbFetchExample()
+
+        # generateMonthlyPub()
+
+
+
+
         return jsonify({"message": "generateMonthlyPub() executed successfully!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500  
