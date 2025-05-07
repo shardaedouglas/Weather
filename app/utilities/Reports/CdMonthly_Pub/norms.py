@@ -6,6 +6,8 @@ import traceback
 # NOTE: replace these with external functions or variables. 
 CoopToGhcn_defaultPath = "/" + os.path.join("data", "ops", "ghcndqi")
 imo = 2
+hddid=[]
+hddval=[]
 
 def round_it(d: float, dec_place: int) -> str:
     val = ""
@@ -243,10 +245,40 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
     return dfn
 
 
+def loadHddNorm():
 
+    fn = os.path.join(CoopToGhcn_defaultPath, "norms", "9641C_1971-2000_NORM_CLIM81_MTH_STNNORM")
+
+    try:
+        with open(fn, "r") as file:
+                    for line in file:
+                        if line is not None:
+                            tt1 = line[6:9]
+                            # print(line)
+                            # print(tt1)
+                            if (tt1 == "604"): # HDD
+                                # //      1         2         3         4         5         6         7         8         9								
+						        # //0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+						        # //014064604   780    587    404    180     41      1      0      0     18    165    417    669    3262
+                                tid = line[:6]
+                                hddid.append(tid)
+
+                                hdd = line[95:100]
+                                hddval.append(hdd)
+
+
+    
+    except Exception as err: 
+        print("error: {}".format(traceback.format_exc()))
+
+    # print("{}  {}".format(hddval, hddid))
 ############################################################
 
 
 # get8110shdd("FMC00914213")
 
-print(computeDivDFN("4801", "    30M", "   89", str(imo)))
+# print(computeDivDFN("4801", "    30M", "   89", str(imo)))
+
+loadHddNorm()
+
+print("HHDVAL{} \nHDDID {}".format(hddval, hddid))
