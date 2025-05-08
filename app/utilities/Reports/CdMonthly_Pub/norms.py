@@ -9,6 +9,8 @@ imo = 2
 hddid=[]
 hddval=[]
 
+
+
 def round_it(d: float, dec_place: int) -> str:
     val = ""
 
@@ -50,6 +52,11 @@ def round_it(d: float, dec_place: int) -> str:
                 val = "0.00"
 
     return val
+
+
+
+
+###########################################################################################
 
 
 # Method
@@ -213,10 +220,10 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
             print("dfn: {}".format(dfn))
 
             try:
-                ix = atmp.index("M")
-                print(ix)
-                if (ix > -1):
-                    atmp = atmp[:ix]
+                # ix = atmp.index("M")
+                # print(ix)
+                # if (ix > -1):
+                #     atmp = atmp[:ix]
                 
                 print(atmp)
 
@@ -251,20 +258,20 @@ def loadHddNorm():
 
     try:
         with open(fn, "r") as file:
-                    for line in file:
-                        if line is not None:
-                            tt1 = line[6:9]
-                            # print(line)
-                            # print(tt1)
-                            if (tt1 == "604"): # HDD
-                                # //      1         2         3         4         5         6         7         8         9								
-						        # //0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
-						        # //014064604   780    587    404    180     41      1      0      0     18    165    417    669    3262
-                                tid = line[:6]
-                                hddid.append(tid)
+            for line in file:
+                if line is not None:
+                    tt1 = line[6:9]
+                    # print(line)
+                    # print(tt1)
+                    if (tt1 == "604"): # HDD
+                        # //      1         2         3         4         5         6         7         8         9								
+                        # //0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+                        # //014064604   780    587    404    180     41      1      0      0     18    165    417    669    3262
+                        tid = line[:6]
+                        hddid.append(tid)
 
-                                hdd = line[95:100]
-                                hddval.append(hdd)
+                        hdd = line[95:100]
+                        hddval.append(hdd)
 
 
     
@@ -272,6 +279,273 @@ def loadHddNorm():
         print("error: {}".format(traceback.format_exc()))
 
     # print("{}  {}".format(hddval, hddid))
+
+
+
+# NOTE: This should be in ghcnDataBrowser.java
+# Method
+# getMlyNormals8110 - Get monthly 81-2010 normals.
+#       @param gid  - GHCND ID.
+#       @return List of strings
+def getMlyNormals8110(gid: str):
+    tmax = ""
+    tmin = ""
+    tavg = ""
+
+    cldd = ""
+    hldd = ""
+    prcp = ""
+    snow = ""
+    ok = False
+
+
+    try:
+        fn = "/" + os.path.join("data", "ops", "norms", "1981-2010", "products", "station", gid + ".normals.txt")
+
+        with open(fn, "r") as file: 
+            for line in file: 
+                if line is not None:
+                    try:
+                        header = line[:23]
+                        
+                        if (header == "        mly-tmax-normal"):
+                            tmax = line[23:]
+                            ok = True
+                        elif (header == "        mly-tavg-normal"):
+                            tavg = line[23:]
+                        
+                        elif (header == "        mly-tmin-normal"):
+                            tmin = line[23:]
+                        elif (header == "        mly-cldd-normal"):
+                            cldd = line[23:]
+                        elif (header == "        mly-htdd-normal"):
+                            hldd = line[23:]
+                        elif (header == "        mly-prcp-normal"):
+                            prcp = line[23:]
+                        elif (header == "        mly-snow-normal"):
+                            snow = line[23:]
+                        
+                    except Exception as err:
+                        print("error: {}".format(traceback.format_exc()))
+
+        # print("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(tmax, tmin, tavg, cldd, hldd, prcp, snow, ok))      
+
+    except Exception as err:
+        ok = False
+
+    
+# 		/*
+#           1         2         3         4         5         6         7         8          
+# 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+#    464R   491R   586R   694R   794R   888R   921R   899R   825R   714R   605R   497R
+#    318R   341R   401R   508R   609R   707R   750R   731R   653R   541R   436R   348R
+# 		 */
+
+
+    dat = []
+
+
+    if ok:
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            try:
+                val = tmax[i1:i1+6]
+                d = float(val)
+                d *= 0.1
+
+                if (i == 0):
+                    rec = round_it(d, 1)
+                else:
+                    rec = rec+","+round_it(d,1)
+
+            except Exception as err:
+                print("{} temp missing".format(gid))
+                break
+            
+            i1 += 7
+        
+        dat.append(rec)
+
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = tmin[i1:i1+6]
+            d = float(val)
+            d *= 0.1
+
+
+            if (i == 0):
+                rec = round_it(d, 1)
+            else:
+                rec += ","+round_it(d,1)
+
+
+            i1 += 7
+        
+
+        dat.append(rec)
+
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = tavg[i1:i1+6]
+            d = float(val)
+            d *= 0.1
+
+            if (i == 0):
+                rec = round_it(d, 1)
+            else:
+                rec += ","+round_it(d,1)
+            
+            i1 += 7
+        
+
+        dat.append(rec)
+        
+        
+
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = hldd[i1:i1+6]
+
+
+            if (val == " -7777"):
+                if (i == 0):
+                    rec = "0"
+                else:
+                    rec += "," + str(0)
+            else:
+                if (i == 0):
+                    rec = val.strip()
+                else:
+                    rec += "," + val.strip()
+
+            
+            i1 += 7
+        
+
+        # dat[3]
+        dat.append(rec)
+
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = cldd[i1:i1+6]
+
+
+            if (val == " -7777"):
+                if (i == 0):
+                    rec = "0"
+                else:
+                    rec += "," + str(0)
+            else:
+                if (i == 0):
+                    rec = val.strip()
+                else:
+                    rec += "," + val.strip()
+
+            
+            i1 += 7
+
+        # dat[4]
+        dat.append(rec)
+
+
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            
+            try:
+                val = prcp[i1:i1+6]
+                if ( not val == " -7777"):
+                    d = float(val)
+                    d *= 0.01
+
+                    if (i == 0):
+                        rec = round_it(d, 2)
+                    else:
+                        rec += ","+round_it(d,2)
+                
+                else:
+                    if (i == 0):
+                        rec = "0.00"
+                    else:
+                        rec += ",0.00"
+
+            except Exception as err:
+                if (i == 0):
+                    rec = "null"
+                else:
+                    rec += ",null"
+            
+            
+            i1 += 7
+
+        # dat[5]
+        dat.append(rec)
+        
+
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            
+            try:
+                val = snow[i1:i1+6]
+                if ( not val == " -7777"):
+                    d = float(val)
+                    d *= 0.1
+
+                    if (i == 0):
+                        rec = round_it(d, 1)
+                    else:
+                        rec += ","+round_it(d,1)
+                
+                else:
+                    if (i == 0):
+                        rec = "0.0"
+                    else:
+                        rec += ",0.0"
+
+            except Exception as err:
+                if (i == 0):
+                    rec = "0.0"
+                else:
+                    rec += ",0.0"
+            
+            
+            i1 += 7
+
+        # dat[6]
+        dat.append(rec)
+    
+    return dat
+            
+
+        
+
+
+
+
+
+# //****************************************************************************	   
+# /**method
+#    getTempNorm8110 - Get temp 71 -2000 Norms.
+#      @param id - ghcnd id
+#      @param atmp -  avg Temp
+#      @param pcn - Precip total
+#      @param iMo - Month, integer.
+# */
+def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
+    dfn = []
+
+    mdfn = []
 ############################################################
 
 
@@ -279,6 +553,9 @@ def loadHddNorm():
 
 # print(computeDivDFN("4801", "    30M", "   89", str(imo)))
 
-loadHddNorm()
+# loadHddNorm()
 
-print("HHDVAL{} \nHDDID {}".format(hddval, hddid))
+# print("HHDVAL{} \nHDDID {}".format(hddval, hddid))
+
+# getMlyNormals8110( "CAW00064757" )
+print(getMlyNormals8110( "CAW00064757" ))
