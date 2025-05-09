@@ -247,7 +247,7 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
             dfn[1] = " "
 
     except Exception as err: #TODO: Consider traceback.format_exc()
-        print(err)
+        print("error: {}".format(traceback.format_exc()))
     
     return dfn
 
@@ -530,7 +530,7 @@ def getMlyNormals8110(gid: str):
 
 # NOTE: This should be in ghcnDataBrowser.java
 # Method
-# getMlyNormals8110 - Get monthly 81-2010 normals.
+# getMlyNormals9121 - Get monthly 91-2020 normals.
 # @param gid  - GHCND ID.
 		#   @return
 
@@ -692,9 +692,7 @@ def getMlyNormals9121(gid: str):
                         rec += "," + str(0)
                 else:
                     if (i == 0):
-                        rec = val.strip() # Note that this leaves leading WS. This is how the OG code is?
-                        # '  5580,5096,5673,5385,5332,4965,4929,4929,4980,5285,5250,5549'
-                        # Executive decision made, hldd has it. probably a mistake to omit it.
+                        rec = val.strip()
                     else:
                         rec += "," + val.strip()
 
@@ -782,17 +780,186 @@ def getMlyNormals9121(gid: str):
 
 # //****************************************************************************	   
 # /**method
-#    getTempNorm8110 - Get temp 71 -2000 Norms.
+#    getTempNorm8110 - Get temp 71 -2000 Norms. Departure from Normal for Temp and Precip.
 #      @param id - ghcnd id
 #      @param atmp -  avg Temp
 #      @param pcn - Precip total
-#      @param iMo - Month, integer.
+#      @param iMo - Month, integer. Note this is 0 indexed, not 1
+#      Return - List[str]
 # */
 def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
-    dfn = []
+    # I'm not sure what format pcn comes in as.
+    dfn = [''] * 2
 
-    mdfn = []
+    # TODO: Update with the external class
+    mdfn = getMlyNormals8110(id)
+    # mdfn = ghcnDataBrowser.getMlyNormals8110(id)
+
+    trec = mdfn[2]
+
+    if (trec):
+        mt = trec.split(",")
+        ntmp = mt[imo]
+
+        multiprint(mt=mt,ntmp=ntmp)
+
+        if (atmp.find("M") >= 0):
+            atmp= atmp[0:atmp.find("M")]
+
+        try:
+            d1 = float(atmp)
+            d2 = float(ntmp)
+
+            d3 = d1- d2
+
+            dfn[0] = round_it(d3, 1)
+        except Exception as err: #TODO: Consider traceback.format_exc()
+            # print("error: {}".format(traceback.format_exc()))
+            dfn[0] = " "
+
+        # multiprint(atmp=atmp, d1=d1, d2=d2, d3=d3, dfn=dfn[0])
+
+    else:
+        dfn[0] = " "
+
+    multiprint(dfn=dfn[0])
+
+    prec = mdfn[5]
+
+    if (prec):
+        mt = prec.split(",")
+        npcn = mt[imo]
+
+
+        if( pcn.find("M") >= 0):
+            pcn = pcn[:pcn.find("M")+1]
+        if( pcn.find("F") >= 0):
+            pcn = pcn[:pcn.find("F")+1]
+        if( pcn.find("A") >= 0):
+            pcn = pcn[:pcn.find("A")+1]
+
+
+
+        try:
+            d1 = float(pcn)
+            d2 = float(npcn)
+
+            d3 = d1- d2
+
+            dfn[1] = round_it(d3, 2)
+        except Exception as err: #TODO: Consider traceback.format_exc()
+            print("error: {}".format(traceback.format_exc()))
+            dfn[1] = " "
+
+        multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
+
+
+        multiprint(mt=mt, npcn=npcn, pcn=pcn)
+
+    else:
+        dfn[1] = " "
+
+    return dfn
+
+
+	# //****************************************************************************	   
+	# /**method
+	#    getTempNorm9121 - Get temp 91 -2021 Norms.
+	#      @param id - ghcnd id
+	#      @param atmp -  avg Temp
+	#      @param pcn - Precip total
+	#      @param iMo - Month, integer.
+	# */
+
+def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
+    # # I'm not sure what format pcn comes in as.
+    dfn = [''] * 2
+
+    # # TODO: Update with the external class
+    mdfn = getMlyNormals9121(id)
+    # mdfn = ghcnDataBrowser.getMlyNormals8110(id)
+
+    trec = mdfn[2]
+    # trec = ""
+
+    if (trec):
+        mt = trec.split(",")
+        ntmp = mt[imo]
+
+        multiprint(mt=mt,ntmp=ntmp)
+
+        if (atmp.find("M") >= 0):
+            atmp= atmp[:atmp.find("M")]
+
+        try:
+            d1 = float(atmp)
+            d2 = float(ntmp)
+
+            d3 = d1- d2
+
+            dfn[0] = round_it(d3, 1)
+        except Exception as err: #TODO: Consider traceback.format_exc()
+            # print("error: {}".format(traceback.format_exc()))
+            dfn[0] = " "
+
+        multiprint(atmp=atmp, d1=d1, d2=d2, d3=d3, dfn=dfn[0])
+
+    else:
+        dfn[0] = " "
+
+    multiprint(dfn=dfn[0])
+
+    prec = mdfn[5]
+
+    if (prec):
+        mt = prec.split(",")
+        npcn = mt[imo]
+
+
+        if( pcn.find("M") >= 0):
+            pcn = pcn[:pcn.find("M")+1]
+        if( pcn.find("F") >= 0):
+            pcn = pcn[:pcn.find("F")+1]
+        if( pcn.find("A") >= 0):
+            pcn = pcn[:pcn.find("A")+1]
+
+
+
+        try:
+            d1 = float(pcn)
+            d2 = float(npcn)
+
+            d3 = d1- d2
+
+            dfn[1] = round_it(d3, 2)
+        except Exception as err: #TODO: Consider traceback.format_exc()
+    #         print("error: {}".format(traceback.format_exc()))
+            dfn[1] = " "
+
+        multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
+
+
+        multiprint(mt=mt, npcn=npcn, pcn=pcn)
+
+    else:
+        dfn[1] = " "
+
+    return dfn
+
+
+
+
 ############################################################
+
+
+
+def multiprint(**kwargs):
+    print('-'*30)
+    for k, v in kwargs.items():
+        try:
+            print("{}: {}".format(k,v))
+        except Exception as err: #TODO: Consider traceback.format_exc()
+            print("error printing: {}".format(traceback.format_exc()))
 
 
 # get8110shdd("FMC00914213")
@@ -804,8 +971,13 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
 # print("HHDVAL{} \nHDDID {}".format(hddval, hddid))
 
 # getMlyNormals8110( "CAW00064757" )
-print(getMlyNormals8110( "CAW00064757" ))
+# print(getMlyNormals8110( "CAW00064757" ))
 
 # getMlyNormals9121("US1COLR0767")
-print(getMlyNormals9121("AQW00061705"))
-print(getMlyNormals9121("US1COLR0767"))
+# print(getMlyNormals9121("AQW00061705"))
+# print(getMlyNormals9121("US1COLR0767"))
+
+# print(getTempNorm8110("CAW00064757","    30M", "    1", 1))
+
+print(getTempNorm9120("AQW00061705", "    30M", "    1", 1))
+
