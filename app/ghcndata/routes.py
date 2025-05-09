@@ -354,9 +354,6 @@ def test_monthlyPub():
         
         generateMonthlyPub()
 
-
-
-
         return jsonify({"message": "generateMonthlyPub() executed successfully!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500  

@@ -118,7 +118,9 @@
 import polars as pl
 import json, os
 from collections import defaultdict
-from app.utilities.Reports.HomrDB import ConnectDB, QueryDB
+from calendar import monthrange
+from app.utilities.Reports.HomrDB import ConnectDB, QuerySoM
+from app.dataingest.readandfilterGHCN import parse_and_filter
 
 def makeGraph(df):
     """
@@ -237,9 +239,6 @@ def processDataForTable(date_param=None):
 #                 result[combined_station_code] = {"TMIN": min_temp, "date": date}
 
 #     return result
-
-
-
 
 
 def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
@@ -370,9 +369,10 @@ def getGreatestTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
     
-    
-    
-    
+
+
+
+
 def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     # Filter only PRCP records
     prcp_df = df.filter(pl.col("observation_type") == "PRCP")
@@ -381,7 +381,7 @@ def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
 
     day_columns = [col for col in df.columns if col.startswith("day_")]
 
-    # Cast to Int64, replace -9999 with nulls
+    # Cast to Int64 and replace -9999 with nulls
     prcp_df = prcp_df.with_columns([
         pl.col(day_columns).cast(pl.Int64, strict=False)
     ])
@@ -393,23 +393,38 @@ def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     station_totals = {}
     for row in prcp_df.iter_rows(named=True):
         ghcn_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
-        valid_values = [val for col, val in row.items() if col.startswith("day_") and val is not None]
-        if not valid_values:
-            continue  # Skip stations with no valid data
-        total = sum(valid_values)
+        year, month = row['year'], row['month']
+        _, days_in_month = monthrange(year, month)
+
+        daily_vals = [row[f"day_{i}"] for i in range(1, days_in_month + 1)]
+
+        # Skip if any daily value is missing
+        if any(val is None for val in daily_vals):
+            continue
+
+        total = sum(daily_vals)  # still in tenths of mm
         station_totals[ghcn_id] = station_totals.get(ghcn_id, 0) + total
 
     if not station_totals:
         return {}
 
-    # Find the minimum total precipitation
-    min_total = min(station_totals.values())
-    tied_stations = [station for station, total in station_totals.items() if total == min_total]
+    converted_totals = {}
+    for station, total in sorted(station_totals.items(), key=lambda x: -x[1]):
+        mm = total / 10
+        inches = mm / 25.4
+        roundedValue = round(inches, 2)
+        converted_totals[station] = roundedValue
+
+    # Find minimum value after conversion and rounding
+    min_value = min(converted_totals.values())
+    tied_stations = [station for station, val in converted_totals.items() if val == min_value]
+    station_str = f"{len(tied_stations)} STATIONS" if len(tied_stations) > 1 else tied_stations[0]
 
     return {
-        "value": round(min_total / 10.0, 1),  # Convert to mm
-        "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
+        "value": min_value,
+        "station": station_str
     }
+    
     
     
 def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
@@ -419,7 +434,11 @@ def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
 
     day_columns = [col for col in df.columns if col.startswith("day_")]
 
-    # Replace -9999 with nulls and cast
+    # Cast to integers first
+    prcp_df = prcp_df.with_columns([
+        pl.col(day_columns).cast(pl.Int64, strict=False)
+    ])
+    # Then replace -9999 with nulls
     prcp_df = prcp_df.with_columns([
         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
         for col in day_columns
@@ -442,9 +461,11 @@ def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
 
     return {
         "value": round(max_val / 10.0, 1),
-        "date": "+".join(sorted(r[1] for r in tied_records)),
+        "day": "+".join(sorted(r[1].split("_")[1].zfill(2) for r in tied_records)),
         "station": tied_records[0][2] if len(set(r[2] for r in tied_records)) == 1 else "MULTIPLE STATIONS"
     }
+
+
 
 def getGreatestTotalSnowfallExtreme(df: pl.DataFrame) -> dict:
     snow_df = df.filter(pl.col("observation_type") == "SNOW")
@@ -453,7 +474,11 @@ def getGreatestTotalSnowfallExtreme(df: pl.DataFrame) -> dict:
 
     day_columns = [col for col in df.columns if col.startswith("day_")]
 
-    # Replace -9999 with nulls and cast
+    # Cast to integers first
+    snow_df = snow_df.with_columns([
+        pl.col(day_columns).cast(pl.Int64, strict=False)
+    ])
+    # Then replace -9999 with nulls
     snow_df = snow_df.with_columns([
         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
         for col in day_columns
@@ -478,6 +503,7 @@ def getGreatestTotalSnowfallExtreme(df: pl.DataFrame) -> dict:
         "value": round(max_total / 10.0, 1),
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
+
     
     
 def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
@@ -521,7 +547,7 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
 
 
 
-def generateMonthlyPub(date_param=None):
+def generateMonthlyPub_hardcoded(date_param=None):
     """
     Reads a Parquet file using Polars, processes it for graphing, 
     and then prepares data for charting.
@@ -544,7 +570,7 @@ def generateMonthlyPub(date_param=None):
                 "observation_type": "TMAX",
                 "day_1": 210,
                 "day_2": -9999,
-                "day_3": 350,
+                "day_3": 750,
                 "day_4": -9999
             },
             {
@@ -704,3 +730,191 @@ def generateMonthlyPub(date_param=None):
 
     except Exception as e:
         print(f"Error reading or processing the Parquet file: {e}")
+        
+        
+        
+        
+
+
+
+def generateMonthlyPub():
+    month = 2
+    year = 2023
+
+    try:
+        stations = QuerySoM("som")
+        print("Station list retrieved.")
+
+        all_filtered_dfs = []
+        noDataCount = 0
+
+        for row in stations:
+            ghcn_id = row[4]
+            file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+
+            if not os.path.exists(file_path):
+                print(f"Missing file: {file_path}")
+                continue
+
+            try:
+                filtered_data = parse_and_filter(
+                    station_code=ghcn_id,
+                    file_path=file_path,
+                    correction_type="table",
+                    month=month,
+                    year=year
+                )
+
+                filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+                if filtered_df.is_empty():
+                    print(f"Skipping station {ghcn_id} due to no data.")
+                    noDataCount += 1
+                    continue
+
+                if all_filtered_dfs:
+                    existing_columns = all_filtered_dfs[0].columns
+                    current_columns = filtered_df.columns
+
+                    missing_columns = set(existing_columns) - set(current_columns)
+                    for col in missing_columns:
+                        filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+                    filtered_df = filtered_df.select(existing_columns)
+
+                all_filtered_dfs.append(filtered_df)
+                print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+
+            except Exception as e:
+                print(f"Error parsing {ghcn_id}: {e}")
+                continue
+
+        if not all_filtered_dfs:
+            print("No valid station files found.")
+            return
+
+        combined_df = pl.concat(all_filtered_dfs, how="vertical")
+        output_file = f"combined_data_{month}_{year}.json"
+        combined_df.write_json(output_file)
+        print(f"Data saved to {output_file}")
+        
+        print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
+        print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
+        print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
+        print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
+        print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
+        print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
+        print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+
+    except Exception as e:
+        print(f"Error in generateMonthlyPub: {e}")
+
+
+
+
+# def parse_and_filter_dly_file(station_code: str, file_path: str, correction_type: str, month: int = None, year: int = None) -> pl.DataFrame:
+#     try:
+#         # Run the parse_and_filter to get filtered data
+#         filtered_data = parse_and_filter(
+#             station_code=station_code,
+#             file_path=file_path,
+#             correction_type=correction_type,
+#             month=month,
+#             year=year
+#         )
+#         print("filtered_data", filtered_data)
+#         # Ensure the filtered_data is converted to a Polars DataFrame (if it's not already one)
+#         if isinstance(filtered_data, dict):
+#             # If it's a dictionary, we should convert it to a Polars DataFrame
+#             return pl.DataFrame(filtered_data)
+#         else:
+#             # Otherwise, assume it's already a Polars DataFrame
+#             return filtered_data
+
+#     except Exception as e:
+#         print(f"Error while parsing the file: {e}")
+#         return pl.DataFrame()  # Return an empty DataFrame if there's an error
+
+
+# def generateMonthlyPub():
+#     month = 2
+#     year = 2023
+    
+#     try:
+#         # Step 1: Query DB for stations
+#         stations = QuerySoM("som")
+
+#         print("STATION LIST: ", stations)
+
+#         all_filtered_dfs = []  # List to accumulate filtered DataFrames
+#         noDataCount = 0
+
+#         for row in stations:
+#             ghcn_id = row[4]  # assuming ghcn_id is at index 4
+#             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+#             if os.path.exists(file_path):
+#                 # Use the new function to get the filtered data
+#                 filtered_data = parse_and_filter_dly_file(
+#                     station_code=ghcn_id,
+#                     file_path=file_path,
+#                     correction_type="graph",
+#                     month=month,
+#                     year=year    
+#                 )
+
+#                 # Ensure the filtered_data is converted to a Polars DataFrame (if it's not already one)
+#                 if isinstance(filtered_data, dict):
+#                     # If it's a dictionary, we should convert it to a Polars DataFrame
+#                     filtered_df = pl.DataFrame(filtered_data)
+#                 else:
+#                     # Otherwise, assume it's already a Polars DataFrame
+#                     filtered_df = filtered_data
+
+#                 # Check if the filtered DataFrame is empty
+#                 if filtered_df.is_empty():
+#                     print(f"Skipping station {ghcn_id} due to no data.")
+#                     noDataCount += 1
+#                     continue  # Skip this station and move to the next
+                
+#                 # Align columns by adding missing columns to the DataFrame
+#                 if all_filtered_dfs:
+#                     # Get the columns of the first DataFrame
+#                     existing_columns = all_filtered_dfs[0].columns
+#                     current_columns = filtered_df.columns
+
+#                     # Add missing columns to current DataFrame, with None values
+#                     missing_columns = set(existing_columns) - set(current_columns)
+#                     for col in missing_columns:
+#                         filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+#                     # Ensure columns are in the same order
+#                     filtered_df = filtered_df.select(existing_columns)
+                
+#                 # Append to list of DataFrames
+#                 all_filtered_dfs.append(filtered_df)
+#                 print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+#             else:
+#                 print(f"Missing file: {file_path}")
+                
+#         if not all_filtered_dfs:
+#             print("No valid station files found.")
+#             return
+
+#         # Combine all DataFrames
+#         combined_df = pl.concat(all_filtered_dfs)
+        
+#         output_file = f"combined_data_{month}_{year}.json"
+#         combined_df.write_json(output_file)
+#         print(f"Data saved to {output_file}")
+
+#         # Print extreme values
+#         print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
+#         print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
+#         print("Greatest Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
+#         print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
+#         print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
+#         print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
+#         print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+
+#     except Exception as e:
+#         print(f"Error in generateMonthlyPub: {e}")
