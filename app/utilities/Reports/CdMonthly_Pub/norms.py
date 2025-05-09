@@ -342,7 +342,7 @@ def getMlyNormals8110(gid: str):
 # 		 */
 
 
-    dat = []
+    dat = [''] * 7
 
 
     if ok:
@@ -365,8 +365,7 @@ def getMlyNormals8110(gid: str):
             
             i1 += 7
         
-        dat.append(rec)
-
+        dat[0] = rec
 
         i1 = 0
         rec = ""
@@ -385,7 +384,7 @@ def getMlyNormals8110(gid: str):
             i1 += 7
         
 
-        dat.append(rec)
+        dat[1] = rec
 
 
         i1 = 0
@@ -403,7 +402,7 @@ def getMlyNormals8110(gid: str):
             i1 += 7
         
 
-        dat.append(rec)
+        dat[2] = rec
         
         
 
@@ -430,7 +429,7 @@ def getMlyNormals8110(gid: str):
         
 
         # dat[3]
-        dat.append(rec)
+        dat[3] = rec
 
 
         i1 = 0
@@ -454,7 +453,7 @@ def getMlyNormals8110(gid: str):
             i1 += 7
 
         # dat[4]
-        dat.append(rec)
+        dat[4] = rec
 
 
 
@@ -489,7 +488,7 @@ def getMlyNormals8110(gid: str):
             i1 += 7
 
         # dat[5]
-        dat.append(rec)
+        dat[5] = rec
         
 
         i1 = 0
@@ -523,15 +522,262 @@ def getMlyNormals8110(gid: str):
             i1 += 7
 
         # dat[6]
-        dat.append(rec)
+        dat[6] = rec
     
     return dat
             
 
+
+# NOTE: This should be in ghcnDataBrowser.java
+# Method
+# getMlyNormals8110 - Get monthly 81-2010 normals.
+# @param gid  - GHCND ID.
+		#   @return
+
+def getMlyNormals9121(gid: str):
+    tmax = ""
+    tmin = ""
+    tavg = ""
+
+    cldd = ""
+    hldd = ""
+    prcp = ""
+    snow = ""
+
+    try:
+        # fn = "/" + os.path.join("data", "ops", "norms", "1981-2010", "products", "station", gid + ".normals.txt")
+
+        #  TESTING
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        fn = os.path.join(script_dir, gid + ".normals.txt")
+
+        with open(fn, "r") as file: 
+            for line in file: 
+                if line is not None:
+                    try:
+                        header = line[:23]
+                        
+                        if (header == "        mly-tmax-normal"):
+                            tmax = line[23:]
+                            ok = True
+                        elif (header == "        mly-tavg-normal"):
+                            tavg = line[23:]
+                        
+                        elif (header == "        mly-tmin-normal"):
+                            tmin = line[23:]
+                        elif (header == "        mly-cldd-normal"):
+                            cldd = line[23:]
+                        elif (header == "        mly-htdd-normal"):
+                            hldd = line[23:]
+                        elif (header == "        mly-prcp-normal"):
+                            prcp = line[23:]
+                        elif (header == "        mly-snow-normal"):
+                            snow = line[23:]
+                        
+                    except Exception as err:
+                        print("error: {}".format(traceback.format_exc()))
+
+        # print("{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(tmax, tmin, tavg, cldd, hldd, prcp, snow))      
+
+    except Exception as err:
+        print("error: {}".format(traceback.format_exc()))
+
+    # 			/*
+	#           1         2         3         4         5         6         7         8          
+	# 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+	#    464R   491R   586R   694R   794R   888R   921R   899R   825R   714R   605R   497R
+	#    318R   341R   401R   508R   609R   707R   750R   731R   653R   541R   436R   348R
+	# 		 */
+
+    dat = [''] * 7
+
+    if (not tmax == ""):
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            try:
+                val = tmax[i1:i1+6]
+                d = float(val)
+                d *= 0.1
+
+                if (i == 0):
+                    rec = round_it(d, 1)
+                else:
+                    rec = rec+","+round_it(d,1)
+
+                
+            except Exception as err:
+                print("error: {}".format(traceback.format_exc()))
+                break
+
+            i1 += 7
         
+        dat[0] = rec
+
+
+    if (not tmin == ""):
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = tmin[i1:i1+6]
+            d = float(val)
+            d *= 0.1
+
+            if (i == 0):
+                rec = round_it(d, 1)
+            else:
+                rec = rec+","+round_it(d,1)
+
+            i1 += 7
+        # dat[1]
+        dat[1] = rec
+
+    if (not tavg == ""):
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = tavg[i1:i1+6]
+            d = float(val)
+            d *= 0.1
+
+            if (i == 0):
+                rec = round_it(d, 1)
+            else:
+                rec = rec+","+round_it(d,1)
+
+            i1 += 7
+    
+        # dat[2]
+        dat[2] = rec
+
+
+    if (not hldd == ""):
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            val = hldd[i1:i1+6]
+
+
+            if (val == " -7777"):
+                if (i == 0):
+                    rec = "0"
+                else:
+                    rec += "," + str(0)
+            else:
+                if (i == 0):
+                    rec = val.strip()
+                else:
+                    rec += "," + val.strip()
+
+            
+            i1 += 7
+
+        # dat[3]
+        dat[3] = rec
 
 
 
+    if (not cldd == ""):
+        i1 = 0
+        rec = ""
+
+        try:
+            for i in range(0, 12, 1):
+                val = cldd[i1:i1+6]
+
+                if (val == " -7777"):
+                    if (i == 0):
+                        rec = "0"
+                    else:
+                        rec += "," + str(0)
+                else:
+                    if (i == 0):
+                        rec = val.strip() # Note that this leaves leading WS. This is how the OG code is?
+                        # '  5580,5096,5673,5385,5332,4965,4929,4929,4980,5285,5250,5549'
+                        # Executive decision made, hldd has it. probably a mistake to omit it.
+                    else:
+                        rec += "," + val.strip()
+
+            
+                i1 += 7
+        except Exception as err:
+            print("error: {}".format(traceback.format_exc()))
+
+        dat[4] = rec
+
+
+    if (not prcp == ""):
+        i1 = 0
+        rec = ""
+        for i in range(0, 12, 1):
+            
+            try:
+                val = prcp[i1:i1+6]
+                if ( not val == " -7777"):
+                    d = float(val)
+                    d *= 0.01
+
+                    if (i == 0):
+                        rec = round_it(d, 2)
+                    else:
+                        rec += ","+round_it(d,2)
+                
+                else:
+                    if (i == 0):
+                        rec = "0.00"
+                    else:
+                        rec += ",0.00"
+
+            except Exception as err:
+                if (i == 0):
+                    rec = "null"
+                else:
+                    rec += ",null"
+            
+            
+            i1 += 7
+
+        # dat[5]
+        dat[5] = rec
+
+        if (not snow == ""):
+            i1 = 0
+            rec = ""
+            for i in range(0, 12, 1):
+                
+                try:
+                    val = snow[i1:i1+6]
+                    if ( not val == " -7777"):
+                        d = float(val)
+                        d *= 0.1
+
+                        if (i == 0):
+                            rec = round_it(d, 1)
+                        else:
+                            rec += ","+round_it(d,1)
+                    
+                    else:
+                        if (i == 0):
+                            rec = "0.0"
+                        else:
+                            rec += ",0.0"
+
+                except Exception as err:
+                    if (i == 0):
+                        rec = "0.0"
+                    else:
+                        rec += ",0.0"
+                
+                
+                i1 += 7
+
+            # dat[6]
+            dat[6] = rec
+
+    # print("{}".format(dat))
+    return dat
+
+    
 
 
 # //****************************************************************************	   
@@ -559,3 +805,7 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
 
 # getMlyNormals8110( "CAW00064757" )
 print(getMlyNormals8110( "CAW00064757" ))
+
+# getMlyNormals9121("US1COLR0767")
+print(getMlyNormals9121("AQW00061705"))
+print(getMlyNormals9121("US1COLR0767"))
