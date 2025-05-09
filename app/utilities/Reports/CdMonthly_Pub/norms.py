@@ -59,12 +59,12 @@ def round_it(d: float, dec_place: int) -> str:
 ###########################################################################################
 
 
-# Method
-# get8110shdd - get ??? for 1981 - 2010
-#  @param gid - GHCN Daily ID
-#  @return string
-
 def get8110shdd(gid: str):
+    """
+    get8110shdd - get ??? for 1981 - 2010
+        @param gid - GHCN Daily ID
+        @return str
+    """
     dat = ""
 
     try:
@@ -95,16 +95,16 @@ def get8110shdd(gid: str):
 
 
 
-# Method
-# computeDivDFN - Compute Divisioanl DFN.
-#   		@param id - 4 character string
-#   		@param atmp
-#   		@param pcn
-#   		@param mo
-#   		@return dfn - Array of strings
 
-# static String[] computeDivDFN(String id, String atmp, String pcn, String mo)
 def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
+    """
+    computeDivDFN - Compute Divisioanl DFN.
+  		@param id - 4 character string
+  		@param atmp
+  		@param pcn
+  		@param mo
+  		@return dfn - list[str]
+    """
     dfn = [None,None]
 
     fn = os.path.join(CoopToGhcn_defaultPath, "norms", "9641F_1971-2000-NORM_CLIM85.txt")
@@ -162,12 +162,12 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
         
             print("dfm: {}", dfm)
 
-            dfn[0] = dfm[imo-1];
+            dfn[0] = dfm[imo-1]
 
             print("dfn: {}".format(dfn))
 
             try:
-                ix = atmp.index("M")
+                ix = atmp.find("M")
                 print(ix)
                 if (ix > -1):
                     atmp = atmp[0:ix]
@@ -253,7 +253,10 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
 
 
 def loadHddNorm():
-
+    """
+    loadHddNorm -  Get Hdd Norms.
+    Loads HDD Norms to variables hddval and hddid
+    """
     fn = os.path.join(CoopToGhcn_defaultPath, "norms", "9641C_1971-2000_NORM_CLIM81_MTH_STNNORM")
 
     try:
@@ -283,11 +286,13 @@ def loadHddNorm():
 
 
 # NOTE: This should be in ghcnDataBrowser.java
-# Method
-# getMlyNormals8110 - Get monthly 81-2010 normals.
-#       @param gid  - GHCND ID.
-#       @return List of strings
 def getMlyNormals8110(gid: str):
+    """
+    getMlyNormals8110 - Get monthly 81-2010 normals.
+        @param gid  - GHCND ID.
+        @return list[str]  
+    """
+    
     tmax = ""
     tmin = ""
     tavg = ""
@@ -529,12 +534,12 @@ def getMlyNormals8110(gid: str):
 
 
 # NOTE: This should be in ghcnDataBrowser.java
-# Method
-# getMlyNormals9121 - Get monthly 91-2020 normals.
-# @param gid  - GHCND ID.
-		#   @return
-
 def getMlyNormals9121(gid: str):
+    """
+    getMlyNormals9121 - Get monthly 91-2020 normals.
+        @param gid  - GHCND ID.
+		@return list[str] - 
+    """
     tmax = ""
     tmin = ""
     tavg = ""
@@ -778,16 +783,16 @@ def getMlyNormals9121(gid: str):
     
 
 
-# //****************************************************************************	   
-# /**method
-#    getTempNorm8110 - Get temp 71 -2000 Norms. Departure from Normal for Temp and Precip.
-#      @param id - ghcnd id
-#      @param atmp -  avg Temp
-#      @param pcn - Precip total
-#      @param iMo - Month, integer. Note this is 0 indexed, not 1
-#      Return - List[str]
-# */
+
 def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
+    """
+    getTempNorm8110 - Get temp 71 -2000 Norms. Departure from Normal for Temp and Precip.
+     @param id - ghcnd id
+     @param atmp -  avg Temp
+     @param pcn - Precip total
+     @param iMo - Month, integer. Note this is 0 indexed, not 1
+     Return - List[str] - dfn
+    """
     # I'm not sure what format pcn comes in as.
     dfn = [''] * 2
 
@@ -862,16 +867,18 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
     return dfn
 
 
-	# //****************************************************************************	   
-	# /**method
-	#    getTempNorm9121 - Get temp 91 -2021 Norms.
-	#      @param id - ghcnd id
-	#      @param atmp -  avg Temp
-	#      @param pcn - Precip total
-	#      @param iMo - Month, integer.
-	# */
+
 
 def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
+    """
+	   getTempNorm9121 - Get temp 91 -2021 Norms.
+	     @param id - ghcnd id
+	     @param atmp -  avg Temp
+	     @param pcn - Precip total
+	     @param iMo - Month, integer.
+
+         @return list[str] - dfn
+    """
     # # I'm not sure what format pcn comes in as.
     dfn = [''] * 2
 
@@ -949,6 +956,153 @@ def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
 
 
 
+
+
+def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
+    """
+    getTempNorm7100 -  Get temp 71 -2000 Norms.
+	  @param id - coop id
+	  @param atmp -  avg Temp
+      @param pcn - Precip total
+      @param iMo - Month, integer. 
+
+      @return - list[str] - departure from normal
+    
+    """
+    
+    dfn = [''] * 2
+
+    fn = os.path.join(CoopToGhcn_defaultPath, "norms", "9641C_1971-2000_NORM_CLIM81_MTH_STNNORM")
+
+    line2 = ""
+    line3 = ""
+
+    try:
+        with open(fn, "r") as file:
+            for line in file:
+                if (line):
+                    
+                    tid = line[:6]
+                    tt1 = line[6:7]
+                    tt2 = line[7:9]
+
+                    if (tid == id):
+                        if (tt1 == "3"):
+                            if (tt2 == "04"): # Av Temp
+                                line2 = line
+
+                        elif (tt1 == "4"): # Precip
+                            if (tt2 == "04"):
+                                line3 = line
+                                break
+                    
+                else: 
+                    break
+    
+            
+
+    
+
+
+
+        if (line2):
+            dfm = [''] * 12
+
+            dfm[0]=line2[9:15]
+            dfm[1]=line2[15:22]
+            dfm[2]=line2[22:29]
+            dfm[3]=line2[29:36]
+            dfm[4]=line2[36:43]
+            dfm[5]=line2[43:50]
+            dfm[6]=line2[50:57]
+            dfm[7]=line2[57:64]
+            dfm[8]=line2[64:71]
+            dfm[9]=line2[71:78]
+            dfm[10]=line2[78:85]
+            dfm[11]=line2[85:92]
+
+            dfn[0] = dfm[imo]
+
+            try:
+                ix = atmp.find("M")
+                if (ix > -1):
+                    atmp = atmp[0:ix]
+                ix = atmp.find("F")
+                if (ix > -1):
+                    atmp = atmp[0:ix]
+                
+
+                d1 = float(atmp)
+                d2 = float(dfn[0])
+                d2 = d2 * 0.1
+
+
+                d3 = d1 - d2
+                dfn[0] = round_it(d3, 1)
+
+                # multiprint(atmp=atmp, d1=d1 ,d2=d2 ,d3=d3 , dfn_0=dfn[0])
+
+            except Exception as err:  #Left as generic exception for now instead of Java's NumberFormatException
+                dfn[0] = " "
+        else: 
+                dfn[0] = " "    
+
+        # multiprint(dfn_0=dfn[0], atmp=atmp, line3=line3)    
+
+        # line3= None
+        if (line3):
+            dfm = [''] * 12
+
+            dfm[0]=line2[9:15]
+            dfm[1]=line2[15:22]
+            dfm[2]=line2[22:29]
+            dfm[3]=line2[29:36]
+            dfm[4]=line2[36:43]
+            dfm[5]=line2[43:50]
+            dfm[6]=line2[50:57]
+            dfm[7]=line2[57:64]
+            dfm[8]=line2[64:71]
+            dfm[9]=line2[71:78]
+            dfm[10]=line2[78:85]
+            dfm[11]=line2[85:92]
+
+
+
+            dfn[1] = dfm[imo];
+
+            multiprint(dfm=dfm)
+
+            try:
+                ix = pcn.find("A")
+                if (ix > -1):
+                    pcn = pcn[ix+1:]
+
+
+                d1 = float(pcn)
+                d2 = float(dfn[1])
+                d2 = d2 * 0.01
+
+
+
+                d3 = d1 - d2
+                dfn[1] = round_it(d3, 2)
+
+                # multiprint(pcn=pcn, d1=d1 ,d2=d2 ,d3=d3 , dfm=dfm, dfn_1=dfn[1])
+
+            except Exception as err:  #Left as generic exception for now instead of Java's NumberFormatException
+                dfn[1] = " "
+                
+        else: 
+            dfn[1] = " "
+
+        # multiprint(dfn_1=dfn[1] ) 
+
+    except Exception as err: #TODO: Consider traceback.format_exc()
+            print("error: {}".format(traceback.format_exc()))
+
+    return dfn
+
+
 ############################################################
 
 
@@ -979,5 +1133,6 @@ def multiprint(**kwargs):
 
 # print(getTempNorm8110("CAW00064757","    30M", "    1", 1))
 
-print(getTempNorm9120("AQW00061705", "    30M", "    1", 1))
+# print(getTempNorm9120("AQW00061705", "    30M", "    1", 1))
 
+print(getTempNorm7100("023393", "    58M", "    A6", 1))
