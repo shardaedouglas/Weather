@@ -160,7 +160,7 @@ def parse_and_filter(
 
         return o_value
     
-    elif correction_type == "graph":
+    elif correction_type == "table":
         
         print("GRAPH CORRECTION TYPE!")
         
