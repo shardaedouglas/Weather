@@ -73,8 +73,6 @@ def get8110shdd(gid: str):
 
         # script_dir = os.path.dirname(os.path.abspath(__file__))
         # fn = os.path.join(script_dir, gid + ".normals.txt")
-        
-        print(fn)
 
         with open(fn, "r") as file:
             for line in file: 
@@ -124,8 +122,6 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
                     tid = line[1:5]
                     tt1 = line[0:1]
                     tt2 = line[92:93]
-                
-                    # print("tid {}, tt1 {}, tt2 {}".format(tid, tt1, tt2))
 
                     if (tid == id):
                         if (tt1 == "1"):
@@ -139,9 +135,6 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
                 else: 
                     break
 
-
-        print("line2 {}".format(line2))
-        print("line3 {}".format(line3))
 
         if (line2 is not None):
             dfm = []
@@ -160,25 +153,21 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
             dfm.append(line2[79:84])
 
         
-            print("dfm: {}", dfm)
 
             dfn[0] = dfm[imo-1]
 
-            print("dfn: {}".format(dfn))
+
 
             try:
                 ix = atmp.find("M")
-                print(ix)
                 if (ix > -1):
                     atmp = atmp[0:ix]
                 
-                print(atmp)
 
                 d1 = float(atmp)
                 d2 = float(dfn[0])
                 d2 = d2 * 0.1
 
-                print ("{} {}".format (d1, d2))
 
                 d3 = d1 - d2
                 dfn[0] = round_it(d3, 1)
@@ -189,13 +178,11 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
               
 
 
-            print("{} {}".format(dfn[0], type(dfn[0])))
         else: 
             dfn[0] = " "
 
 
         
-        print("line3")
         if (line3 is not None):
             dfm = []
 
@@ -213,11 +200,11 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
             dfm.append(line3[79:84])
 
         
-            print("dfm: {}".format( dfm))
+
 
             dfn[1] = dfm[imo-1];
 
-            print("dfn: {}".format(dfn))
+ 
 
             try:
                 # ix = atmp.index("M")
@@ -225,13 +212,12 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
                 # if (ix > -1):
                 #     atmp = atmp[:ix]
                 
-                print(atmp)
 
                 d1 = float(pcn)
                 d2 = float(dfn[1])
                 d2 = d2 * 0.01
 
-                print ("{} {}".format (d1, d2))
+
 
                 d3 = d1 - d2
                 dfn[1] = round_it(d3, 2)
@@ -242,11 +228,11 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
               
 
 
-            print("{} {}".format(dfn[1], type(dfn[1])))
+
         else: 
             dfn[1] = " "
 
-    except Exception as err: #TODO: Consider traceback.format_exc()
+    except Exception as err: 
         print("error: {}".format(traceback.format_exc()))
     
     return dfn
@@ -281,7 +267,6 @@ def loadHddNorm():
     except Exception as err: 
         print("error: {}".format(traceback.format_exc()))
 
-    # print("{}  {}".format(hddval, hddid))
 
 
 
@@ -332,8 +317,7 @@ def getMlyNormals8110(gid: str):
                         
                     except Exception as err:
                         print("error: {}".format(traceback.format_exc()))
-
-        # print("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(tmax, tmin, tavg, cldd, hldd, prcp, snow, ok))      
+   
 
     except Exception as err:
         ok = False
@@ -582,7 +566,6 @@ def getMlyNormals9121(gid: str):
                     except Exception as err:
                         print("error: {}".format(traceback.format_exc()))
 
-        # print("{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(tmax, tmin, tavg, cldd, hldd, prcp, snow))      
 
     except Exception as err:
         print("error: {}".format(traceback.format_exc()))
@@ -806,7 +789,7 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
         mt = trec.split(",")
         ntmp = mt[imo]
 
-        multiprint(mt=mt,ntmp=ntmp)
+        # multiprint(mt=mt,ntmp=ntmp)
 
         if (atmp.find("M") >= 0):
             atmp= atmp[0:atmp.find("M")]
@@ -827,7 +810,7 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
     else:
         dfn[0] = " "
 
-    multiprint(dfn=dfn[0])
+    # multiprint(dfn=dfn[0])
 
     prec = mdfn[5]
 
@@ -856,10 +839,10 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
             print("error: {}".format(traceback.format_exc()))
             dfn[1] = " "
 
-        multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
+        # multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
 
 
-        multiprint(mt=mt, npcn=npcn, pcn=pcn)
+        # multiprint(mt=mt, npcn=npcn, pcn=pcn)
 
     else:
         dfn[1] = " "
@@ -893,7 +876,7 @@ def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
         mt = trec.split(",")
         ntmp = mt[imo]
 
-        multiprint(mt=mt,ntmp=ntmp)
+        # multiprint(mt=mt,ntmp=ntmp)
 
         if (atmp.find("M") >= 0):
             atmp= atmp[:atmp.find("M")]
@@ -909,12 +892,12 @@ def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
             # print("error: {}".format(traceback.format_exc()))
             dfn[0] = " "
 
-        multiprint(atmp=atmp, d1=d1, d2=d2, d3=d3, dfn=dfn[0])
+        # multiprint(atmp=atmp, d1=d1, d2=d2, d3=d3, dfn=dfn[0])
 
     else:
         dfn[0] = " "
 
-    multiprint(dfn=dfn[0])
+    # multiprint(dfn=dfn[0])
 
     prec = mdfn[5]
 
@@ -943,10 +926,10 @@ def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
     #         print("error: {}".format(traceback.format_exc()))
             dfn[1] = " "
 
-        multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
+        # multiprint(pcn=pcn, d1=d1, d2=d2, d3=d3, dfn=dfn[1])
 
 
-        multiprint(mt=mt, npcn=npcn, pcn=pcn)
+        # multiprint(mt=mt, npcn=npcn, pcn=pcn)
 
     else:
         dfn[1] = " "
@@ -1070,7 +1053,7 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
 
             dfn[1] = dfm[imo];
 
-            multiprint(dfm=dfm)
+            # multiprint(dfm=dfm)
 
             try:
                 ix = pcn.find("A")
@@ -1116,23 +1099,23 @@ def multiprint(**kwargs):
             print("error printing: {}".format(traceback.format_exc()))
 
 
-# get8110shdd("FMC00914213")
+get8110shdd("FMC00914213")
 
-# print(computeDivDFN("4801", "    30M", "   89", str(imo)))
+print(computeDivDFN("4801", "    30M", "   89", str(imo)))
 
-# loadHddNorm()
+loadHddNorm()
 
 # print("HHDVAL{} \nHDDID {}".format(hddval, hddid))
 
 # getMlyNormals8110( "CAW00064757" )
-# print(getMlyNormals8110( "CAW00064757" ))
+print(getMlyNormals8110( "CAW00064757" ))
 
 # getMlyNormals9121("US1COLR0767")
-# print(getMlyNormals9121("AQW00061705"))
-# print(getMlyNormals9121("US1COLR0767"))
+print(getMlyNormals9121("AQW00061705"))
+print(getMlyNormals9121("US1COLR0767"))
 
-# print(getTempNorm8110("CAW00064757","    30M", "    1", 1))
+print(getTempNorm8110("CAW00064757","    30M", "    1", 1))
 
-# print(getTempNorm9120("AQW00061705", "    30M", "    1", 1))
+print(getTempNorm9120("AQW00061705", "    30M", "    1", 1))
 
 print(getTempNorm7100("023393", "    58M", "    A6", 1))
