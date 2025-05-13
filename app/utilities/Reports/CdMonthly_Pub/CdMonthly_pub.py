@@ -688,8 +688,17 @@ def generateMonthlyPub():
             return
 
         combined_df = pl.concat(all_filtered_dfs, how="vertical")
+
+        json_data = json.dumps(combined_df.to_dicts(), indent=2)
+
+        # Optional: write JSON string to file
         output_file = f"combined_data_{month}_{year}.json"
-        combined_df.write_json(output_file)
+        with open(output_file, "w") as f:
+            f.write(json_data)
+        
+        
+        
+        
         print(f"Data saved to {output_file}")
         
         print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
