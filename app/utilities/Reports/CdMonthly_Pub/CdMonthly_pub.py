@@ -121,7 +121,9 @@ import traceback
 import polars as pl
 import json, os
 from collections import defaultdict
+import calendar
 from calendar import monthrange
+from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QuerySoM
 from app.dataingest.readandfilterGHCN import parse_and_filter
 
@@ -438,6 +440,199 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
         "value": round(max_value / 10.0, 1),  # Convert tenths of mm to mm
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
+    
+
+def getMonthlyHDD(df: pl.DataFrame) -> dict:
+    tmax_data = {}
+    tmin_data = {}
+
+    for row in df.iter_rows(named=True):
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # Collect daily values, keeping -9999 for missing data
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, 32)
+            if f"day_{i}" in row
+        ]
+
+        # Remove trailing -9999 values
+        while daily_values and daily_values[-1] == -9999:
+            daily_values.pop()
+
+        if obs_type == "TMAX":
+            tmax_data.setdefault(station_id, []).extend(daily_values)
+        elif obs_type == "TMIN":
+            tmin_data.setdefault(station_id, []).extend(daily_values)
+
+    # Filter out stations with 10 or more -9999 values in either TMAX or TMIN
+    valid_stations = {}
+    for station in sorted(set(tmax_data) | set(tmin_data)):
+        tmax_count = tmax_data.get(station, []).count(-9999)
+        tmin_count = tmin_data.get(station, []).count(-9999)
+
+        if tmax_count < 10 and tmin_count < 10:
+            valid_stations[station] = {
+                "TMAX": tmax_data.get(station, []),
+                "TMIN": tmin_data.get(station, []),
+            }
+
+    # Convert to Fahrenheit (from tenths of Celsius), but keep -9999 values
+    for station in valid_stations:
+        valid_stations[station]["TMAX"] = [
+            (value / 10 * 9 / 5) + 32 if value != -9999 else -9999
+            for value in valid_stations[station]["TMAX"]
+        ]
+        valid_stations[station]["TMIN"] = [
+            (value / 10 * 9 / 5) + 32 if value != -9999 else -9999
+            for value in valid_stations[station]["TMIN"]
+        ]
+
+    # Final dictionary to hold the results
+    hdd_results = {}
+
+    for station, data in valid_stations.items():
+        total_hdd = 0
+        valid_days = 0
+        missing_days = 0
+
+        # Iterate through the daily data and calculate HDD
+        for tmax, tmin in zip(data["TMAX"], data["TMIN"]):
+            if tmax == -9999 or tmin == -9999:
+                missing_days += 1
+                continue
+
+            # Round both, then average, then subtract from 65
+            rtmax = round(tmax)
+            rtmin = round(tmin)
+            avg = (rtmax + rtmin) / 2
+
+            hdd = int(65 - avg) if avg < 65 else 0
+            total_hdd += hdd
+            valid_days += 1
+
+        # Normalize if there are missing values
+        if missing_days > 0:
+            avg_hdd = total_hdd / valid_days if valid_days > 0 else 0
+            total_hdd = avg_hdd * (valid_days + missing_days)
+            total_hdd = round(total_hdd)
+            # Append "E" to indicate normalization
+            total_hdd = f"{total_hdd}E"
+
+        # Add HDD results for this station
+        hdd_results[station] = {
+            "total_HDD": total_hdd
+        }
+
+    return hdd_results
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def getMonthlyHDD(df: pl.DataFrame) -> dict:
+#     tmax_df = df.filter(pl.col("observation_type") == "TMAX")
+#     tmin_df = df.filter(pl.col("observation_type") == "TMIN")
+#     if tmax_df.is_empty() or tmin_df.is_empty():
+#         return {}
+
+#     day_columns = [col for col in df.columns if col.startswith("day_")]
+
+#     # Cast all day values to integers, allow coercion, then replace -9999 with None
+#     for data in [tmax_df, tmin_df]:
+#         data = data.with_columns([pl.col(day_columns).cast(pl.Int64, strict=False)])
+#         data = data.with_columns([
+#             pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
+#             for col in day_columns
+#         ])
+
+#     # Re-assign cleaned data
+#     tmax_df = tmax_df.with_columns([
+#         pl.col(day_columns).cast(pl.Int64, strict=False)
+#     ]).with_columns([
+#         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
+#         for col in day_columns
+#     ])
+
+#     tmin_df = tmin_df.with_columns([
+#         pl.col(day_columns).cast(pl.Int64, strict=False)
+#     ]).with_columns([
+#         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
+#         for col in day_columns
+#     ])
+
+#     tmax_data = tmax_df.to_dicts()
+#     tmin_data = tmin_df.to_dicts()
+
+#     combined_data = {}
+
+#     for tmax_entry in tmax_data:
+#         station_code = tmax_entry['station_code']
+#         year = tmax_entry['year']
+#         month = tmax_entry['month']
+#         num_days = calendar.monthrange(year, month)[1]
+
+#         tmin_entry = next(
+#             (item for item in tmin_data if item['station_code'] == station_code and
+#              item['year'] == year and item['month'] == month),
+#             None
+#         )
+#         if not tmin_entry:
+#             continue
+
+#         missing_count = 0
+#         daily_values = []
+#         sum_of_hdd = 0
+
+#         for day in range(1, num_days + 1):
+#             tmax_val = tmax_entry.get(f'day_{day}')
+#             tmin_val = tmin_entry.get(f'day_{day}')
+
+#             if tmax_val is None or tmin_val is None:
+#                 missing_count += 1
+
+#         if missing_count >= 10:
+#             continue  # Skip this station due to too much missing data
+
+#         for day in range(1, 32):  # Always include up to day_31 for completeness
+#             tmax_val = tmax_entry.get(f'day_{day}')
+#             tmin_val = tmin_entry.get(f'day_{day}')
+
+#             if tmax_val is not None and tmin_val is not None:
+#                 tmax_f = round((tmax_val / 10) * 9/5 + 32)
+#                 tmin_f = round((tmin_val / 10) * 9/5 + 32)
+#                 avg_f = (tmax_f + tmin_f) / 2
+#                 hdd = max(65 - avg_f, 0)
+#                 daily_values.append(round(hdd, 2))
+#                 sum_of_hdd += hdd
+#             else:
+#                 daily_values.append(None)
+
+#         combined_data[station_code] = {
+#             'country_code': tmax_entry['country_code'],
+#             'network_code': tmax_entry['network_code'],
+#             'station_code': station_code,
+#             'year': year,
+#             'month': month,
+#             'daily_values': daily_values,
+#             'sum_of_hdd': round(sum_of_hdd, 2)
+#         }
+
+#     return combined_data
+
+
+
+
+
 
 
 
@@ -642,7 +837,7 @@ def generateMonthlyPub():
         all_filtered_dfs = []
         noDataCount = 0
 
-        for row in stations:
+        for row in stations[:10]:
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -701,13 +896,16 @@ def generateMonthlyPub():
         
         print(f"Data saved to {output_file}")
         
-        print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
-        print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
-        print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
-        print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
-        print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
-        print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
-        print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+        # print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
+        # print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
+        # print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
+        # print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
+        # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
+        # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
+        # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+        print("MonthlyHDD:", getMonthlyHDD(combined_df))
+
+        getMonthlyHDD
 
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
