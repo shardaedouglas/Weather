@@ -443,42 +443,49 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
     
 
 def getMonthlyHDD(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    # Determine the number of days in the month
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
     tmax_data = {}
     tmin_data = {}
 
+    # Step 1: Collect TMAX and TMIN values
     for row in df.iter_rows(named=True):
         station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
         obs_type = row["observation_type"]
 
-        # Collect daily values, keeping -9999 for missing data
         daily_values = [
             int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
-            for i in range(1, 32)
-            if f"day_{i}" in row
+            for i in range(1, num_days + 1)
         ]
-
-        # Remove trailing -9999 values
-        while daily_values and daily_values[-1] == -9999:
-            daily_values.pop()
 
         if obs_type == "TMAX":
             tmax_data.setdefault(station_id, []).extend(daily_values)
         elif obs_type == "TMIN":
             tmin_data.setdefault(station_id, []).extend(daily_values)
 
-    # Filter out stations with 10 or more -9999 values in either TMAX or TMIN
+    print("Stations with TMAX:", list(tmax_data.keys()))
+    print("Stations with TMIN:", list(tmin_data.keys()))
+
+    # Step 2: Use all stations regardless of missing data
     valid_stations = {}
-    for station in sorted(set(tmax_data) | set(tmin_data)):
-        tmax_count = tmax_data.get(station, []).count(-9999)
-        tmin_count = tmin_data.get(station, []).count(-9999)
+    all_stations = sorted(set(tmax_data) | set(tmin_data))
+    print("All candidate stations:", all_stations)
 
-        if tmax_count < 10 and tmin_count < 10:
-            valid_stations[station] = {
-                "TMAX": tmax_data.get(station, []),
-                "TMIN": tmin_data.get(station, []),
-            }
+    for station in all_stations:
+        valid_stations[station] = {
+            "TMAX": tmax_data.get(station, []),
+            "TMIN": tmin_data.get(station, []),
+        }
 
-    # Convert to Fahrenheit (from tenths of Celsius), but keep -9999 values
+    print("Valid stations after missing value check:", list(valid_stations.keys()))
+
+    # Step 3: Convert to Fahrenheit
     for station in valid_stations:
         valid_stations[station]["TMAX"] = [
             (value / 10 * 9 / 5) + 32 if value != -9999 else -9999
@@ -489,7 +496,7 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             for value in valid_stations[station]["TMIN"]
         ]
 
-    # Final dictionary to hold the results
+    # Step 4: Calculate HDD
     hdd_results = {}
 
     for station, data in valid_stations.items():
@@ -497,13 +504,11 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
         valid_days = 0
         missing_days = 0
 
-        # Iterate through the daily data and calculate HDD
         for tmax, tmin in zip(data["TMAX"], data["TMIN"]):
             if tmax == -9999 or tmin == -9999:
                 missing_days += 1
                 continue
 
-            # Round both, then average, then subtract from 65
             rtmax = round(tmax)
             rtmin = round(tmin)
             avg = (rtmax + rtmin) / 2
@@ -512,18 +517,17 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             total_hdd += hdd
             valid_days += 1
 
-        # Normalize if there are missing values
         if missing_days > 0:
             avg_hdd = total_hdd / valid_days if valid_days > 0 else 0
             total_hdd = avg_hdd * (valid_days + missing_days)
             total_hdd = round(total_hdd)
-            # Append "E" to indicate normalization
             total_hdd = f"{total_hdd}E"
 
-        # Add HDD results for this station
         hdd_results[station] = {
             "total_HDD": total_hdd
         }
+
+    print("Final stations in HDD results:", list(hdd_results.keys()))
 
     return hdd_results
 
@@ -821,7 +825,6 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
 
 #     except Exception as e:
 #         print(f"Error reading or processing the Parquet file: {e}")
-        
         
         
 
