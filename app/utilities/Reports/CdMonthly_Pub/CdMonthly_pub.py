@@ -1165,8 +1165,8 @@ def getMlyNormals8110(gid: str):
     tmin = ""
     tavg = ""
 
-    cldd = ""
-    hldd = ""
+    cldd = "" # Cooling Degree Days Normal?
+    hldd = "" # Heating Degree Days Normal?
     prcp = ""
     snow = ""
     ok = False
@@ -1417,11 +1417,8 @@ def getMlyNormals9121(gid: str):
     snow = ""
 
     try:
-        # fn = "/" + os.path.join("data", "ops", "norms", "1981-2010", "products", "station", gid + ".normals.txt")
+        fn = "/" + os.path.join("data", "ops", "norms", "1991-2020", "products", "station", gid + ".normals.txt")
 
-        #  TESTING
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        fn = os.path.join(script_dir, gid + ".normals.txt")
 
         with open(fn, "r") as file: 
             for line in file: 
@@ -1655,22 +1652,22 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
     getTempNorm8110 - Get temp 71 -2000 Norms. Departure from Normal for Temp and Precip.
      @param id - ghcnd id
      @param atmp -  avg Temp
-     @param pcn - Precip total
-     @param iMo - Month, integer. Note this is 0 indexed, not 1
-     Return - List[str] - dfn
+     @param pcn - Total Precip
+     @param iMo - Month, integer. Note this is 0 indexed, not 1 indexed
+     Return - list[str] - 0 = DFN Temperature
+                        - 1 = DFN Precipitation
     """
-    # I'm not sure what format pcn comes in as.
     dfn = [''] * 2
 
     # TODO: Update with the external class
     mdfn = getMlyNormals8110(id)
     # mdfn = ghcnDataBrowser.getMlyNormals8110(id)
 
-    trec = mdfn[2]
+    trec = mdfn[2] # CSV of Temperature Normals for the year?
 
-    if (trec):
+    if (trec): # Temperature DFN
         mt = trec.split(",")
-        ntmp = mt[imo]
+        ntmp = mt[imo] # Get the temperature data for selected month
 
         # multiprint(mt=mt,ntmp=ntmp)
 
@@ -1681,10 +1678,10 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
             d1 = float(atmp)
             d2 = float(ntmp)
 
-            d3 = d1- d2
+            d3 = d1 - d2
 
             dfn[0] = round_it(d3, 1)
-        except Exception as err: #TODO: Consider traceback.format_exc()
+        except Exception as err: 
             # print("error: {}".format(traceback.format_exc()))
             dfn[0] = " "
 
@@ -1695,19 +1692,19 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
 
     # multiprint(dfn=dfn[0])
 
-    prec = mdfn[5]
+    prec = mdfn[5] #CSV of Precip Normals for the year?
 
-    if (prec):
+    if (prec): # Precip DFN
         mt = prec.split(",")
         npcn = mt[imo]
 
 
         if( pcn.find("M") >= 0):
-            pcn = pcn[:pcn.find("M")+1]
+            pcn = pcn[pcn.find("M")+1:]
         if( pcn.find("F") >= 0):
-            pcn = pcn[:pcn.find("F")+1]
+            pcn = pcn[pcn.find("F")+1:]
         if( pcn.find("A") >= 0):
-            pcn = pcn[:pcn.find("A")+1]
+            pcn = pcn[pcn.find("A")+1:]
 
 
 
@@ -1718,7 +1715,7 @@ def getTempNorm8110(id: str, atmp: str, pcn: str, imo: int):
             d3 = d1- d2
 
             dfn[1] = round_it(d3, 2)
-        except Exception as err: #TODO: Consider traceback.format_exc()
+        except Exception as err: 
             print("error: {}".format(traceback.format_exc()))
             dfn[1] = " "
 
@@ -1743,7 +1740,8 @@ def getTempNorm9120(id: str, atmp: str, pcn: str, imo: int):
 	     @param pcn - Precip total
 	     @param iMo - Month, integer.
 
-         @return list[str] - dfn
+         @return list[str] - 0 = DFN Temperature
+                            - 1 = DFN Precipitation
     """
     # # I'm not sure what format pcn comes in as.
     dfn = [''] * 2
@@ -1832,7 +1830,8 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
       @param pcn - Precip total
       @param iMo - Month, integer. 
 
-      @return - list[str] - departure from normal
+      @return - list[str] - 0 = DFN Temperature
+                        - 1 = DFN Precipitation
     
     """
     
@@ -1848,9 +1847,9 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
             for line in file:
                 if (line):
                     
-                    tid = line[:6]
-                    tt1 = line[6:7]
-                    tt2 = line[7:9]
+                    tid = line[:6] # STATION COOPERATIVE I.D. NUMBER (CD NUMBER)
+                    tt1 = line[6:7] # ELEMENT CODE
+                    tt2 = line[7:9] # DATA CODE
 
                     if (tid == id):
                         if (tt1 == "3"):
@@ -1867,7 +1866,7 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
     
             
 
-    
+        # multiprint(line2=line2, line3_precip=line3)
 
 
 
@@ -1919,18 +1918,18 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
         if (line3):
             dfm = [''] * 12
 
-            dfm[0]=line2[9:15]
-            dfm[1]=line2[15:22]
-            dfm[2]=line2[22:29]
-            dfm[3]=line2[29:36]
-            dfm[4]=line2[36:43]
-            dfm[5]=line2[43:50]
-            dfm[6]=line2[50:57]
-            dfm[7]=line2[57:64]
-            dfm[8]=line2[64:71]
-            dfm[9]=line2[71:78]
-            dfm[10]=line2[78:85]
-            dfm[11]=line2[85:92]
+            dfm[0]=line3[9:15]
+            dfm[1]=line3[15:22]
+            dfm[2]=line3[22:29]
+            dfm[3]=line3[29:36]
+            dfm[4]=line3[36:43]
+            dfm[5]=line3[43:50]
+            dfm[6]=line3[50:57]
+            dfm[7]=line3[57:64]
+            dfm[8]=line3[64:71]
+            dfm[9]=line3[71:78]
+            dfm[10]=line3[78:85]
+            dfm[11]=line3[85:92]
 
 
 
