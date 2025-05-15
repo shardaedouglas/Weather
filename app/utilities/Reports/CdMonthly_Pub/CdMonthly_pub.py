@@ -792,7 +792,7 @@ def get8110shdd(gid: str):
             for line in file: 
                 if (line is not None):
                     if (len(line) > 29):
-                        elem = line[0:23]
+                        elem = line[0:23] 
                         if ("        ann-htdd-normal" in elem):
                             dat = line[24:29]
 
@@ -811,12 +811,14 @@ def get8110shdd(gid: str):
 def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
     """
     computeDivDFN - Compute Divisioanl DFN.
-  		@param id - 4 character string
-  		@param atmp
-  		@param pcn
-  		@param mo
+  		@param id - STATE CODE + DIV NUMBER - 4 char string
+  		@param atmp - Average Temperature
+  		@param pcn - Total Precip
+  		@param mo - Month, but its not used in the function?
   		@return dfn - list[str]
     """
+
+
     dfn = [None,None]
 
     fn = os.path.join(CoopToGhcn_defaultPath, "norms", "9641F_1971-2000-NORM_CLIM85.txt")
@@ -833,9 +835,9 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
 		# 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
 		# 1010119712000  395   438   517   595   677   752   789   778   717   605   507   426    600 2   
 
-                    tid = line[1:5]
-                    tt1 = line[0:1]
-                    tt2 = line[92:93]
+                    tid = line[1:5] # STATE ID CODE + DIVISION NUMBER
+                    tt1 = line[0:1] # ELEMENT CODE
+                    tt2 = line[92:93] # STATISTIC CODE
 
                     if (tid == id):
                         if (tt1 == "1"):
@@ -851,7 +853,7 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
 
 
         if (line2 is not None):
-            dfm = []
+            dfm = [] # Data for each month
 
             dfm.append(line2[13:18])
             dfm.append(line2[19:24])
@@ -898,7 +900,7 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
 
         
         if (line3 is not None):
-            dfm = []
+            dfm = [] # Data for each month
 
             dfm.append(line3[13:18])
             dfm.append(line3[19:24])
@@ -921,10 +923,11 @@ def computeDivDFN( id: str,  atmp: str, pcn: str,  mo: str):
  
 
             try:
-                # ix = atmp.index("M")
+                # This isn't used in this try block?
+                ix = atmp.find("M")
                 # print(ix)
-                # if (ix > -1):
-                #     atmp = atmp[:ix]
+                if (ix > -1):
+                    atmp = atmp[:ix]
                 
 
                 d1 = float(pcn)
