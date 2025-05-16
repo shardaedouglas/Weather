@@ -534,104 +534,70 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
 
 
 
+def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
+    """
+    Returns a dictionary mapping station ID (ghcn_id) to a dictionary with counts of temperature threshold exceedances:
+    - tmax_ge_90: TMAX >= 90°F
+    - tmax_le_32: TMAX <= 32°F
+    - tmin_le_32: TMIN <= 32°F
+    - tmin_le_0:  TMIN <= 0°F
+    """
+    threshold_counts = defaultdict(lambda: {
+        "tmax_ge_90": 0,
+        "tmax_le_32": 0,
+        "tmin_le_32": 0,
+        "tmin_le_0": 0,
+    })
+
+    # Filter to only TMAX and TMIN
+    df = df.filter(pl.col("observation_type").is_in(["TMAX", "TMIN"]))
+
+    for row in df.iter_rows(named=True):
+        ghcn_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+        year = row["year"]
+        month = row["month"]
+
+        _, days_in_month = monthrange(year, month)
+
+        valid_data_found = False
+
+        for day in range(1, days_in_month + 1):
+            val_str = row.get(f"day_{day}")
+            try:
+                val = int(val_str)
+            except (ValueError, TypeError):
+                continue
+            if val == -9999:
+                continue
+
+            valid_data_found = True
+
+            # Convert tenths °C to °F
+            temp_f = val * 9 / 5 / 10 + 32
+
+            if obs_type == "TMAX":
+                if temp_f >= 90:
+                    threshold_counts[ghcn_id]["tmax_ge_90"] += 1
+                if temp_f <= 32:
+                    threshold_counts[ghcn_id]["tmax_le_32"] += 1
+            elif obs_type == "TMIN":
+                if temp_f <= 32:
+                    threshold_counts[ghcn_id]["tmin_le_32"] += 1
+                if temp_f <= 0:
+                    threshold_counts[ghcn_id]["tmin_le_0"] += 1
+
+        if not valid_data_found:
+            threshold_counts[ghcn_id] = {
+                "tmax_ge_90": "no_data",
+                "tmax_le_32": "no_data",
+                "tmin_le_32": "no_data",
+                "tmin_le_0": "no_data",
+            }
+
+    return threshold_counts
 
 
-
-
-
-
-
-
-
-# def getMonthlyHDD(df: pl.DataFrame) -> dict:
-#     tmax_df = df.filter(pl.col("observation_type") == "TMAX")
-#     tmin_df = df.filter(pl.col("observation_type") == "TMIN")
-#     if tmax_df.is_empty() or tmin_df.is_empty():
-#         return {}
-
-#     day_columns = [col for col in df.columns if col.startswith("day_")]
-
-#     # Cast all day values to integers, allow coercion, then replace -9999 with None
-#     for data in [tmax_df, tmin_df]:
-#         data = data.with_columns([pl.col(day_columns).cast(pl.Int64, strict=False)])
-#         data = data.with_columns([
-#             pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
-#             for col in day_columns
-#         ])
-
-#     # Re-assign cleaned data
-#     tmax_df = tmax_df.with_columns([
-#         pl.col(day_columns).cast(pl.Int64, strict=False)
-#     ]).with_columns([
-#         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
-#         for col in day_columns
-#     ])
-
-#     tmin_df = tmin_df.with_columns([
-#         pl.col(day_columns).cast(pl.Int64, strict=False)
-#     ]).with_columns([
-#         pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col)
-#         for col in day_columns
-#     ])
-
-#     tmax_data = tmax_df.to_dicts()
-#     tmin_data = tmin_df.to_dicts()
-
-#     combined_data = {}
-
-#     for tmax_entry in tmax_data:
-#         station_code = tmax_entry['station_code']
-#         year = tmax_entry['year']
-#         month = tmax_entry['month']
-#         num_days = calendar.monthrange(year, month)[1]
-
-#         tmin_entry = next(
-#             (item for item in tmin_data if item['station_code'] == station_code and
-#              item['year'] == year and item['month'] == month),
-#             None
-#         )
-#         if not tmin_entry:
-#             continue
-
-#         missing_count = 0
-#         daily_values = []
-#         sum_of_hdd = 0
-
-#         for day in range(1, num_days + 1):
-#             tmax_val = tmax_entry.get(f'day_{day}')
-#             tmin_val = tmin_entry.get(f'day_{day}')
-
-#             if tmax_val is None or tmin_val is None:
-#                 missing_count += 1
-
-#         if missing_count >= 10:
-#             continue  # Skip this station due to too much missing data
-
-#         for day in range(1, 32):  # Always include up to day_31 for completeness
-#             tmax_val = tmax_entry.get(f'day_{day}')
-#             tmin_val = tmin_entry.get(f'day_{day}')
-
-#             if tmax_val is not None and tmin_val is not None:
-#                 tmax_f = round((tmax_val / 10) * 9/5 + 32)
-#                 tmin_f = round((tmin_val / 10) * 9/5 + 32)
-#                 avg_f = (tmax_f + tmin_f) / 2
-#                 hdd = max(65 - avg_f, 0)
-#                 daily_values.append(round(hdd, 2))
-#                 sum_of_hdd += hdd
-#             else:
-#                 daily_values.append(None)
-
-#         combined_data[station_code] = {
-#             'country_code': tmax_entry['country_code'],
-#             'network_code': tmax_entry['network_code'],
-#             'station_code': station_code,
-#             'year': year,
-#             'month': month,
-#             'daily_values': daily_values,
-#             'sum_of_hdd': round(sum_of_hdd, 2)
-#         }
-
-#     return combined_data
 
 
 
@@ -840,7 +806,7 @@ def generateMonthlyPub():
         all_filtered_dfs = []
         noDataCount = 0
 
-        for row in stations[:10]:
+        for row in stations[:20]:
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -906,7 +872,9 @@ def generateMonthlyPub():
         # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
         # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
         # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
-        print("MonthlyHDD:", getMonthlyHDD(combined_df))
+        #print("MonthlyHDD:", getMonthlyHDD(combined_df))
+        print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
+
 
         getMonthlyHDD
 
