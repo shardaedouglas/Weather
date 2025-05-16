@@ -121,7 +121,9 @@ import traceback
 import polars as pl
 import json, os
 from collections import defaultdict
+import calendar
 from calendar import monthrange
+from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QuerySoM
 from app.dataingest.readandfilterGHCN import parse_and_filter
 
@@ -438,6 +440,169 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
         "value": round(max_value / 10.0, 1),  # Convert tenths of mm to mm
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
+    
+
+def getMonthlyHDD(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    # Determine the number of days in the month
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    tmax_data = {}
+    tmin_data = {}
+
+    # Step 1: Collect TMAX and TMIN values
+    for row in df.iter_rows(named=True):
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)
+        ]
+
+        if obs_type == "TMAX":
+            tmax_data.setdefault(station_id, []).extend(daily_values)
+        elif obs_type == "TMIN":
+            tmin_data.setdefault(station_id, []).extend(daily_values)
+
+    print("Stations with TMAX:", list(tmax_data.keys()))
+    print("Stations with TMIN:", list(tmin_data.keys()))
+
+    # Step 2: Use all stations regardless of missing data
+    valid_stations = {}
+    all_stations = sorted(set(tmax_data) | set(tmin_data))
+    print("All candidate stations:", all_stations)
+
+    for station in all_stations:
+        valid_stations[station] = {
+            "TMAX": tmax_data.get(station, []),
+            "TMIN": tmin_data.get(station, []),
+        }
+
+    print("Valid stations after missing value check:", list(valid_stations.keys()))
+
+    # Step 3: Convert to Fahrenheit
+    for station in valid_stations:
+        valid_stations[station]["TMAX"] = [
+            (value / 10 * 9 / 5) + 32 if value != -9999 else -9999
+            for value in valid_stations[station]["TMAX"]
+        ]
+        valid_stations[station]["TMIN"] = [
+            (value / 10 * 9 / 5) + 32 if value != -9999 else -9999
+            for value in valid_stations[station]["TMIN"]
+        ]
+
+    # Step 4: Calculate HDD
+    hdd_results = {}
+
+    for station, data in valid_stations.items():
+        total_hdd = 0
+        valid_days = 0
+        missing_days = 0
+
+        for tmax, tmin in zip(data["TMAX"], data["TMIN"]):
+            if tmax == -9999 or tmin == -9999:
+                missing_days += 1
+                continue
+
+            rtmax = round(tmax)
+            rtmin = round(tmin)
+            avg = (rtmax + rtmin) / 2
+
+            hdd = int(65 - avg) if avg < 65 else 0
+            total_hdd += hdd
+            valid_days += 1
+
+        if missing_days > 0:
+            avg_hdd = total_hdd / valid_days if valid_days > 0 else 0
+            total_hdd = avg_hdd * (valid_days + missing_days)
+            total_hdd = round(total_hdd)
+            total_hdd = f"{total_hdd}E"
+
+        hdd_results[station] = {
+            "total_HDD": total_hdd
+        }
+
+    print("Final stations in HDD results:", list(hdd_results.keys()))
+
+    return hdd_results
+
+
+
+
+def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
+    """
+    Returns a dictionary mapping station ID (ghcn_id) to a dictionary with counts of temperature threshold exceedances:
+    - tmax_ge_90: TMAX >= 90°F
+    - tmax_le_32: TMAX <= 32°F
+    - tmin_le_32: TMIN <= 32°F
+    - tmin_le_0:  TMIN <= 0°F
+    """
+    threshold_counts = defaultdict(lambda: {
+        "tmax_ge_90": 0,
+        "tmax_le_32": 0,
+        "tmin_le_32": 0,
+        "tmin_le_0": 0,
+    })
+
+    # Filter to only TMAX and TMIN
+    df = df.filter(pl.col("observation_type").is_in(["TMAX", "TMIN"]))
+
+    for row in df.iter_rows(named=True):
+        ghcn_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+        year = row["year"]
+        month = row["month"]
+
+        _, days_in_month = monthrange(year, month)
+
+        valid_data_found = False
+
+        for day in range(1, days_in_month + 1):
+            val_str = row.get(f"day_{day}")
+            try:
+                val = int(val_str)
+            except (ValueError, TypeError):
+                continue
+            if val == -9999:
+                continue
+
+            valid_data_found = True
+
+            # Convert tenths °C to °F
+            temp_f = val * 9 / 5 / 10 + 32
+
+            if obs_type == "TMAX":
+                if temp_f >= 90:
+                    threshold_counts[ghcn_id]["tmax_ge_90"] += 1
+                if temp_f <= 32:
+                    threshold_counts[ghcn_id]["tmax_le_32"] += 1
+            elif obs_type == "TMIN":
+                if temp_f <= 32:
+                    threshold_counts[ghcn_id]["tmin_le_32"] += 1
+                if temp_f <= 0:
+                    threshold_counts[ghcn_id]["tmin_le_0"] += 1
+
+        if not valid_data_found:
+            threshold_counts[ghcn_id] = {
+                "tmax_ge_90": "no_data",
+                "tmax_le_32": "no_data",
+                "tmin_le_32": "no_data",
+                "tmin_le_0": "no_data",
+            }
+
+    return threshold_counts
+
+
+
+
+
+
+
 
 
 
@@ -628,7 +793,6 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
 #         print(f"Error reading or processing the Parquet file: {e}")
         
         
-        
 
 
 def generateMonthlyPub():
@@ -642,7 +806,7 @@ def generateMonthlyPub():
         all_filtered_dfs = []
         noDataCount = 0
 
-        for row in stations:
+        for row in stations[:20]:
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -701,13 +865,18 @@ def generateMonthlyPub():
         
         print(f"Data saved to {output_file}")
         
-        print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
-        print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
-        print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
-        print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
-        print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
-        print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
-        print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+        # print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
+        # print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
+        # print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
+        # print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
+        # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
+        # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
+        # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
+        #print("MonthlyHDD:", getMonthlyHDD(combined_df))
+        print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
+
+
+        getMonthlyHDD
 
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
