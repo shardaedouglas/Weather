@@ -461,9 +461,9 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
 
         daily_values = [
             int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
-            for i in range(1, num_days + 1)    
+            for i in range(1, num_days + 1)
         ]
-        print("daily values:", daily_values)
+
         if obs_type == "TMAX":
             tmax_data.setdefault(station_id, []).extend(daily_values)
         elif obs_type == "TMIN":
@@ -484,7 +484,6 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
         }
 
     print("Valid stations after missing value check:", list(valid_stations.keys()))
-    print("valid stations", valid_stations)
 
     # Step 3: Convert to Fahrenheit
     for station in valid_stations:
@@ -499,15 +498,9 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
 
     # Step 4: Calculate HDD
     hdd_results = {}
-    
-    # Step 4: Calculate CDD
-    cdd_results = {}
-
-
 
     for station, data in valid_stations.items():
         total_hdd = 0
-        total_cdd = 0
         valid_days = 0
         missing_days = 0
 
@@ -520,16 +513,8 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             rtmin = round(tmin)
             avg = (rtmax + rtmin) / 2
 
-            hdd = 0
-            cdd = 0
-
-            if avg < 65:
-                hdd = int( 65 - avg )
-            elif avg > 65:
-                cdd = int( avg - 65 )
-            # hdd = int(65 - avg) if avg < 65 else 0
+            hdd = int(65 - avg) if avg < 65 else 0
             total_hdd += hdd
-            total_cdd += cdd
             valid_days += 1
 
         if missing_days > 0:
@@ -537,27 +522,14 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             total_hdd = avg_hdd * (valid_days + missing_days)
             total_hdd = round(total_hdd)
             total_hdd = f"{total_hdd}E"
-            
-            avg_cdd = total_cdd / valid_days if valid_days > 0 else 0
-            total_cdd = avg_cdd * (valid_days + missing_days)
-            total_cdd = round(total_cdd)
-            total_cdd = f"{total_cdd}E"
-
-
-            
 
         hdd_results[station] = {
             "total_HDD": total_hdd
         }
-        cdd_results[station] = {
-            "total_CDD": total_cdd
-        }
-
 
     print("Final stations in HDD results:", list(hdd_results.keys()))
 
-
-    return hdd_results, cdd_results
+    return hdd_results
 
 
 
