@@ -598,10 +598,208 @@ def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
     return threshold_counts
 
 
+def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    day_columns = [f"day_{i}" for i in range(1, num_days + 1)]
+
+    # Filter for SNOW and WT04 observations only
+    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "WT04"]))
+
+    # Cast daily values to Int64 (to be safe)
+    snow_df = snow_df.with_columns([
+        pl.col(day_columns).cast(pl.Int64, strict=False)
+    ])
+
+    # Create station ID
+    snow_df = snow_df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    station_sums = {}
+    for row in snow_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        daily_values = [row[col] for col in day_columns]
+        missing_days = sum(1 for val in daily_values if val == -9999)
+
+        # Convert and round each daily value before summing
+        valid_sum_in = sum(
+            round(val * 0.03937, 1) for val in daily_values if val != -9999
+        )
+
+        if ghcn_id not in station_sums:
+            station_sums[ghcn_id] = {"total_in": 0, "missing": 0}
+        station_sums[ghcn_id]["total_in"] += valid_sum_in
+        station_sums[ghcn_id]["missing"] += missing_days
+
+    # Build initial results from stations with data
+    result = {}
+    for station, data in station_sums.items():
+        if data["missing"] >= 10:
+            result[station] = "M"
+        elif 1 <= data["missing"] <= 9:
+            result[station] = f"M {round(data['total_in'], 1)}"
+        else:
+            result[station] = round(data["total_in"], 1)
+
+    # Now, include stations in original df but NOT in snow_df, mark them as "M"
+    # Fix: safely handle None values
+    original_station_ids = set(
+        (
+            (df[row, "country_code"] or "") +
+            (df[row, "network_code"] or "") +
+            (df[row, "station_code"] or "")
+        )
+        for row in range(df.height)
+    )
+    processed_station_ids = set(station_sums.keys())
+
+    for station_id in original_station_ids - processed_station_ids:
+        result[station_id] = "M"
+
+    return result
 
 
 
 
+def getMaxDepthOnGround(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+    valid_day_cols = [f"day_{i}" for i in range(1, num_days + 1)]
+    valid_flag_cols = [f"day_{i}_flag" for i in range(1, num_days + 1)]
+
+    snwd_df = df.filter(pl.col("observation_type") == "SNWD").with_columns([
+        pl.col(valid_day_cols).cast(pl.Int64, strict=False),
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    station_max = {}
+
+    for row in snwd_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        daily_values = [row.get(f"day_{i}", None) for i in range(1, num_days + 1)]
+
+        # Count how many days are missing/null (-9999 or None)
+        missing_days = sum(1 for val in daily_values if val is None or val == -9999)
+
+        # Exclude station ONLY if all days missing (all 31 days missing)
+        if missing_days == num_days:
+            continue  # exclude station completely
+
+        # Filter to valid days: any day that is not missing (-9999 or None)
+        valid_days = [(i, val) for i, val in enumerate(daily_values, start=1) if val is not None and val != -9999]
+
+        if not valid_days:
+            continue  # no valid days at all, exclude
+
+        # Find max value and last day of that max
+        max_val = max(val for i, val in valid_days)
+        max_days = [i for i, val in valid_days if val == max_val]
+        max_day = max_days[-1]  # last tie wins
+
+        if max_val == 0:
+            station_max[ghcn_id] = (0, "")
+        else:
+            inches = round(max_val * 0.03937)
+            station_max[ghcn_id] = (inches, f"{max_day:02d}")
+
+    return station_max
+
+
+
+def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    # Filter for SNOW and SNWD only
+    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "SNWD"]))
+
+    # Create full station ID
+    snow_df = snow_df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    result = {}
+
+    for row in snow_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+
+        daily_data = []
+        for i in range(1, num_days + 1):
+            raw_val = row.get(f"day_{i}", -9999)
+            try:
+                num_val = float(raw_val)
+            except (TypeError, ValueError):
+                num_val = -9999  # fallback if conversion fails
+
+            if num_val in (0, -9999):
+                converted_val = num_val
+            else:
+                converted_val = round(num_val / 25.4, 1)
+
+            flag_val = row.get(f"flag_{i}", None)
+            daily_data.append((converted_val, flag_val))
+
+        if ghcn_id not in result:
+            result[ghcn_id] = {}
+
+        result[ghcn_id][obs_type] = daily_data
+
+    converted_result = {}
+    # Keep track of stations already processed
+    processed_stations = set()
+
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        if ghcn_id in processed_stations:
+            continue
+        processed_stations.add(ghcn_id)
+
+        converted_result[ghcn_id] = {}
+        for obs_type in ["SNOW", "SNWD"]:
+            if ghcn_id in result and obs_type in result[ghcn_id]:
+                daily_list = result[ghcn_id][obs_type]
+                converted_values = []
+                for val, flag in daily_list:
+                    flag = (flag or "").strip()
+                    if '7' in flag and 'T' in flag:
+                        converted_values.append('T')
+                    elif val == 0.0:
+                        converted_values.append('')
+                    elif '7' in flag:
+                        converted_values.append(val)
+                    else:
+                        converted_values.append('-')
+                while len(converted_values) < 31:
+                    converted_values.append('')
+                converted_result[ghcn_id][obs_type] = converted_values
+            else:
+                converted_result[ghcn_id][obs_type] = ["MISSING DATA"]
+
+    print("Original result:\n", result)
+    print("SnowAndSnwdTable:", converted_result)
+
+    return converted_result
+
+
+
+
+
+    
 
 
 
@@ -806,7 +1004,7 @@ def generateMonthlyPub():
         all_filtered_dfs = []
         noDataCount = 0
 
-        for row in stations[:20]:
+        for row in stations[:10]:
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -872,12 +1070,13 @@ def generateMonthlyPub():
         # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
         # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
         # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
-        #print("MonthlyHDD:", getMonthlyHDD(combined_df))
-        print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
+        # print("MonthlyHDD:", getMonthlyHDD(combined_df))
+        # print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
+        # print("TotalSnowAndIcePellets:", getTotalSnowAndIcePellets(combined_df))
+        # print("maxDepthOnGround:", getMaxDepthOnGround(combined_df))
+        print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
 
-
-        getMonthlyHDD
-
+        
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
 
