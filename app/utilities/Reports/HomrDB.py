@@ -25,6 +25,30 @@ SoilTempQuery = "WITH main_query AS (SELECT DISTINCT(A.COOP_ID), A.nws_CLIM_DIV,
 SoilRefQuery = "WITH main_query AS (SELECT DISTINCT(A.COOP_ID), A.nws_CLIM_DIV, A.NAME_COOP_SHORT, b.TIME_OF_OBS, A.ghcnd_id, b.SOIL_TYPE, b.SOIL_COVER, b.DEPTH, b.SLOPE, b.MEASUREMENT_UNITS, MAX(A.end_date) mshr_end_date, MAX(b.end_date) phr_end_date FROM CTXT_MSHR_GHCND_ARCHIVE A, ctxt_phr_ARCHIVE b WHERE A.nws_st_code = '04' AND b.ELEMENT = 'MAX/MINTEM' AND (A.begin_date, A.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy'))) AND (b.begin_date, b.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy'))) AND A.coop_id=b.coop_id AND b.published_flag = 'CD' AND A.report_month = (SELECT MAX(report_month) FROM ctxt_mshr_ghcnd_archive) AND b.report_month = (SELECT MAX(report_month) FROM ctxt_phr_archive) GROUP BY A.coop_id, A.nws_clim_div, A.name_coop_short, b.TIME_OF_OBS, A.ghcnd_id, b.SOIL_TYPE, b.SOIL_COVER, b.DEPTH, b.SLOPE, b.MEASUREMENT_UNITS) SELECT coop_id, nws_clim_div, name_coop_short, time_of_obs, ghcnd_id, SOIL_TYPE, SOIL_COVER, DEPTH, SLOPE, MEASUREMENT_UNITS, mshr_end_date, phr_end_date FROM (SELECT main_query.*, row_number() OVER (PARTITION BY main_query.coop_id ORDER BY mshr_end_date desc, phr_end_date desc) rn FROM main_query) WHERE rn = 1 ORDER BY nws_CLIM_DIV, coop_id"
 SoilTempQuery2 = "WITH main_query AS (SELECT DISTINCT(A.COOP_ID), A.nws_CLIM_DIV, A.NAME_COOP_SHORT, b.TIME_OF_OBS, A.ghcnd_id, b.SOIL_COVER, b.DEPTH, b.DEPTH_UNITS, b.MEASUREMENT_UNITS, MAX(A.end_date) mshr_end_date, MAX(b.end_date) phr_end_date FROM CTXT_MSHR_GHCND_ARCHIVE A, ctxt_phr_ARCHIVE b WHERE A.nws_st_code = '04' AND b.ELEMENT = 'MAX/MINTEM' AND (A.begin_date, A.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy'))) AND (b.begin_date, b.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy'))) AND A.coop_id=b.coop_id AND b.published_flag = 'CD' AND A.report_month = (SELECT MAX(report_month) FROM ctxt_mshr_ghcnd_archive) AND b.report_month = (SELECT MAX(report_month) FROM ctxt_phr_archive) GROUP BY A.coop_id, A.nws_clim_div, A.name_coop_short, b.TIME_OF_OBS, A.ghcnd_id, b.SOIL_COVER, b.DEPTH, b.DEPTH_UNITS, b.MEASUREMENT_UNITS) SELECT coop_id, nws_clim_div, name_coop_short, time_of_obs, ghcnd_id, SOIL_COVER, DEPTH, DEPTH_UNITS, MEASUREMENT_UNITS, mshr_end_date, phr_end_date FROM (SELECT main_query.*, row_number() OVER (PARTITION BY main_query.coop_id ORDER BY mshr_end_date desc, phr_end_date desc) rn FROM main_query) WHERE rn = 1 ORDER BY nws_CLIM_DIV, coop_id"
 
+DailyPrecipQuery = """
+WITH main_query AS (
+    SELECT DISTINCT(A.COOP_ID), A.nws_CLIM_DIV, A.NAME_COOP_SHORT, b.TIME_OF_OBS, A.ghcnd_id, MAX(A.end_date) mshr_end_date, MAX(b.end_date) phr_end_date 
+    FROM  CTXT_MSHR_GHCND_ARCHIVE A, ctxt_phr_ARCHIVE b 
+    WHERE A.nws_st_code = '04'  
+    AND b.ELEMENT IN ('PRECIP')   
+    AND (A.begin_date, A.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/01/2023','mm/dd/yyyy')))    
+    AND (b.begin_date, b.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/01/2023','mm/dd/yyyy')))    
+    AND A.coop_id=b.coop_id    
+    AND b.published_flag = 'CD'   
+    AND A.report_month = (SELECT MAX(report_month) FROM ctxt_mshr_ghcnd_archive)    
+    AND b.report_month = (SELECT MAX(report_month) FROM ctxt_phr_archive) 
+    GROUP BY A.coop_id, A.nws_clim_div, A.name_coop_short, b.TIME_OF_OBS, A.ghcnd_id
+)
+SELECT coop_id, nws_clim_div, name_coop_short, time_of_obs, ghcnd_id, mshr_end_date, phr_end_date
+FROM (
+    SELECT main_query.*, row_number() OVER (PARTITION BY main_query.coop_id ORDER BY mshr_end_date desc, phr_end_date desc) rn
+    FROM main_query
+)
+WHERE rn = 1
+ORDER BY nws_CLIM_DIV,  coop_id;     
+
+"""
+
 #       ************* END Query list **************
 
 
@@ -38,16 +62,27 @@ def ConnectDB() :
     return connection
 
 def QueryDB(query):
-    getConnected = ConnectDB()
-    cursor = getConnected.cursor()
+    connection = ConnectDB()
+    cursor = connection.cursor()
     
     # Get Station list for the Summary of the Month Table
-    if query == "som":
-        cursor.execute(SomQuery) # Only needed 
+    # if query == "som":
+    #     cursor.execute(SomQuery) # Only needed 
+    #     rows = cursor.fetchall()
+    #     for row in rows:
+    #         print(row)
+    #     cursor.close()
+    
+    try:
+        cursor.execute(SomQuery)
         rows = cursor.fetchall()
-        for row in rows:
-            print(row)
         cursor.close()
+        connection.close()
+        return rows
+                
+    except Exception as err: 
+            print("error: {}".format(traceback.format_exc()))
+            return None
         
 def QuerySoM(query):
     connection = ConnectDB()
