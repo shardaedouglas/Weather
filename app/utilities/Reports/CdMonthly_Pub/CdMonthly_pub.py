@@ -797,6 +797,94 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
 
 
 
+def getTemperatureTable(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    # Add ghcn_id column
+    df = df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    result = {}
+    ob_time_map = {}
+
+    # Extract OB.TIME from TMAX rows (or TMIN if TMAX missing)
+    # Build dict of {ghcn_id: time_of_obs}
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        time_of_obs = row.get("time_of_obs", "") or ""
+
+        if obs_type == "TMAX":
+            ob_time_map[ghcn_id] = time_of_obs
+
+    # For stations without TMAX time_of_obs, fallback to TMIN time_of_obs if available
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        time_of_obs = row.get("time_of_obs", "") or ""
+
+        if ghcn_id not in ob_time_map and obs_type == "TMIN":
+            ob_time_map[ghcn_id] = time_of_obs
+
+    # Now build TMAX and TMIN daily arrays
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        if obs_type not in ("TMAX", "TMIN"):
+            continue
+
+        daily_data = []
+        for i in range(1, num_days + 1):
+            raw_val = row.get(f"day_{i}", -9999)
+            try:
+                num_val = float(raw_val)
+            except (TypeError, ValueError):
+                num_val = -9999
+
+            if num_val in (-9999, 9999):
+                converted_val = ''
+            else:
+                # Convert tenths °C to °F rounded integer
+                converted_val = round((num_val / 10.0) * 9 / 5 + 32)
+
+            daily_data.append(converted_val)
+
+        if ghcn_id not in result:
+            result[ghcn_id] = {}
+        # Assumes only one TMAX and one TMIN row per station
+        result[ghcn_id][obs_type] = daily_data
+
+    # Build final dict output
+    final_result = {}
+    unique_ghcn_ids = []
+    seen = set()
+    for ghcn_id in df["ghcn_id"]:
+        if ghcn_id not in seen:
+            unique_ghcn_ids.append(ghcn_id)
+            seen.add(ghcn_id)
+            
+    for ghcn_id in unique_ghcn_ids:
+        final_result[ghcn_id] = {
+            "OB.TIME": (
+                f"{int(ob_time_map[ghcn_id]) // 100:02d}"
+                if ghcn_id in ob_time_map and ob_time_map[ghcn_id].isdigit()
+                else ""
+            ),            
+            "TMAX": result.get(ghcn_id, {}).get("TMAX", [""] * num_days),
+            "TMIN": result.get(ghcn_id, {}).get("TMIN", [""] * num_days),
+        }
+
+    return final_result
+
+
+
+
 
 
     
@@ -1000,11 +1088,18 @@ def generateMonthlyPub():
     try:
         stations = QuerySoM("som")
         print("Station list retrieved.")
+        
+        tobs_data = QuerySoM("tobs")
+        print("TOBS metadata retrieved.")
+
+        # Build TOBS metadata lookup by coop_id
+        tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
         all_filtered_dfs = []
         noDataCount = 0
 
         for row in stations[:10]:
+            coop_id = row[0]
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -1027,6 +1122,18 @@ def generateMonthlyPub():
                     print(f"Skipping station {ghcn_id} due to no data.")
                     noDataCount += 1
                     continue
+
+                # Add TOBS metadata if available
+                if coop_id in tobs_lookup:
+                    meta_fields = [
+                        "data_program", "element", "time_of_obs", "equipment", "shield_flag",
+                        "roof_flag", "j_flag", "r_flag", "c_flag", "g_flag"
+                    ]
+                    metadata = dict(zip(meta_fields, tobs_lookup[coop_id]))
+                    for key, val in metadata.items():
+                        filtered_df = filtered_df.with_columns(pl.lit(val).cast(pl.String).alias(key))
+                else:
+                    print(f"No TOBS metadata for {coop_id}")
 
                 if all_filtered_dfs:
                     existing_columns = all_filtered_dfs[0].columns
@@ -1057,10 +1164,7 @@ def generateMonthlyPub():
         output_file = f"combined_data_{month}_{year}.json"
         with open(output_file, "w") as f:
             f.write(json_data)
-        
-        
-        
-        
+
         print(f"Data saved to {output_file}")
         
         # print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
@@ -1074,11 +1178,12 @@ def generateMonthlyPub():
         # print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
         # print("TotalSnowAndIcePellets:", getTotalSnowAndIcePellets(combined_df))
         # print("maxDepthOnGround:", getMaxDepthOnGround(combined_df))
-        print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
+        # print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
+        print("TemperatureTable:", getTemperatureTable(combined_df))
 
-        
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
+
 
 
 
