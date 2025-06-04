@@ -140,6 +140,37 @@ def processDataForTable(date_param=None):
     """
     print("Processing chart data!")
     
+    
+    
+    
+def add_station_names(data_dict, station_file_path='/data/ops/ghcnd/data/ghcnd-stations.txt'):
+
+    # Load mapping from file
+    station_names = {}
+    with open(station_file_path, 'r') as f:
+        for line in f:
+            ghcn_id = line[:11].strip()
+            name = line[41:71].strip()
+            station_names[ghcn_id] = name
+
+    # Add staiton name to output.
+    updated_dict = {}
+    for ghcn_id, data in data_dict.items():
+        station_name = station_names.get(ghcn_id, "UNKNOWN")
+        if isinstance(data, dict):
+            updated = data.copy()
+            updated["station_name"] = station_name
+        else:
+            updated = {
+                "value": data,
+                "station_name": station_name
+            }
+        updated_dict[ghcn_id] = updated
+    
+    return updated_dict
+
+
+
 
 def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
     # Filter only TMAX records (maximum temperature)
@@ -790,7 +821,6 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
             else:
                 converted_result[ghcn_id][obs_type] = ["MISSING DATA"]
 
-    print("Original result:\n", result)
     print("SnowAndSnwdTable:", converted_result)
 
     return converted_result
@@ -1179,8 +1209,12 @@ def generateMonthlyPub():
         # print("TotalSnowAndIcePellets:", getTotalSnowAndIcePellets(combined_df))
         # print("maxDepthOnGround:", getMaxDepthOnGround(combined_df))
         # print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
-        print("TemperatureTable:", getTemperatureTable(combined_df))
-
+        # print("TemperatureTable:", getTemperatureTable(combined_df))
+       
+        tempTableData = getTemperatureTable(combined_df)
+        tempTableDataWithNames = add_station_names(tempTableData)
+        print(tempTableDataWithNames)
+        
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
 
