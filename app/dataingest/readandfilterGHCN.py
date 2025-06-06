@@ -167,8 +167,8 @@ def parse_and_filter(
         if filtered_df.is_empty() or filtered_df["year"].is_null().all() or filtered_df["month"].is_null().all():
             print("No valid data available for the given month.")
             return {'status': 'skip', 'station_code': station_code}
-    
-        graph_data = {
+
+        table_data = {
                 'country_code': filtered_df['country_code'][0],
                 'network_code': filtered_df['network_code'][0],
                 'station_code': filtered_df['station_code'][0],
@@ -179,11 +179,14 @@ def parse_and_filter(
         
         # Add data for all days in the month
         for day in range(1, 32):  # Loop through days 1-31
-            graph_data[f'day_{day}'] = (
+            table_data[f'day_{day}'] = (
                 filtered_df[f'day_{day}'] if f'day_{day}' in filtered_df.columns else None
             )
+            table_data[f'flag_{day}'] = (
+                filtered_df[f'flag_{day}'] if f'flag_{day}' in filtered_df.columns else None
+            )
             
-        return graph_data
+        return table_data
     
         
     else:   #correction_type = monthly
