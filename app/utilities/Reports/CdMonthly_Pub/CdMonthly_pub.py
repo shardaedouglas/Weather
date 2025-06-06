@@ -806,7 +806,7 @@ def generateMonthlyPub():
         all_filtered_dfs = []
         noDataCount = 0
 
-        for row in stations[:20]:
+        for row in stations:
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -872,11 +872,12 @@ def generateMonthlyPub():
         # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
         # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
         # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
-        #print("MonthlyHDD:", getMonthlyHDD(combined_df))
-        print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
+        # print("MonthlyHDD:", getMonthlyHDD(combined_df))
+        print("Precip Number of Days:", getNumOfDays(json.loads(json_data)))
+        # print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
 
 
-        getMonthlyHDD
+        # getMonthlyHDD
 
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
@@ -893,6 +894,8 @@ hddid=[]
 hddval=[]
 
 
+
+# This works differently than python's round().
 
 def round_it(d: float, dec_place: int) -> str:
     val = ""
@@ -1970,3 +1973,78 @@ def getTempNorm7100(id: str, atmp: str, pcn:str, imo: int):
 
     return dfn
 
+def getNumOfDays(json_data) -> dict:
+    """
+    getNumOfDays -  Returns count of PRECIPITATION NO OF DAYS >= .01 IN, >= .10 IN, >= 1.00 IN for given data.
+	  @param json_data - Json data returned from data parser
+
+      @return - dict:
+                    {"Station ID": {
+                        '.01 OR MORE': int, 
+                        '.10 OR MORE': int, 
+                        '1.00 OR MORE': int
+                        }
+                    } 
+    
+    """
+
+    if (not json_data):
+        return {}
+    
+    # Determine the number of days in the month
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    prcp_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # List Comprehesion
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+
+        if obs_type == "PRCP":
+            prcp_data.setdefault(station_id, []).extend(daily_values)
+
+    nod_results = {}
+    for station, data in prcp_data.items():
+
+        nod_01 = 0      # Precip Number of Days >= .01 in
+        nod_10 = 0      # Precip Number of Days >= .10 in
+        nod_100 = 0     # Precip Number of Days >= 1.00 in
+                
+        for record in data:
+    #         print(record)
+            if record == -9999:
+                continue
+            # record*=0.1
+            record= record * 0.1 * 0.03937
+            record = float(round_it(record, 2))
+            
+            if record >= .01:
+                nod_01+=1   
+            if record >= .10:
+                nod_10+=1
+            if record >= 1.00:
+                nod_100+=1
+
+            # print(f"{record:<20} {str(float(record) >= .01):<8} {str(float(record) >= .10):<8} {str(float(record) >= 1.00):<8}")
+
+
+        nod_results[station] = {
+            ".01 OR MORE": nod_01,
+            ".10 OR MORE": nod_10,
+            "1.00 OR MORE": nod_100
+
+        }
+        print(f"{station}: nod_01={nod_01}\tnod_10={nod_10}\tnod_100={nod_100}")
+
+
+    # print(nod_results)
+    return nod_results
