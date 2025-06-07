@@ -16,6 +16,7 @@ from calendar import monthrange
 from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
 from app.dataingest.readandfilterGHCN import parse_and_filter
+import traceback
 
 # print(f"{record:<20} {str(float(record) >= .01):<8} {str(float(record) >= .10):<8} {str(float(record) >= 1.00):<8}")
 
@@ -125,6 +126,8 @@ def generateDailyPrecip():
     num_days = monthrange(year, month)[1]
     
     prcp_data = {}
+    mdpr_data = {}
+    dapr_data = {}
 
     # Collect Precip data
     for row in json_data:
@@ -144,19 +147,46 @@ def generateDailyPrecip():
         if obs_type == "PRCP":
             # prcp_data.setdefault(station_id, []).extend(daily_values)
             prcp_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "MDPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "DAPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+            
 
     for key, data in prcp_data.items():
         # print(f"{key}:\t{data}")
         write_to_file(f"{key}:\t{data}")
+    write_to_file(f"-"*30)
+    for key, data in mdpr_data.items():
+        # print(f"{key}:\t{data}")
+        
+        write_to_file(f"{key}:\t{data}")
+        write_to_file(len(data))
+    write_to_file(f"-"*30)
+    for key, data in dapr_data.items():
+        # print(f"{key}:\t{data}")
+        
+        write_to_file(f"{key}:\t{data}")
+        write_to_file(len(data))
+
     # print(prcp_data)
     ############################################
 
 
     prcp_data = {
-        'test_station_01': [(0, '  7'), (0, '  7'), (297, '  7'), (157, '  7'), (137, '  7'), (0, 'T 7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (51, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (8, '  7'), (424, '  7'), (0, 'T 7'), (272, '  7'), (244, '  7'), (-9999, '   ')] 
+        'test_station_01': [(0, '  7'), (0, '  7'), (297, '  7'), (157, '  7'), (-9999, '   ') , (-9999, '   ') , (0, '  7'), (0, '  7'), (137, '  7'), (0, '  7'), (51, '  7'), (0, '  7'), (0, 'T 7') , (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (8, '  7'), (424, '  7'), (0, 'T 7'), (272, '  7'), (244, '  7'), (-9999, '   ')] 
         }
-    
-    print(len(prcp_data['test_station_01']))
+    mdpr_data = {
+        'test_station_01': [(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (46, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+    }
+    dapr_data = {
+        'test_station_01': [(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+    }
+    # print(len(prcp_data['test_station_01']))
 
     # prcp_data = {
     #     'USC00040212': [(0, '  7'), (0, '  7'), (114, '  7'), (119, '  7'), (119, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (13, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (127, '  7'), (381, '  7'), (0, '  7'), (51, '  7'), (211, '  7'), (145, '  7')]
@@ -170,13 +200,19 @@ def generateDailyPrecip():
     for station, data in prcp_data.items():
         print(station)
         if data is not None: #If there's precip data
-            for item in data: # each day
-                # print(item)
-                pcn = item[0]
-                flg = item[1][:1]
-                qflg = item[1][2:3]
-
-                print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
+            print(data)
+            for i in range(31): # each day
+                try:    # print(item)
+                    pcn = data[i][0]
+                    flg = data[i][1][:1]
+                    qflg = data[i][1][2:3]
+                    
+                    print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
+                except IndexError as err:
+                    # print("error: {}".format(traceback.format_exc()))
+                    pcnrec[idy+1] = "-  "
+                    idy+=1
+                    continue
 
                 if pcn != -9999:
                     if qflg == " ":
@@ -200,10 +236,43 @@ def generateDailyPrecip():
                 
                 
                 else:  # pcn == -9999
-                    if False:
-                        pass
-                    else:
-                        pcnrec[idy] = "-  "
+                    try:
+                        if mdpr_data[station]: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
+                            # print(mdpr_data[station])
+                            pcn = mdpr_data[station][i][0]
+                            flg = mdpr_data[station][i][1][:1]
+                            qflg = mdpr_data[station][i][1][2:3]
+
+                            print(f"MDPR: pcn {pcn}  flg {flg}  qflg {qflg}")
+
+                            if pcn != -9999:
+                                if qflg == " ":
+                                    d = float(pcn) * 0.1
+                                    d = get_mm_to_in(d)
+                                    pcnrec[idy+1] = round_it(d,2) + "a"
+
+                                    #  DAPR
+                                    try:
+                                        if dapr_data[station]:
+                                            print(f"dapr station: {dapr_data[station]}")
+                                            days = dapr_data[station][0]
+                                            if days != -9999:
+                                                #continue coding here. 
+                                    except KeyError as err:
+                                        pass # Is this right? 
+                                
+                                else:
+                                    d = float(pcn) * 0.1
+                                    d = get_mm_to_in(d)
+                                    pcnrec[idy+1] = round_it(d,2) + "a"
+
+                                if flg == "T":
+                                    pcnrec[idy+1] = "Ta"
+
+                            
+                    except KeyError as err:
+                        print("error: {}".format(traceback.format_exc()))
+                        pcnrec[idy+1] = "-  "
                 idy+=1
 
 
