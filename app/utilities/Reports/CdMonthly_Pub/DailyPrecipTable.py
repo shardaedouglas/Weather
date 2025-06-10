@@ -227,9 +227,12 @@ def generateDailyPrecip():
 
     for station, data in prcp_data.items():
         print(station)
-        if data is not None: #If there's precip data
-            print(data)
-            for i in range(31): # each day
+        
+        for i in range(31): 
+         #If there's precip data
+            
+            if data is not None: # each day
+                print(data)
                 try:    # print(item)
                     pcn = data[i][0]
                     flg = data[i][1][:1]
@@ -310,12 +313,26 @@ def generateDailyPrecip():
 
                                 if flg == "T":
                                     pcnrec[idy+1] = "Ta"
+                            else:
+                                pcnrec[idy+1] = "-  "
+                        
 
                             
                     except KeyError as err:
                         print("error: {}".format(traceback.format_exc()))
                         pcnrec[idy+1] = "-  "
-                idy+=1
+
+                # idy+=1
+            else:
+                inullct += 1
+                pcnrec[idy+1] = "-  "     
+            
+            idy+=1   
+
+
+
+
+                
 
 
     return pcnrec
