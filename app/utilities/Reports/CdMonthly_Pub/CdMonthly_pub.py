@@ -119,7 +119,7 @@ import traceback
 #         return jsonify({"error": str(e)}), 500  
     
 import polars as pl
-import json, os
+import json, os, math
 from collections import defaultdict
 import calendar
 from calendar import monthrange
@@ -914,10 +914,142 @@ def getTemperatureTable(df: pl.DataFrame) -> dict:
 
 
 
+def getSoilsData(month: int, year: int) -> pl.DataFrame:
+    try:
+        soils_data = QuerySoM("soil")
+        print("Soil metadata retrieved.")
+        print("soils_data", soils_data)
+
+        all_soil_dfs = []
+        for row in soils_data:
+            coop_id = row[0]
+            ghcn_id = row[4]
+            file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+
+            if not os.path.exists(file_path):
+                print(f"Missing soil file: {file_path}")
+                continue
+
+            try:
+                filtered_data = parse_and_filter(
+                    station_code=ghcn_id,
+                    file_path=file_path,
+                    correction_type="soilTable",
+                    month=month,
+                    year=year
+                )
+
+                filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+                if filtered_df.is_empty():
+                    print(f"Skipping soil station {ghcn_id} due to no data.")
+                    continue
+
+                all_soil_dfs.append(filtered_df)
+                print(f"Parsed {len(filtered_df)} soil records from {ghcn_id}")
+
+            except Exception as e:
+                print(f"Error parsing soil station {ghcn_id}: {e}")
+                continue
+
+        if not all_soil_dfs:
+            print("No valid soil station files found.")
+            return pl.DataFrame()
+
+        combined_soil_df = pl.concat(all_soil_dfs, how="vertical")
+        return combined_soil_df
+
+    except Exception as e:
+        print(f"Error in getSoilsData: {e}")
+        return pl.DataFrame()
+
+
+GROUND_COVER_MAP = {
+    "0": "UNKNOWN",
+    "1": "GRASS",
+    "2": "FALLOW",
+    "3": "BARE GROUND",
+    "4": "BROME GRASS",
+    "5": "SOD",
+    "6": "STRAW MULCH",
+    "7": "GRASS MUCK",
+    "8": "BARE MUCK"
+}
+
+DEPTH_CODE_MAP = {
+    "1": 5,
+    "2": 10,
+    "3": 20,
+    "4": 50,
+    "5": 100,
+    "6": 150,
+    "7": 180
+}
+
+def getSoilTemperatureTable(soils_combined_df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if soils_combined_df.is_empty():
+        print("No soil data available.")
+        return []
+
+    # Determine year and month from first row
+    year = soils_combined_df[0, "year"]
+    month = soils_combined_df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    for row in soils_combined_df.iter_rows(named=True):
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        obs_type = row["observation_type"]
+
+        # Determine if max or min soil temp
+        calc_type = "MAX" if obs_type[:2] == "SX" else "MIN"
+
+        # Ground cover and depth codes from obs_type like SN32
+        if len(obs_type) < 4:
+            continue
+        ground_cover_code = obs_type[2]
+        depth_code = obs_type[3]
+
+        # Collect daily values using actual month length
+        daily_values = []
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                celsius = int(val) / 10
+                fahrenheit = round((celsius * 9 / 5) + 32)
+                daily_values.append(fahrenheit)
+            except Exception:
+                daily_values.append("-")
+
+        # Pad out to 31 days with ""
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        # Skip if all values are missing
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        # Map depth code to cm, then to inches
+        cm_val = DEPTH_CODE_MAP.get(depth_code)
+        if cm_val is None:
+            continue
+        in_val = math.ceil(cm_val / 2.54)
+
+        grouped[ghcn_id].append({
+            "calc_type": calc_type,
+            "ground_cover": GROUND_COVER_MAP.get(ground_cover_code, "unknown"),
+            "depth_in": in_val,
+            "daily_values_f": daily_values
+        })
+
+    return [{"ghcn_id": ghcn_id, "soil_temperatures": entries} for ghcn_id, entries in grouped.items()]
 
 
 
-    
 
 
 
@@ -1121,7 +1253,10 @@ def generateMonthlyPub():
         
         tobs_data = QuerySoM("tobs")
         print("TOBS metadata retrieved.")
-
+        
+        soils_data = QuerySoM("soil")
+        print("Soil metadata retrieved.")
+        print("soils_data", soils_data)
         # Build TOBS metadata lookup by coop_id
         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
@@ -1211,10 +1346,16 @@ def generateMonthlyPub():
         # print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
         # print("TemperatureTable:", getTemperatureTable(combined_df))
        
-        tempTableData = getTemperatureTable(combined_df)
-        tempTableDataWithNames = add_station_names(tempTableData)
-        print(tempTableDataWithNames)
+        #tempTableData = getTemperatureTable(combined_df)
+        #tempTableDataWithNames = add_station_names(tempTableData)
+        #print(tempTableDataWithNames)
+
+        soils_combined_df = getSoilsData(month, year)
+        with open(f"soil_data_{month}_{year}.json", "w") as f:
+            f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
         
+        print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df)) 
+            
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
 
