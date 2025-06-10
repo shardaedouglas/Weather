@@ -188,18 +188,18 @@ def generateDailyPrecip():
     # }
 
 
-    prcp_data = {
-            'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+#     prcp_data = {
+#             'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
 
-        }
-    mdpr_data = {
-'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+#         }
+#     mdpr_data = {
+# 'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
-    }
-    dapr_data = {
-'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+#     }
+#     dapr_data = {
+# 'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
-    }
+#     }
 
 #     prcp_data = {
 # 'USC00043182':	[(0, '  7'), (0, '  7'), (64, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (20, '  7'), (0, '  7'), (30, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, 'T 7'), (0, 'T 7'), (13, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
@@ -219,14 +219,17 @@ def generateDailyPrecip():
 
 
 
-    pcnrec = [""] * 33 # Station Name, Precip Total, pcn record, pcn record, etc. 
     
-    idy = 1     # Integer for current day
-    inullct = 0 # Integer for null number of days??
-    idyct = 0   # ???
 
+    daily_precip_table_rec = {}
     for station, data in prcp_data.items():
         print(station)
+
+        pcnrec = [""] * 33 # Station Name, Precip Total, pcn record, pcn record, etc. 
+    
+        idy = 1     # Integer for current day
+        inullct = 0 # Integer for null number of days??
+        idyct = 0   # ???
         
         for i in range(31): 
          #If there's precip data
@@ -236,12 +239,13 @@ def generateDailyPrecip():
                 try:    # print(item)
                     pcn = data[i][0]
                     flg = data[i][1][:1]
-                    qflg = data[i][1][2:3]
+                    qflg = data[i][1][1:2]
                     
                     print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
                 except IndexError as err:
+                    # Handling months without 31 days
                     # print("error: {}".format(traceback.format_exc()))
-                    pcnrec[idy+1] = "-  "
+                    pcnrec[idy+1] = "  "
                     idy+=1
                     continue
 
@@ -252,7 +256,8 @@ def generateDailyPrecip():
                         d = get_mm_to_in(d)
                         pcnrec[idy+1] = round_it(d,2)
 
-                        if pcnrec[idy+1] == "0.00":
+                        print(f"pcnrec[idy+1] = {pcnrec[idy+1]} ({type(pcnrec[idy+1])} \t '0.00' ")
+                        if pcnrec[idy+1] == '0.00':
                             pcnrec[idy+1] = " "
                     else:
                         d = float(pcn) * 0.1
@@ -329,13 +334,18 @@ def generateDailyPrecip():
             
             idy+=1   
 
+        # Add to dictionary
+        print(pcnrec)
+        daily_precip_table_rec.setdefault(station, []).extend(pcnrec)
+
+
 
 
 
                 
 
 
-    return pcnrec
+    return daily_precip_table_rec
 
 
 
@@ -398,6 +408,13 @@ def write_to_file(obj, filename="program_output.txt"):
 
 
 if __name__ == "__main__":
-    # print(generateDailyPrecip())
-    for i, value in enumerate(generateDailyPrecip(), start=-1):
-        print(f"{i}: {repr(value)}")
+    results = generateDailyPrecip()
+    # write_to_file("*"* 30)
+    print(results)
+    write_to_file("*"* 30)
+    for key, value  in results.items():
+        write_to_file(f"{key}:  {value}")
+        
+        # for i, value in enumerate(generateDailyPrecip(), start=-1):
+    #     # print(f"{i}: {value} {type(value)}")
+    #     print(f"{i}: {value}")
