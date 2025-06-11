@@ -126,6 +126,7 @@ from calendar import monthrange
 from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QuerySoM
 from app.dataingest.readandfilterGHCN import parse_and_filter
+from typing import List, Dict, Any
 
 def makeGraph(df):
     """
@@ -1051,7 +1052,29 @@ def getSoilTemperatureTable(soils_combined_df: pl.DataFrame) -> list[dict]:
 
 
 
+def get_soil_refernce_notes(rows: List[tuple]) -> List[Dict[str, Any]]:
 
+    report_list = []
+
+    for row in rows:
+        station_name = row[2]  # 'DAVIS 2 WSW EXP FARM'
+        soil_type = row[5]     # 'LOAM'
+        soil_cover = row[6]    # 'BARE GROUND'
+        slope = row[8]         # 00
+        units = row[9]         # 'F'
+
+        # Convert slope to string, pad with zeros if needed (e.g. '20' -> '20')
+        slope_str = str(slope).zfill(2) if slope is not None else ""
+
+        report_list.append({
+            "station_name": station_name,
+            "soil_type": soil_type,
+            "soil_cover": soil_cover,
+            "slope": slope_str,
+            "units": units
+        })
+
+    return report_list
 
 
 
@@ -1257,6 +1280,11 @@ def generateMonthlyPub():
         soils_data = QuerySoM("soil")
         print("Soil metadata retrieved.")
         print("soils_data", soils_data)
+        
+        soils_ref_data = QuerySoM("soilref")
+        print("Soil REF metadata retrieved.")
+        print("soils_REF_data", soils_ref_data)
+        
         # Build TOBS metadata lookup by coop_id
         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
@@ -1350,11 +1378,17 @@ def generateMonthlyPub():
         #tempTableDataWithNames = add_station_names(tempTableData)
         #print(tempTableDataWithNames)
 
-        soils_combined_df = getSoilsData(month, year)
-        with open(f"soil_data_{month}_{year}.json", "w") as f:
-            f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
+        # soils_combined_df = getSoilsData(month, year)
+        # with open(f"soil_data_{month}_{year}.json", "w") as f:
+            # f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
         
-        print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df)) 
+        # print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df))
+        
+        
+        soilRefNotes = get_soil_refernce_notes(soils_ref_data)
+        for item in soilRefNotes:
+            print("SoilRefNotes: ", item)
+ 
             
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
