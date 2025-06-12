@@ -119,13 +119,14 @@ import traceback
 #         return jsonify({"error": str(e)}), 500  
     
 import polars as pl
-import json, os
+import json, os, math
 from collections import defaultdict
 import calendar
 from calendar import monthrange
 from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QuerySoM
 from app.dataingest.readandfilterGHCN import parse_and_filter
+from typing import List, Dict, Any
 
 def makeGraph(df):
     """
@@ -140,6 +141,37 @@ def processDataForTable(date_param=None):
     """
     print("Processing chart data!")
     
+    
+    
+    
+def add_station_names(data_dict, station_file_path='/data/ops/ghcnd/data/ghcnd-stations.txt'):
+
+    # Load mapping from file
+    station_names = {}
+    with open(station_file_path, 'r') as f:
+        for line in f:
+            ghcn_id = line[:11].strip()
+            name = line[41:71].strip()
+            station_names[ghcn_id] = name
+
+    # Add staiton name to output.
+    updated_dict = {}
+    for ghcn_id, data in data_dict.items():
+        station_name = station_names.get(ghcn_id, "UNKNOWN")
+        if isinstance(data, dict):
+            updated = data.copy()
+            updated["station_name"] = station_name
+        else:
+            updated = {
+                "value": data,
+                "station_name": station_name
+            }
+        updated_dict[ghcn_id] = updated
+    
+    return updated_dict
+
+
+
 
 def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
     # Filter only TMAX records (maximum temperature)
@@ -598,12 +630,451 @@ def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
     return threshold_counts
 
 
+def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    day_columns = [f"day_{i}" for i in range(1, num_days + 1)]
+
+    # Filter for SNOW and WT04 observations only
+    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "WT04"]))
+
+    # Cast daily values to Int64 (to be safe)
+    snow_df = snow_df.with_columns([
+        pl.col(day_columns).cast(pl.Int64, strict=False)
+    ])
+
+    # Create station ID
+    snow_df = snow_df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    station_sums = {}
+    for row in snow_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        daily_values = [row[col] for col in day_columns]
+        missing_days = sum(1 for val in daily_values if val == -9999)
+
+        # Convert and round each daily value before summing
+        valid_sum_in = sum(
+            round(val * 0.03937, 1) for val in daily_values if val != -9999
+        )
+
+        if ghcn_id not in station_sums:
+            station_sums[ghcn_id] = {"total_in": 0, "missing": 0}
+        station_sums[ghcn_id]["total_in"] += valid_sum_in
+        station_sums[ghcn_id]["missing"] += missing_days
+
+    # Build initial results from stations with data
+    result = {}
+    for station, data in station_sums.items():
+        if data["missing"] >= 10:
+            result[station] = "M"
+        elif 1 <= data["missing"] <= 9:
+            result[station] = f"M {round(data['total_in'], 1)}"
+        else:
+            result[station] = round(data["total_in"], 1)
+
+    # Now, include stations in original df but NOT in snow_df, mark them as "M"
+    # Fix: safely handle None values
+    original_station_ids = set(
+        (
+            (df[row, "country_code"] or "") +
+            (df[row, "network_code"] or "") +
+            (df[row, "station_code"] or "")
+        )
+        for row in range(df.height)
+    )
+    processed_station_ids = set(station_sums.keys())
+
+    for station_id in original_station_ids - processed_station_ids:
+        result[station_id] = "M"
+
+    return result
 
 
 
 
+def getMaxDepthOnGround(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+    valid_day_cols = [f"day_{i}" for i in range(1, num_days + 1)]
+    valid_flag_cols = [f"day_{i}_flag" for i in range(1, num_days + 1)]
+
+    snwd_df = df.filter(pl.col("observation_type") == "SNWD").with_columns([
+        pl.col(valid_day_cols).cast(pl.Int64, strict=False),
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    station_max = {}
+
+    for row in snwd_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        daily_values = [row.get(f"day_{i}", None) for i in range(1, num_days + 1)]
+
+        # Count how many days are missing/null (-9999 or None)
+        missing_days = sum(1 for val in daily_values if val is None or val == -9999)
+
+        # Exclude station ONLY if all days missing (all 31 days missing)
+        if missing_days == num_days:
+            continue  # exclude station completely
+
+        # Filter to valid days: any day that is not missing (-9999 or None)
+        valid_days = [(i, val) for i, val in enumerate(daily_values, start=1) if val is not None and val != -9999]
+
+        if not valid_days:
+            continue  # no valid days at all, exclude
+
+        # Find max value and last day of that max
+        max_val = max(val for i, val in valid_days)
+        max_days = [i for i, val in valid_days if val == max_val]
+        max_day = max_days[-1]  # last tie wins
+
+        if max_val == 0:
+            station_max[ghcn_id] = (0, "")
+        else:
+            inches = round(max_val * 0.03937)
+            station_max[ghcn_id] = (inches, f"{max_day:02d}")
+
+    return station_max
 
 
+
+def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    # Filter for SNOW and SNWD only
+    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "SNWD"]))
+
+    # Create full station ID
+    snow_df = snow_df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    result = {}
+
+    for row in snow_df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+
+        daily_data = []
+        for i in range(1, num_days + 1):
+            raw_val = row.get(f"day_{i}", -9999)
+            try:
+                num_val = float(raw_val)
+            except (TypeError, ValueError):
+                num_val = -9999  # fallback if conversion fails
+
+            if num_val in (0, -9999):
+                converted_val = num_val
+            else:
+                converted_val = round(num_val / 25.4, 1)
+
+            flag_val = row.get(f"flag_{i}", None)
+            daily_data.append((converted_val, flag_val))
+
+        if ghcn_id not in result:
+            result[ghcn_id] = {}
+
+        result[ghcn_id][obs_type] = daily_data
+
+    converted_result = {}
+    # Keep track of stations already processed
+    processed_stations = set()
+
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        if ghcn_id in processed_stations:
+            continue
+        processed_stations.add(ghcn_id)
+
+        converted_result[ghcn_id] = {}
+        for obs_type in ["SNOW", "SNWD"]:
+            if ghcn_id in result and obs_type in result[ghcn_id]:
+                daily_list = result[ghcn_id][obs_type]
+                converted_values = []
+                for val, flag in daily_list:
+                    flag = (flag or "").strip()
+                    if '7' in flag and 'T' in flag:
+                        converted_values.append('T')
+                    elif val == 0.0:
+                        converted_values.append('')
+                    elif '7' in flag:
+                        converted_values.append(val)
+                    else:
+                        converted_values.append('-')
+                while len(converted_values) < 31:
+                    converted_values.append('')
+                converted_result[ghcn_id][obs_type] = converted_values
+            else:
+                converted_result[ghcn_id][obs_type] = ["MISSING DATA"]
+
+    print("SnowAndSnwdTable:", converted_result)
+
+    return converted_result
+
+
+
+def getTemperatureTable(df: pl.DataFrame) -> dict:
+    if df.is_empty():
+        return {}
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    # Add ghcn_id column
+    df = df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("ghcn_id")
+    ])
+
+    result = {}
+    ob_time_map = {}
+
+    # Extract OB.TIME from TMAX rows (or TMIN if TMAX missing)
+    # Build dict of {ghcn_id: time_of_obs}
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        time_of_obs = row.get("time_of_obs", "") or ""
+
+        if obs_type == "TMAX":
+            ob_time_map[ghcn_id] = time_of_obs
+
+    # For stations without TMAX time_of_obs, fallback to TMIN time_of_obs if available
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        time_of_obs = row.get("time_of_obs", "") or ""
+
+        if ghcn_id not in ob_time_map and obs_type == "TMIN":
+            ob_time_map[ghcn_id] = time_of_obs
+
+    # Now build TMAX and TMIN daily arrays
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["ghcn_id"]
+        obs_type = row["observation_type"]
+        if obs_type not in ("TMAX", "TMIN"):
+            continue
+
+        daily_data = []
+        for i in range(1, num_days + 1):
+            raw_val = row.get(f"day_{i}", -9999)
+            try:
+                num_val = float(raw_val)
+            except (TypeError, ValueError):
+                num_val = -9999
+
+            if num_val in (-9999, 9999):
+                converted_val = ''
+            else:
+                # Convert tenths °C to °F rounded integer
+                converted_val = round((num_val / 10.0) * 9 / 5 + 32)
+
+            daily_data.append(converted_val)
+
+        if ghcn_id not in result:
+            result[ghcn_id] = {}
+        # Assumes only one TMAX and one TMIN row per station
+        result[ghcn_id][obs_type] = daily_data
+
+    # Build final dict output
+    final_result = {}
+    unique_ghcn_ids = []
+    seen = set()
+    for ghcn_id in df["ghcn_id"]:
+        if ghcn_id not in seen:
+            unique_ghcn_ids.append(ghcn_id)
+            seen.add(ghcn_id)
+            
+    for ghcn_id in unique_ghcn_ids:
+        final_result[ghcn_id] = {
+            "OB.TIME": (
+                f"{int(ob_time_map[ghcn_id]) // 100:02d}"
+                if ghcn_id in ob_time_map and ob_time_map[ghcn_id].isdigit()
+                else ""
+            ),            
+            "TMAX": result.get(ghcn_id, {}).get("TMAX", [""] * num_days),
+            "TMIN": result.get(ghcn_id, {}).get("TMIN", [""] * num_days),
+        }
+
+    return final_result
+
+
+
+def getSoilsData(month: int, year: int) -> pl.DataFrame:
+    try:
+        soils_data = QuerySoM("soil")
+        print("Soil metadata retrieved.")
+        print("soils_data", soils_data)
+
+        all_soil_dfs = []
+        for row in soils_data:
+            coop_id = row[0]
+            ghcn_id = row[4]
+            file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+
+            if not os.path.exists(file_path):
+                print(f"Missing soil file: {file_path}")
+                continue
+
+            try:
+                filtered_data = parse_and_filter(
+                    station_code=ghcn_id,
+                    file_path=file_path,
+                    correction_type="soilTable",
+                    month=month,
+                    year=year
+                )
+
+                filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+                if filtered_df.is_empty():
+                    print(f"Skipping soil station {ghcn_id} due to no data.")
+                    continue
+
+                all_soil_dfs.append(filtered_df)
+                print(f"Parsed {len(filtered_df)} soil records from {ghcn_id}")
+
+            except Exception as e:
+                print(f"Error parsing soil station {ghcn_id}: {e}")
+                continue
+
+        if not all_soil_dfs:
+            print("No valid soil station files found.")
+            return pl.DataFrame()
+
+        combined_soil_df = pl.concat(all_soil_dfs, how="vertical")
+        return combined_soil_df
+
+    except Exception as e:
+        print(f"Error in getSoilsData: {e}")
+        return pl.DataFrame()
+
+
+GROUND_COVER_MAP = {
+    "0": "UNKNOWN",
+    "1": "GRASS",
+    "2": "FALLOW",
+    "3": "BARE GROUND",
+    "4": "BROME GRASS",
+    "5": "SOD",
+    "6": "STRAW MULCH",
+    "7": "GRASS MUCK",
+    "8": "BARE MUCK"
+}
+
+DEPTH_CODE_MAP = {
+    "1": 5,
+    "2": 10,
+    "3": 20,
+    "4": 50,
+    "5": 100,
+    "6": 150,
+    "7": 180
+}
+
+def getSoilTemperatureTable(soils_combined_df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if soils_combined_df.is_empty():
+        print("No soil data available.")
+        return []
+
+    # Determine year and month from first row
+    year = soils_combined_df[0, "year"]
+    month = soils_combined_df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    for row in soils_combined_df.iter_rows(named=True):
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        obs_type = row["observation_type"]
+
+        # Determine if max or min soil temp
+        calc_type = "MAX" if obs_type[:2] == "SX" else "MIN"
+
+        # Ground cover and depth codes from obs_type like SN32
+        if len(obs_type) < 4:
+            continue
+        ground_cover_code = obs_type[2]
+        depth_code = obs_type[3]
+
+        # Collect daily values using actual month length
+        daily_values = []
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                celsius = int(val) / 10
+                fahrenheit = round((celsius * 9 / 5) + 32)
+                daily_values.append(fahrenheit)
+            except Exception:
+                daily_values.append("-")
+
+        # Pad out to 31 days with ""
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        # Skip if all values are missing
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        # Map depth code to cm, then to inches
+        cm_val = DEPTH_CODE_MAP.get(depth_code)
+        if cm_val is None:
+            continue
+        in_val = math.ceil(cm_val / 2.54)
+
+        grouped[ghcn_id].append({
+            "calc_type": calc_type,
+            "ground_cover": GROUND_COVER_MAP.get(ground_cover_code, "unknown"),
+            "depth_in": in_val,
+            "daily_values_f": daily_values
+        })
+
+    return [{"ghcn_id": ghcn_id, "soil_temperatures": entries} for ghcn_id, entries in grouped.items()]
+
+
+
+
+def get_soil_refernce_notes(rows: List[tuple]) -> List[Dict[str, Any]]:
+
+    report_list = []
+
+    for row in rows:
+        station_name = row[2]  # 'DAVIS 2 WSW EXP FARM'
+        soil_type = row[5]     # 'LOAM'
+        soil_cover = row[6]    # 'BARE GROUND'
+        slope = row[8]         # 00
+        units = row[9]         # 'F'
+
+        # Convert slope to string, pad with zeros if needed (e.g. '20' -> '20')
+        slope_str = str(slope).zfill(2) if slope is not None else ""
+
+        report_list.append({
+            "station_name": station_name,
+            "soil_type": soil_type,
+            "soil_cover": soil_cover,
+            "slope": slope_str,
+            "units": units
+        })
+
+    return report_list
 
 
 
@@ -802,6 +1273,20 @@ def generateMonthlyPub():
     try:
         stations = QuerySoM("som")
         print("Station list retrieved.")
+        
+        tobs_data = QuerySoM("tobs")
+        print("TOBS metadata retrieved.")
+        
+        soils_data = QuerySoM("soil")
+        print("Soil metadata retrieved.")
+        print("soils_data", soils_data)
+        
+        soils_ref_data = QuerySoM("soilref")
+        print("Soil REF metadata retrieved.")
+        print("soils_REF_data", soils_ref_data)
+        
+        # Build TOBS metadata lookup by coop_id
+        tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
         all_filtered_dfs = []
         noDataCount = 0
@@ -829,6 +1314,18 @@ def generateMonthlyPub():
                     print(f"Skipping station {ghcn_id} due to no data.")
                     noDataCount += 1
                     continue
+
+                # Add TOBS metadata if available
+                if coop_id in tobs_lookup:
+                    meta_fields = [
+                        "data_program", "element", "time_of_obs", "equipment", "shield_flag",
+                        "roof_flag", "j_flag", "r_flag", "c_flag", "g_flag"
+                    ]
+                    metadata = dict(zip(meta_fields, tobs_lookup[coop_id]))
+                    for key, val in metadata.items():
+                        filtered_df = filtered_df.with_columns(pl.lit(val).cast(pl.String).alias(key))
+                else:
+                    print(f"No TOBS metadata for {coop_id}")
 
                 if all_filtered_dfs:
                     existing_columns = all_filtered_dfs[0].columns
@@ -859,10 +1356,7 @@ def generateMonthlyPub():
         output_file = f"combined_data_{month}_{year}.json"
         with open(output_file, "w") as f:
             f.write(json_data)
-        
-        
-        
-        
+
         print(f"Data saved to {output_file}")
         
         # print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
@@ -879,8 +1373,21 @@ def generateMonthlyPub():
 
         # getMonthlyHDD
 
+        # soils_combined_df = getSoilsData(month, year)
+        # with open(f"soil_data_{month}_{year}.json", "w") as f:
+            # f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
+        
+        # print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df))
+        
+        
+        soilRefNotes = get_soil_refernce_notes(soils_ref_data)
+        for item in soilRefNotes:
+            print("SoilRefNotes: ", item)
+ 
+            
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
+
 
 
 
