@@ -188,18 +188,18 @@ def generateDailyPrecip():
     # }
 
 
-#     prcp_data = {
-#             'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+    prcp_data = {
+            'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
 
-#         }
-#     mdpr_data = {
-# 'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+        }
+    mdpr_data = {
+'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
-#     }
-#     dapr_data = {
-# 'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+    }
+    dapr_data = {
+'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
-#     }
+    }
 
 #     prcp_data = {
 # 'USC00043182':	[(0, '  7'), (0, '  7'), (64, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (20, '  7'), (0, '  7'), (30, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, 'T 7'), (0, 'T 7'), (13, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
@@ -231,6 +231,11 @@ def generateDailyPrecip():
         idy = 1     # Integer for current day
         inullct = 0 # Integer for null number of days??
         idyct = 0   # ???
+        ptrace = False
+        pcnFlagged = False
+        total_pcn = 0
+        pcn_count = 0 # each valid and non Q flagged PRCP data day
+        ieommd = 0 # Still don't know what this represents.
         
         pcnrec[0] = station
 
@@ -244,7 +249,7 @@ def generateDailyPrecip():
                     flg = data[i][1][:1]
                     qflg = data[i][1][1:2]
                     
-                    # print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
+                    print(f"pcn:{pcn}  flg:{flg}  qflg:{qflg}")
                 except IndexError as err:
                     # Handling months without 31 days
                     # print("error: {}".format(traceback.format_exc()))
@@ -256,22 +261,38 @@ def generateDailyPrecip():
                     if qflg == " ":
                         d = float(pcn) * 0.1
                         # print(f"mm: {d}  in: {round_it(get_mm_to_in(d),2)}")
-                        d = get_mm_to_in(d)
-                        pcnrec[idy+1] = round_it(d,2)
-
-                        # print(f"pcnrec[idy+1] = {pcnrec[idy+1]} ({type(pcnrec[idy+1])} \t '0.00' ")
+                        d = round_it(get_mm_to_in(d),2)
+                        # pcnrec[idy+1] = round_it(d,2)
+                        pcnrec[idy+1] = d
+                        
                         if pcnrec[idy+1] == '0.00':
                             pcnrec[idy+1] = " "
+
+                        total_pcn += float(d) # Add to Total PCN
+                        
+                        total_pcn = float(round_it(total_pcn, 2)) #Is this rounding required? 
+
+                        pcn_count += 1
+                        ieommd = 0
+
+                        if flg == "T":
+                            ptrace = True
+
+
                     else:
                         d = float(pcn) * 0.1
                         # print(f"mm: {d}  in: {round_it(get_mm_to_in(d),2)}")
                         d = get_mm_to_in(d)
                         pcnrec[idy+1] = round_it(d,2)
+                        pcnFlagged = True
 
                     idyct += 1
 
                     if flg == "T":
                         pcnrec[idy+1] = "T  "
+
+                    
+                    print(f"Line: pcnrec[idy+1]:{pcnrec[idy+1]} \ttotal_pcn:{total_pcn} \tpcn_count:{pcn_count} \tieommd:{ieommd}\tptrace:{ptrace} pcnFlagged:{pcnFlagged}")
                 
                 
                 else:  # pcn == -9999
@@ -339,8 +360,7 @@ def generateDailyPrecip():
 
             #  31 day loop level
             # Total Precipitation Calculation
-            total_pcn = totalPrecipCalculator(station ,prcp_data, mdpr_data , dapr_data, i )
-            write_to_file(f"{station}:  {total_pcn}")
+
 
         # Add to dictionary
         # print(pcnrec)
@@ -403,7 +423,7 @@ def round_it(d: float, dec_place: int) -> str:
 
     return val
 
-def write_to_file(obj, filename="program_output.txt"):
+def write_to_file(obj, filename="program_output2.txt"):
     if not hasattr(write_to_file, "has_written"):
         mode = 'w'
         write_to_file.has_written = True
@@ -418,7 +438,7 @@ if __name__ == "__main__":
     results = generateDailyPrecip()
     # write_to_file("*"* 30)
     # print(results)
-    # write_to_file("*"* 30)
+    write_to_file("*"* 30)
     for key, value  in results.items():
         write_to_file(f"{key}:  {value}")
         write_to_file(f"{len(value)}")
