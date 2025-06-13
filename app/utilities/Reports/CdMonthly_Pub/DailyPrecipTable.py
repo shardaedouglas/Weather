@@ -220,6 +220,7 @@ def generateDailyPrecip():
 
 
     
+# Daily Calculations
 
     daily_precip_table_rec = {}
     for station, data in prcp_data.items():
@@ -231,17 +232,19 @@ def generateDailyPrecip():
         inullct = 0 # Integer for null number of days??
         idyct = 0   # ???
         
+        pcnrec[0] = station
+
         for i in range(31): 
          #If there's precip data
             
             if data is not None: # each day
-                print(data)
+                # print(data)
                 try:    # print(item)
                     pcn = data[i][0]
                     flg = data[i][1][:1]
                     qflg = data[i][1][1:2]
                     
-                    print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
+                    # print(f"pcn {pcn}  flg {flg}  qflg {qflg}")
                 except IndexError as err:
                     # Handling months without 31 days
                     # print("error: {}".format(traceback.format_exc()))
@@ -256,7 +259,7 @@ def generateDailyPrecip():
                         d = get_mm_to_in(d)
                         pcnrec[idy+1] = round_it(d,2)
 
-                        print(f"pcnrec[idy+1] = {pcnrec[idy+1]} ({type(pcnrec[idy+1])} \t '0.00' ")
+                        # print(f"pcnrec[idy+1] = {pcnrec[idy+1]} ({type(pcnrec[idy+1])} \t '0.00' ")
                         if pcnrec[idy+1] == '0.00':
                             pcnrec[idy+1] = " "
                     else:
@@ -281,7 +284,7 @@ def generateDailyPrecip():
                             qflg = mdpr_data[station][i][1][1:2]
 
 
-                            print(f"MDPR: pcn {pcn}  flg {flg}  qflg {qflg}")
+                            # print(f"MDPR: pcn {pcn}  flg {flg}  qflg {qflg}")
 
                             if pcn != -9999:
                                 if qflg == " ":
@@ -292,10 +295,10 @@ def generateDailyPrecip():
                                     #  DAPR
                                     try:
                                         if dapr_data[station]:
-                                            print(f"dapr station: {dapr_data[station]}")
+                                            # print(f"dapr station: {dapr_data[station]}")
                                             days = dapr_data[station][i][0]
-                                            print(days)
-                                            print(f"Before DAPR Calc: {pcnrec}")
+                                            # print(days)
+                                            # print(f"Before DAPR Calc: {pcnrec}")
 
                                             if days != -9999:
                                                 ix = i+1 # Index for this calculation
@@ -304,7 +307,7 @@ def generateDailyPrecip():
                                                         pcnrec[ix] = "* "
                                                         ix -= 1
                                                         idyct += 1
-                                                        print(f"Pass {i2}: {pcnrec}")
+                                                        # print(f"Pass {i2}: {pcnrec}")
                                                     except (ValueError, IndexError):
                                                         print("Too many days")
 
@@ -334,15 +337,19 @@ def generateDailyPrecip():
             
             idy+=1   
 
+            #  31 day loop level
+            # Total Precipitation Calculation
+            total_pcn = totalPrecipCalculator(station ,prcp_data, mdpr_data , dapr_data, i )
+            write_to_file(f"{station}:  {total_pcn}")
+
         # Add to dictionary
-        print(pcnrec)
+        # print(pcnrec)
+
+
         daily_precip_table_rec.setdefault(station, []).extend(pcnrec)
 
 
-
-
-
-                
+      
 
 
     return daily_precip_table_rec
@@ -410,10 +417,11 @@ def write_to_file(obj, filename="program_output.txt"):
 if __name__ == "__main__":
     results = generateDailyPrecip()
     # write_to_file("*"* 30)
-    print(results)
-    write_to_file("*"* 30)
+    # print(results)
+    # write_to_file("*"* 30)
     for key, value  in results.items():
         write_to_file(f"{key}:  {value}")
+        write_to_file(f"{len(value)}")
         
         # for i, value in enumerate(generateDailyPrecip(), start=-1):
     #     # print(f"{i}: {value} {type(value)}")
