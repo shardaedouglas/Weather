@@ -202,17 +202,22 @@ def generateDailyPrecip():
 #     }
 
     prcp_data = {
-            'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+            # 'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+            'USC00041990':	None
+        }
+    prcp_data = {
 
         }
+
     mdpr_data = {
-'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (50, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
     }
     dapr_data = {
-'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (8, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (8, '   '), (60, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
     }
+
 
 #     prcp_data = {
 # 'USC00043182':	[(0, '  7'), (0, '  7'), (64, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (20, '  7'), (0, '  7'), (30, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, 'T 7'), (0, 'T 7'), (13, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
@@ -227,8 +232,13 @@ def generateDailyPrecip():
 
 #     }
 
+    # Update the PRCP dictionary with stations that have no PRCP data (but have MDPR and DAPR)
+    for key in set(mdpr_data) | set(dapr_data):  
+        if key not in prcp_data:
+            prcp_data[key] = None
 
-
+    # Output the updated A
+    print(f" Updated prcp data: {prcp_data}")
 
 
 
@@ -389,23 +399,90 @@ def generateDailyPrecip():
                                                 ieommd += 1
                                                 pcn_missing = True    
 
+                                        else:
+                                            print(f"ndays == -9999")
+                                            ndays = 0
+                                            pcn_missing = True
+                                            ieommd += 1
+
                                     except ValueError as err:
                                         print("error: {}".format(traceback.format_exc()))
                                         pass
                             except KeyError as err:
                                 print("error: {}".format(traceback.format_exc()))
-                                pass
+                                print(f"NOTE: No DAPR data")
+                                pcn_missing = True
+                                ieommd += 1
                         
 
                             
                     except KeyError as err:
                         print("error: {}".format(traceback.format_exc()))
+                        print(f"No MDPR Data")
                         pcnrec[idy+1] = "-  "
+                        pcn_missing = True
+                        ieommd += 1
 
                 print(f"Line2: total_pcn: {total_pcn} pcn_count: {pcn_count} pcn_acc: {pcn_acc} pcn_missing:{pcn_missing} ieommd:{ieommd}")
             else:
                 inullct += 1
-                pcnrec[idy+1] = "-  "     
+                pcnrec[idy+1] = "-  "
+
+                #  CODE HERE
+                try:
+                    if mdpr_data[station]: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
+                        
+                        
+                        # print(mdpr_data[station])
+                        # print(f"L: {len(mdpr_data[station])} MDPR station: {mdpr_data[station]}")
+                        try:
+                            pcn = mdpr_data[station][i][0]
+                            qflg = mdpr_data[station][i][1][1:2]
+                        except IndexError as err: # Handling months with less than 31 days.
+                            print("error: {}".format(traceback.format_exc()))
+                            pcn = None 
+                            qflg = None                             
+                        try:
+                            ndays = dapr_data[station][i][0] if dapr_data[station] is not None else 0
+                        except KeyError as err:
+                            print("error: {}".format(traceback.format_exc()))
+                            ndays = 0
+                        except IndexError as err:
+                            print("error: {}".format(traceback.format_exc()))
+                            ndays = None
+
+                        if (pcn or qflg or ndays) is None: 
+                            print(f"Skipping because of index {i}")
+                            continue
+                        
+                        print(f"NOTE: Else.if mdpr_data[station]: pcn {pcn} qflg {qflg} ndays {ndays}")
+
+                        if pcn is not -9999:
+                            if qflg == " ":
+                                # d = 
+                                # d = get_mm_to_in(d)
+                                pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
+                                total_pcn += pcn
+
+                                ndays = int(ndays)
+                                if ndays < i:
+                                    print(f"Note: ndays < i = False")
+                                    pcn_count += ndays
+                                else:
+                                    print(f"Note: ndays < i = True")
+                                    pcn_count = i
+                                    pcn_acc = True
+
+                        print(f"NOTE: Else.if mdpr_data[station].inches: pcn {pcn} qflg {qflg} ndays {ndays} total_pcn {total_pcn} " 
+                                + f"\npcn_count {pcn_count} pcn_acc {pcn_acc} iteration {i}")
+
+
+                            
+                except KeyError as err:
+                    print("error: {}".format(traceback.format_exc()))
+                    pcn_missing = True
+
+            
             
             idy+=1   
 
