@@ -40,13 +40,13 @@ def generateDailyPrecip():
     # # Get Station List
     # stations = QueryDB(DailyPrecipQuery)
     # print(bool(stations))
-    # for station in stations[-20:]:
+    # for station in stations[-10:]:
     #     print(station)
 
     # all_filtered_dfs = []
     # noDataCount = 0
 
-    # for row in stations[:20]:
+    # for row in stations[:10]:
     #     ghcn_id = row[4]
     #     file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
 
@@ -201,22 +201,22 @@ def generateDailyPrecip():
 
 #     }
 
-    prcp_data = {
-            'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
-            # 'USC00041990':	None
-        }
-    # prcp_data = {
+#     prcp_data = {
+#             'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+#             # 'USC00041990':	None
+#         }
+#     # prcp_data = {
 
-    #     }
+#     #     }
 
-    mdpr_data = {
-'USC00041990':	[(100, '   '), (100, ' 77'), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (50, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
-# 'USC00041990':	None
-    }
-    dapr_data = {
-'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (8, '   '), (60, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+#     mdpr_data = {
+# 'USC00041990':	[(100, '   '), (100, ' 77'), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (50, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+# # 'USC00041990':	None
+#     }
+#     dapr_data = {
+# 'USC00041990':	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (8, '   '), (60, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
-    }
+#     }
 
 
 #     prcp_data = {
@@ -507,8 +507,29 @@ def generateDailyPrecip():
             
             
             idy+=1   
-
+        
+        station_name = None
         print(f"station: {station} total precip = {total_pcn}")
+        if station in load_station_data():
+            station_name = load_station_data()[station][1]
+        # print(f"station={station} {station_name}: idy={idy}, inullct={inullct}, idyct={idyct}, ptrace={ptrace}, pcnFlagged={pcnFlagged}, "
+        #     f"total_pcn={total_pcn}, pcn_count={pcn_count}, ieommd={ieommd}, "
+        #     f"pcn_acc={pcn_acc}, pcn_missing={pcn_missing}")
+        write_to_file(
+            f"station={station:<13}  {station_name:<40}"
+            f"  total_pcn={total_pcn:<5}"
+            f"  idy={idy:<3}"
+            f"  inullct={inullct:<2}"
+            f"  idyct={idyct:<3}"
+            f"  ptrace={str(ptrace):<5}"
+            f"  pcnFlagged={str(pcnFlagged):<5}"
+            
+            f"  pcn_count={pcn_count:<2}"
+            f"  ieommd={ieommd:<1}"
+            f"  pcn_acc={str(pcn_acc):<5}"
+            f"  pcn_missing={str(pcn_missing):<5}"
+        )
+        write_to_file(f"station: {station} {station_name}: {total_pcn}", "tprcp_output.txt")
 
 
         # Add to dictionary
@@ -523,6 +544,127 @@ def generateDailyPrecip():
 
     return daily_precip_table_rec
 
+
+def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
+    all_filtered_dfs = []
+    noDataCount = 0
+
+    still_missing = True
+
+    # Parse month and increment
+    month = month
+    year = year
+
+    if month < 12:
+        month += 1
+    else:
+        month = 1
+        year += 1
+
+    ######################
+    # Get next month's data
+
+    file_path = f"/data/ops/ghcnd/data/ghcnd_all/{station_id}.dly"
+
+    if not os.path.exists(file_path):
+        print(f"Missing file: {file_path}")
+        return still_missing
+
+    try:
+        filtered_data = parse_and_filter(
+            station_code=station_id,
+            file_path=file_path,
+            correction_type="table",
+            month=month,
+            year=year
+        )
+
+        filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+        if filtered_df.is_empty():
+            print(f"Skipping station {station_id} due to no data.")
+            noDataCount += 1
+            return still_missing
+
+        if all_filtered_dfs:
+            existing_columns = all_filtered_dfs[0].columns
+            current_columns = filtered_df.columns
+
+            missing_columns = set(existing_columns) - set(current_columns)
+            for col in missing_columns:
+                filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+            filtered_df = filtered_df.select(existing_columns)
+
+        all_filtered_dfs.append(filtered_df)
+        print(f"Parsed {len(filtered_df)} records from {station_id}")
+
+    except Exception as e:
+        print(f"Error parsing {station_id}: {e}")
+        return still_missing
+
+    if not all_filtered_dfs:
+        print("No valid station files found.")
+        return still_missing
+
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
+
+    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = json.loads(json_data)
+
+    # # Optional: write JSON string to file
+    # output_file = f"combined_data_{month}_{year}.json"
+    # with open(output_file, "w") as f:
+    #     f.write(json_data)
+
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    prcp_data = {}
+    mdpr_data = {}
+    dapr_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # List Comprehesion
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+        daily_flags = [
+            row[f"flag_{i}"] # if row[f"day_{i}"] is not None else None
+            for i in range(1, num_days + 1)
+        ]
+
+        if obs_type == "PRCP":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            prcp_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "MDPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "DAPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+
+    for key, data in prcp_data.items():
+        # print(f"{key}:\t{data}")
+        write_to_file(f"{key}:\t{data}", "program_output2.txt")
+    write_to_file(f"-"*30, "program_output2.txt")
+    for key, data in mdpr_data.items():
+        # print(f"{key}:\t{data}")
+        
+        write_to_file(f"{key}:\t{data}", "program_output2.txt")
+        write_to_file(len(data), "program_output2.txt")
+    write_to_file(f"-"*30, "program_output2.txt")
+    for key, data in dapr_data.items():
+        # print(f"{key}:\t{data}")
+        
+        write_to_file(f"{key}:\t{data}", "program_output2.txt")
+        write_to_file(len(data), "program_output2.txt")
 
 
 
@@ -573,17 +715,34 @@ def round_it(d: float, dec_place: int) -> str:
     return val
 
 def write_to_file(obj, filename="program_output2.txt"):
-    if not hasattr(write_to_file, "has_written"):
+    if not hasattr(write_to_file, "write_flags"):
+        write_to_file.write_flags = {}
+
+    if filename not in write_to_file.write_flags:
         mode = 'w'
-        write_to_file.has_written = True
+        write_to_file.write_flags[filename] = True
     else:
         mode = 'a'
 
     with open(filename, mode, encoding='utf-8') as f:
         f.write(str(obj) + '\n')
 
+def load_station_data( filename = os.path.join("/data/ops/onyx.imeh/datzilla-flask/", "ghcnd-stations.txt")):
+    """Load station data into a dictionary keyed by station ID."""
+    stations = {}
+    with open(filename, "r") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 6:
+                continue  # skip malformed lines
+            station_id = parts[0]
+            state = parts[4]
+            name = " ".join(parts[5:])  # everything after the state is the name
+            stations[station_id] = (state, name)
+    return stations
 
 if __name__ == "__main__":
+    
     results = generateDailyPrecip()
     # write_to_file("*"* 30)
     # print(results)
@@ -595,3 +754,6 @@ if __name__ == "__main__":
         # for i, value in enumerate(generateDailyPrecip(), start=-1):
     #     # print(f"{i}: {value} {type(value)}")
     #     print(f"{i}: {value}")
+
+
+    check_next_month_for_acc_pcn("USC00040383", 2, 2023, 0)
