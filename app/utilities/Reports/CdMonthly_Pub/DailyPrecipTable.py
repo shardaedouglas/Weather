@@ -18,14 +18,6 @@ from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrec
 from app.dataingest.readandfilterGHCN import parse_and_filter
 import traceback
 
-# print(f"{record:<20} {str(float(record) >= .01):<8} {str(float(record) >= .10):<8} {str(float(record) >= 1.00):<8}")
-
-# Testing Multiline queries
-# stations = QuerySoM("som")
-# print(bool(stations))
-# for station in stations[:20]:
-#     print(station)
-
 #Testing Daily Precip Query
 
 def get_mm_to_in(mm: float) -> float:
@@ -37,73 +29,98 @@ def generateDailyPrecip():
     month = 2
     year = 2023
     
-    # # Get Station List
-    # stations = QueryDB(DailyPrecipQuery)
-    # print(bool(stations))
-    # for station in stations[-10:]:
-    #     print(station)
+    # Get Station List
+    db_stations = QueryDB(DailyPrecipQuery)
+    print(bool(db_stations))
+    # for station in db_stations[-50:]:
+    # for station in db_stations[:50]:
+    for station in db_stations:
+        print(station)
+        write_to_file(station, "station_list_from_db.txt")
 
-    # all_filtered_dfs = []
-    # noDataCount = 0
+    all_filtered_dfs = []
+    noDataCount = 0
+    full_station_id_list = []
 
-    # for row in stations[:10]:
-    #     ghcn_id = row[4]
-    #     file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+    # for row in db_stations[:50]:
+    for row in db_stations:
+        ghcn_id = row[4]
+        file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+        full_station_id_list.append(ghcn_id)
 
-    #     if not os.path.exists(file_path):
-    #         print(f"Missing file: {file_path}")
-    #         continue
+        if not os.path.exists(file_path):
+            print(f"Missing file: {file_path}")
+            continue
 
-    #     try:
-    #         filtered_data = parse_and_filter(
-    #             station_code=ghcn_id,
-    #             file_path=file_path,
-    #             correction_type="table",
-    #             month=month,
-    #             year=year
-    #         )
+        try:
+            filtered_data = parse_and_filter(
+                station_code=ghcn_id,
+                file_path=file_path,
+                correction_type="table",
+                month=month,
+                year=year
+            )
 
-    #         filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+            filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
 
-    #         if filtered_df.is_empty():
-    #             print(f"Skipping station {ghcn_id} due to no data.")
-    #             noDataCount += 1
-    #             continue
+            if filtered_df.is_empty():
+                print(f"Skipping station {ghcn_id} due to no data.")
+                noDataCount += 1
+                continue
 
-    #         if all_filtered_dfs:
-    #             existing_columns = all_filtered_dfs[0].columns
-    #             current_columns = filtered_df.columns
+            if all_filtered_dfs:
+                existing_columns = all_filtered_dfs[0].columns
+                current_columns = filtered_df.columns
 
-    #             missing_columns = set(existing_columns) - set(current_columns)
-    #             for col in missing_columns:
-    #                 filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+                missing_columns = set(existing_columns) - set(current_columns)
+                for col in missing_columns:
+                    filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
 
-    #             filtered_df = filtered_df.select(existing_columns)
+                filtered_df = filtered_df.select(existing_columns)
 
-    #         all_filtered_dfs.append(filtered_df)
-    #         print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+            all_filtered_dfs.append(filtered_df)
+            print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
 
-    #     except Exception as e:
-    #         print(f"Error parsing {ghcn_id}: {e}")
-    #         continue
+        except Exception as e:
+            print(f"Error parsing {ghcn_id}: {e}")
+            continue
 
-    # if not all_filtered_dfs:
-    #     print("No valid station files found.")
-    #     return
+    if not all_filtered_dfs:
+        print("No valid station files found.")
+        # return?
+    
+        
 
-    # combined_df = pl.concat(all_filtered_dfs, how="vertical")
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
-    # json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = json.dumps(combined_df.to_dicts(), indent=2)
 
-    # # Optional: write JSON string to file
-    # output_file = f"combined_data_{month}_{year}.json"
-    # with open(output_file, "w") as f:
-    #     f.write(json_data)
+    # Optional: write JSON string to file
+    output_file = f"combined_data_{month}_{year}.json"
+    with open(output_file, "w") as f:
+        f.write(json_data)
     
     
     
     
-    # print(f"Data saved to {output_file}")
+    print(f"Data saved to {output_file}")
+
+    
+
+    # # Testing getting just the station list. 
+    # json_data = json.loads(json_data)
+    # print(json_data)
+
+    # # db_stations = list db_stations[2] to a new list. 
+    # # Update
+    # for key in db_stations:  
+    #     if key not in json:
+    #         prcp_data[key] = None
+
+    # # Output the updated A
+    # print(f" Updated prcp data: {prcp_data}")
+
+    # return
 
     # print(json_data)
 
@@ -186,6 +203,10 @@ def generateDailyPrecip():
     #     'test_station_01': [(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (3, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 
     # }
+    # dapr_data.update( {
+    #     'test_station_01': [(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (3, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+    # } )
 
 
 #     prcp_data = {
@@ -202,7 +223,7 @@ def generateDailyPrecip():
 #     }
 
 #     prcp_data = {
-#             'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
+#             'USC00041990':	[(0, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (36, '  7'), (0, '  7'), (0, '  7'), (48, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (0, '  7'), (0, '  7'), (254, '  7'), (-9999, '   '), (0, '  7'), (0, '  7'), (23, '  7'), (0, 'T 7'), (74, '  7')]
 #             # 'USC00041990':	None
 #         }
 #     # prcp_data = {
@@ -210,7 +231,7 @@ def generateDailyPrecip():
 #     #     }
 
 #     mdpr_data = {
-# 'USC00041990':	[(100, '   '), (100, ' 77'), (-9999, '   '), (-9999, '   '), (46, '  7'), (-9999, '   '), (-9999, '   '), (50, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+# 'USC00041990':	[(100, '   '), (100, ' 77'), (-9999, '   '), (-9999, '   '), (0, '  7'), (-9999, '   '), (-9999, '   '), (50, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
 # # 'USC00041990':	None
 #     }
 #     dapr_data = {
@@ -233,12 +254,18 @@ def generateDailyPrecip():
 #     }
 
     # Update the PRCP dictionary with stations that have no PRCP data (but have MDPR and DAPR)
-    for key in set(mdpr_data) | set(dapr_data):  
+    
+
+
+    for key in set(mdpr_data) | set(dapr_data) | set(full_station_id_list):  
         if key not in prcp_data:
             prcp_data[key] = None
 
+
+
+
     # Output the updated A
-    print(f" Updated prcp data: {prcp_data}")
+    # print(f" Updated prcp data: {prcp_data}")
 
 
 
@@ -432,7 +459,7 @@ def generateDailyPrecip():
                 inullct += 1
                 pcnrec[idy+1] = "-  "
 
-                #  CODE HERE
+            
                 try:
                     if mdpr_data[station]is not None: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
                         
@@ -504,38 +531,118 @@ def generateDailyPrecip():
                     print("error: {}".format(traceback.format_exc()))
                     pcn_missing = True
 
-            
+
+
+
+
             
             idy+=1   
+
+
+                # Add Flags to the Total Precip Calculation
+        day_diff = monthrange(year, month)[1] - pcn_count
+
+        if day_diff == 0:
+            pcn_missing = False
+        
+        setAstr = False # Set Asterisk
+        still_missing = True
+
+        if day_diff <= 9:
+            flag_total_pcn = round_it(total_pcn, 2)
+
+            if day_diff == ieommd and ieommd > 0:
+                still_missing = check_next_month_for_acc_pcn(station, month, year, ieommd)
+                if not still_missing:
+                    pcn_missing = False
+                    setAstr = True
+
+            print(f"NOTE: flag_total_pcn={flag_total_pcn} ptrace={ptrace} day_diff={day_diff} pcn_missing={pcn_missing} setAstr={setAstr} still_missing={still_missing}" )
+
+            if ptrace and flag_total_pcn == "0.00":
+                flag_total_pcn = "T"
+
+            label = ""
+
+
+            # TESTING FLAG LOGIC
+            # label = True
+            # setAstr = True
+
+            #####
+            if pcn_acc:
+                if pcn_missing:
+                    label = "FMA" if pcnFlagged else "MA"
+                else:
+                    label = "FA" if pcnFlagged else "A"
+            else:
+                if pcn_missing:
+                    label = "FM" if pcnFlagged else "M"
+                else:
+                    label = "F" if pcnFlagged else ""
+
+            if label:
+                if setAstr:
+                    flag_total_pcn = f"{label}* {flag_total_pcn}"
+                else:
+                    flag_total_pcn = f"{label} {flag_total_pcn}"
+            elif setAstr:
+                flag_total_pcn = f"* {flag_total_pcn}"
+        
+        else:
+            flag_total_pcn = "M"
+
+
+        print(f"pcn_acc={pcn_acc} pcn_missing={pcn_missing} label={label} setAstr={setAstr}")
+                    
+        print(f"NOTE: flag_total_pcn={flag_total_pcn} ptrace={ptrace} day_diff={day_diff} pcn_missing={pcn_missing} setAstr={setAstr} still_missing={still_missing}" )
         
         station_name = None
-        print(f"station: {station} total precip = {total_pcn}")
+        print(f"station: {station} total precip = {total_pcn} flag_total_pcn={flag_total_pcn}")
         if station in load_station_data():
             station_name = load_station_data()[station][1]
         # print(f"station={station} {station_name}: idy={idy}, inullct={inullct}, idyct={idyct}, ptrace={ptrace}, pcnFlagged={pcnFlagged}, "
         #     f"total_pcn={total_pcn}, pcn_count={pcn_count}, ieommd={ieommd}, "
         #     f"pcn_acc={pcn_acc}, pcn_missing={pcn_missing}")
-        write_to_file(
-            f"station={station:<13}  {station_name:<40}"
-            f"  total_pcn={total_pcn:<5}"
-            f"  idy={idy:<3}"
-            f"  inullct={inullct:<2}"
-            f"  idyct={idyct:<3}"
-            f"  ptrace={str(ptrace):<5}"
-            f"  pcnFlagged={str(pcnFlagged):<5}"
-            
-            f"  pcn_count={pcn_count:<2}"
-            f"  ieommd={ieommd:<1}"
-            f"  pcn_acc={str(pcn_acc):<5}"
-            f"  pcn_missing={str(pcn_missing):<5}"
-        )
-        write_to_file(f"station: {station} {station_name}: {total_pcn}", "tprcp_output.txt")
+        
+        write_to_file(f"station: {station} {station_name}: {total_pcn} flag_total_pcn={flag_total_pcn}", "tprcp_output.txt")
 
 
         # Add to dictionary
-        # print(pcnrec)
+        pcnrec[1] = flag_total_pcn
+        print(pcnrec)
+
+    
+        write_to_file(
+            f"station={str(station):<13}  {str(station_name):<40}"
+            f"  flag_total_pcn={str(flag_total_pcn):<5}"
+            f"  total_pcn={str(total_pcn):<5}"
+            f"  idy={str(idy):<3}"
+            f"  inullct={str(inullct):<2}"
+            f"  idyct={str(idyct):<3}"
+            f"  ptrace={str(ptrace):<5}"
+            f"  pcnFlagged={str(pcnFlagged):<5}"
+            f"  pcn_count={str(pcn_count):<2}"
+            f"  ieommd={str(ieommd):<1}"
+            f"  pcn_acc={str(pcn_acc):<5}"
+            f"  pcn_missing={str(pcn_missing):<5}"
+            f"\n{str(station_name)} {str(pcnrec)}"
+        )
 
 
+        # Printing the results for each station to a file to QA them. 
+        result = {}
+        result['station_id'] = pcnrec[0]
+        result['tprcp'] = pcnrec[1].strip()
+
+        for i, value in enumerate(pcnrec[2:], start=1):
+            label = f"{i:02d}"
+            result[label] = value.strip()
+
+        write_to_file(
+             f"{str(station_name)} {str(result)}\n"
+             , "tprcp_output.txt"
+        )
         daily_precip_table_rec.setdefault(station, []).extend(pcnrec)
 
 
@@ -650,25 +757,98 @@ def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: 
             # prcp_data.setdefault(station_id, []).extend(daily_values)
             dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
 
-    for key, data in prcp_data.items():
-        # print(f"{key}:\t{data}")
-        write_to_file(f"{key}:\t{data}", "program_output2.txt")
-    write_to_file(f"-"*30, "program_output2.txt")
-    for key, data in mdpr_data.items():
-        # print(f"{key}:\t{data}")
+    # for key, data in prcp_data.items():
+    #     # print(f"{key}:\t{data}")
+    #     write_to_file(f"{key}:\t{data}", "program_output2.txt")
+    # write_to_file(f"-"*30, "program_output2.txt")
+    # for key, data in mdpr_data.items():
+    #     # print(f"{key}:\t{data}")
         
-        write_to_file(f"{key}:\t{data}", "program_output2.txt")
-        write_to_file(len(data), "program_output2.txt")
-    write_to_file(f"-"*30, "program_output2.txt")
-    for key, data in dapr_data.items():
-        # print(f"{key}:\t{data}")
+    #     write_to_file(f"{key}:\t{data}", "program_output2.txt")
+    #     write_to_file(len(data), "program_output2.txt")
+    # write_to_file(f"-"*30, "program_output2.txt")
+    # for key, data in dapr_data.items():
+    #     # print(f"{key}:\t{data}")
         
-        write_to_file(f"{key}:\t{data}", "program_output2.txt")
-        write_to_file(len(data), "program_output2.txt")
+    #     write_to_file(f"{key}:\t{data}", "program_output2.txt")
+    #     write_to_file(len(data), "program_output2.txt")
 
 
+    #########################
+# OG Unedited data
+#     prcp_data = {
+# "USC00040383":	[(292, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (356, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (300, '  7'), (41, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (66, '  7'), (61, '  7'), (64, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#         }
+#     mdpr_data = {
+# "USC00040383":	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (168, '  7'), (-9999, '   '), (114, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (343, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (244, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#     }
+#     dapr_data = {
+# "USC00040383":	[(-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#     }
+
+# Testing Data (Edited)
+#     prcp_data = {
+# "USC00040383":	[(-9999, '  7'), (9999, '  7'), (9999, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (9999, '  7'), (356, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (300, '  7'), (41, '  7'), (0, '  7'), (0, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (0, '  7'), (66, '  7'), (61, '  7'), (64, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#         }
+#     mdpr_data = {
+# "USC00040383":	[(10, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (168, '  7'), (-9999, '   '), (114, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (343, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (244, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#     }
+#     dapr_data = {
+# "USC00040383":	[(1, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (2, '  7'), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   '), (-9999, '   ')]
+
+#     }
 
 
+    for i in range(32):
+
+        try:
+            try:
+                pcn = prcp_data[station_id][i][0] if prcp_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                pcn = None
+            
+            try:
+                pcn_mdpr = mdpr_data[station_id][i][0] if mdpr_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                pcn_mdpr = -9999
+            
+            try:
+                days = dapr_data[station_id][i][0] if dapr_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                days = None
+            
+
+        except IndexError as err:
+            print(f"Breaking from next month acc loop.")
+            break # Exit early if data is shorter than expected
+    
+        print(f"pcn={pcn} pcn_mdpr={pcn_mdpr} days={days}")
+
+        # days = None
+        if pcn_mdpr != -9999 and days != -9999:
+            try:
+                days = int(days)
+                day_diff = days - (i + 1)
+                print(day_diff)
+                if day_diff == ieommd:
+                    still_missing = False
+                
+            except TypeError:
+                pass   
+            break # Exit loop if accumulated value found
+
+        if pcn != -9999:
+            break # Exit loop if direct value found
+
+    return still_missing
 
 #############################################################################
 
@@ -714,7 +894,8 @@ def round_it(d: float, dec_place: int) -> str:
 
     return val
 
-def write_to_file(obj, filename="program_output2.txt"):
+def write_to_file(obj, filename="program_output2.txt", path="temp/daily_precip/"):
+    filename = os.path.join(path, filename)
     if not hasattr(write_to_file, "write_flags"):
         write_to_file.write_flags = {}
 
@@ -756,4 +937,4 @@ if __name__ == "__main__":
     #     print(f"{i}: {value}")
 
 
-    check_next_month_for_acc_pcn("USC00040383", 2, 2023, 0)
+    # print(check_next_month_for_acc_pcn("USC00040383", 2, 2023, 0))
