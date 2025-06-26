@@ -25,9 +25,10 @@ def get_mm_to_in(mm: float) -> float:
     return mm * 0.03937 # 1 inch = 25.4 mm
 
 
-def generateDailyPrecip():
-    month = 2
-    year = 2023
+# def generateDailyPrecip():
+def generateDailyPrecip(month:int = 9, year:int = 2020):
+    # month = 5
+    # year = 2023
     
     # Get Station List
     db_stations = QueryDB(DailyPrecipQuery)
@@ -42,69 +43,68 @@ def generateDailyPrecip():
     noDataCount = 0
     full_station_id_list = []
 
-    # for row in db_stations[:50]:
-    for row in db_stations:
-        ghcn_id = row[4]
-        file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
-        full_station_id_list.append(ghcn_id)
+    # for row in db_stations[:10]:
+    # # for row in db_stations:
+    #     ghcn_id = row[4]
+    #     file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+    #     full_station_id_list.append(ghcn_id)
 
-        if not os.path.exists(file_path):
-            print(f"Missing file: {file_path}")
-            continue
+    #     if not os.path.exists(file_path):
+    #         print(f"Missing file: {file_path}")
+    #         continue
 
-        try:
-            filtered_data = parse_and_filter(
-                station_code=ghcn_id,
-                file_path=file_path,
-                correction_type="table",
-                month=month,
-                year=year
-            )
+    #     try:
+    #         filtered_data = parse_and_filter(
+    #             station_code=ghcn_id,
+    #             file_path=file_path,
+    #             correction_type="table",
+    #             month=month,
+    #             year=year
+    #         )
 
-            filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+    #         filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
 
-            if filtered_df.is_empty():
-                print(f"Skipping station {ghcn_id} due to no data.")
-                noDataCount += 1
-                continue
+    #         if filtered_df.is_empty():
+    #             print(f"Skipping station {ghcn_id} due to no data.")
+    #             noDataCount += 1
+    #             continue
 
-            if all_filtered_dfs:
-                existing_columns = all_filtered_dfs[0].columns
-                current_columns = filtered_df.columns
+    #         if all_filtered_dfs:
+    #             existing_columns = all_filtered_dfs[0].columns
+    #             current_columns = filtered_df.columns
 
-                missing_columns = set(existing_columns) - set(current_columns)
-                for col in missing_columns:
-                    filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+    #             missing_columns = set(existing_columns) - set(current_columns)
+    #             for col in missing_columns:
+    #                 filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
 
-                filtered_df = filtered_df.select(existing_columns)
+    #             filtered_df = filtered_df.select(existing_columns)
 
-            all_filtered_dfs.append(filtered_df)
-            print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+    #         all_filtered_dfs.append(filtered_df)
+    #         print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
 
-        except Exception as e:
-            print(f"Error parsing {ghcn_id}: {e}")
-            continue
+    #     except Exception as e:
+    #         print(f"Error parsing {ghcn_id}: {e}")
+    #         continue
 
-    if not all_filtered_dfs:
-        print("No valid station files found.")
-        # return?
+    # if not all_filtered_dfs:
+    #     print("No valid station files found.")
+    #     # return?
     
         
 
-    combined_df = pl.concat(all_filtered_dfs, how="vertical")
+    # combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
-    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    # json_data = json.dumps(combined_df.to_dicts(), indent=2)
 
     # Optional: write JSON string to file
     output_file = f"combined_data_{month}_{year}.json"
-    with open(output_file, "w") as f:
-        f.write(json_data)
+    # with open(output_file, "w") as f:
+    #     f.write(json_data)
     
     
     
     
     print(f"Data saved to {output_file}")
-
     
 
     # # Testing getting just the station list. 
@@ -131,7 +131,10 @@ def generateDailyPrecip():
 
     json_data = None
 
-    with open('combined_data_2_2023.json') as f:
+    # with open('combined_data_2_2023.json') as f:
+    #     json_data = json.load(f)
+    #     # print(d)
+    with open(output_file) as f:
         json_data = json.load(f)
         # print(d)
 
@@ -456,80 +459,81 @@ def generateDailyPrecip():
 
                 print(f"Line2: total_pcn: {total_pcn} pcn_count: {pcn_count} pcn_acc: {pcn_acc} pcn_missing:{pcn_missing} ieommd:{ieommd}")
             else:
-                inullct += 1
-                pcnrec[idy+1] = "-  "
+                if i < num_days:
+                    inullct += 1
+                    pcnrec[idy+1] = "-  "
 
             
-                try:
-                    if mdpr_data[station]is not None: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
-                        
-                        
-                        # print(mdpr_data[station])
-                        # print(f"L: {len(mdpr_data[station])} MDPR station: {mdpr_data[station]}")
-                        try:
-                            pcn = mdpr_data[station][i][0]
-                            qflg = mdpr_data[station][i][1][1:2]
-                        except IndexError as err: # Handling months with less than 31 days.
-                            print("error: {}".format(traceback.format_exc()))
-                            pcn = None 
-                            qflg = None                             
-                        try:
-                            ndays = dapr_data[station][i][0] if dapr_data[station] is not None else 0
-                        except KeyError as err:
-                            print("error: {}".format(traceback.format_exc()))
-                            ndays = 0
-                        except IndexError as err:
-                            print("error: {}".format(traceback.format_exc()))
-                            ndays = None
+                    try:
+                        if mdpr_data[station]is not None: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
+                            
+                            
+                            # print(mdpr_data[station])
+                            # print(f"L: {len(mdpr_data[station])} MDPR station: {mdpr_data[station]}")
+                            try:
+                                pcn = mdpr_data[station][i][0]
+                                qflg = mdpr_data[station][i][1][1:2]
+                            except IndexError as err: # Handling months with less than 31 days.
+                                print("error: {}".format(traceback.format_exc()))
+                                pcn = None 
+                                qflg = None                             
+                            try:
+                                ndays = dapr_data[station][i][0] if dapr_data[station] is not None else 0
+                            except KeyError as err:
+                                print("error: {}".format(traceback.format_exc()))
+                                ndays = 0
+                            except IndexError as err:
+                                print("error: {}".format(traceback.format_exc()))
+                                ndays = None
 
-                        if (pcn or qflg or ndays) is None: 
-                            print(f"Skipping because of index {i}")
-                            continue
-                        
-                        print(f"NOTE: Else.if mdpr_data[station]: pcn {pcn} qflg {qflg} ndays {ndays}")
+                            if (pcn or qflg or ndays) is None: 
+                                print(f"Skipping because of index {i}")
+                                continue
+                            
+                            print(f"NOTE: Else.if mdpr_data[station]: pcn {pcn} qflg {qflg} ndays {ndays}")
 
-                        if pcn != -9999:
-                            if qflg == " ":
-                                # d = 
-                                # d = get_mm_to_in(d)
-                                pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
-                                # total_pcn += pcn
-                                total_pcn = float(round_it(total_pcn +  pcn, 2))
+                            if pcn != -9999:
+                                if qflg == " ":
+                                    # d = 
+                                    # d = get_mm_to_in(d)
+                                    pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
+                                    # total_pcn += pcn
+                                    total_pcn = float(round_it(total_pcn +  pcn, 2))
 
-                                ndays = int(ndays)
-                                if ndays < i:
-                                    print(f"Note: ndays < i = False")
-                                    pcn_count += ndays if ndays != -9999 else 0
+                                    ndays = int(ndays)
+                                    if ndays < i:
+                                        print(f"Note: ndays < i = False")
+                                        pcn_count += ndays if ndays != -9999 else 0
+                                    else:
+                                        print(f"Note: ndays < i = True")
+                                        pcn_count = i
+                                        pcn_acc = True
+
+                                    if pcn != -9999:
+                                        if qflg == " ":
+                                            pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
+                                            # total_pcn += pcn
+                                            total_pcn = float(round_it(total_pcn +  pcn, 2))
+                                            ieommd = 0
+                                            print(f'NOTE: In second loop. ')
+                                    else: # This clause is unreachable.
+                                        ieommd += 1
+                                        pcn_missing = True
                                 else:
-                                    print(f"Note: ndays < i = True")
-                                    pcn_count = i
-                                    pcn_acc = True
-
-                                if pcn != -9999:
-                                    if qflg == " ":
-                                        pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
-                                        # total_pcn += pcn
-                                        total_pcn = float(round_it(total_pcn +  pcn, 2))
-                                        ieommd = 0
-                                        print(f'NOTE: In second loop. ')
-                                else: # This clause is unreachable.
-                                    ieommd += 1
-                                    pcn_missing = True
+                                    pcnFlagged = True
+                                    # ieommd += 1 # I feel like this should be here, but it isn't. 
                             else:
-                                pcnFlagged = True
-                                # ieommd += 1 # I feel like this should be here, but it isn't. 
+                                pcn_missing = True
+
+                            print(f"NOTE: Else.if mdpr_data[station].inches: pcn {pcn} qflg {qflg} ndays {ndays} total_pcn {total_pcn} " 
+                                    + f"\npcn_count {pcn_count} pcn_acc {pcn_acc} pcnFlagged {pcnFlagged} pcn_missing {pcn_missing} ieommd {ieommd} iteration {i}")
+                        
                         else:
                             pcn_missing = True
-
-                        print(f"NOTE: Else.if mdpr_data[station].inches: pcn {pcn} qflg {qflg} ndays {ndays} total_pcn {total_pcn} " 
-                                + f"\npcn_count {pcn_count} pcn_acc {pcn_acc} pcnFlagged {pcnFlagged} pcn_missing {pcn_missing} ieommd {ieommd} iteration {i}")
-                    
-                    else:
+                                
+                    except KeyError as err:
+                        print("error: {}".format(traceback.format_exc()))
                         pcn_missing = True
-                            
-                except KeyError as err:
-                    print("error: {}".format(traceback.format_exc()))
-                    pcn_missing = True
 
 
 
@@ -629,7 +633,7 @@ def generateDailyPrecip():
             f"\n{str(station_name)} {str(pcnrec)}"
         )
 
-
+        ##############################
         # Printing the results for each station to a file to QA them. 
         result = {}
         result['station_id'] = pcnrec[0]
@@ -643,13 +647,29 @@ def generateDailyPrecip():
              f"{str(station_name)} {str(result)}\n"
              , "tprcp_output.txt"
         )
-        daily_precip_table_rec.setdefault(station, []).extend(pcnrec)
+        ############################
+        
+        # End result format
+        result = {}
+        # result['station_id'] = pcnrec[0]
+        result['total_pcn'] = pcnrec[1].strip()
 
+        daily_pcn = {}
+        for i, value in enumerate(pcnrec[2:], start=1):
+            label = f"{i:02d}"
+            daily_pcn[label] = value.strip()
 
-      
+        # result.update(daily_pcn)
+        result["daily_pcn"] = daily_pcn
+        print(f"daily: {daily_pcn} result: {result}")
+
+        daily_precip_table_rec.setdefault(station, {}).update(result)
+
 
 
     return daily_precip_table_rec
+
+
 
 
 def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
@@ -894,7 +914,7 @@ def round_it(d: float, dec_place: int) -> str:
 
     return val
 
-def write_to_file(obj, filename="program_output2.txt", path="temp/daily_precip/"):
+def write_to_file(obj, filename="program_output_199705.txt", path="temp/daily_precip/"):
     filename = os.path.join(path, filename)
     if not hasattr(write_to_file, "write_flags"):
         write_to_file.write_flags = {}
@@ -925,16 +945,40 @@ def load_station_data( filename = os.path.join("/data/ops/onyx.imeh/datzilla-fla
 if __name__ == "__main__":
     
     results = generateDailyPrecip()
-    # write_to_file("*"* 30)
-    # print(results)
+    
+    
+    print("*"* 30)
+    # Print all
+    print(results)
+
+    # Print one item at a time
+    for k, v in results.items():
+        print(f"{k} {v}")
+    
+    # Print recursively
+    # for k, v in results.items():
+    #     print(k, end="")
+    #     if type(v) is dict:
+    #         print("\n")
+    #         for k2, v2 in v.items():
+    #             print(k2, end="")
+    #             if type(v2) is dict: 
+    #                 print("\n")
+    #                 for k3, v3 in v2.items():
+    #                     print(f"{k3} : {v3}")
+    #             else:
+    #                 print(f": {v2}")
+    #     else:
+    #         print(v)
+
+    
+    # Write to file for Testing
     write_to_file("*"* 30)
     for key, value  in results.items():
         write_to_file(f"{key}:  {value}")
-        write_to_file(f"{len(value)}")
+
         
-        # for i, value in enumerate(generateDailyPrecip(), start=-1):
-    #     # print(f"{i}: {value} {type(value)}")
-    #     print(f"{i}: {value}")
+
 
 
     # print(check_next_month_for_acc_pcn("USC00040383", 2, 2023, 0))
