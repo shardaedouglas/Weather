@@ -26,118 +26,111 @@ def get_mm_to_in(mm: float) -> float:
 
 
 # def generateDailyPrecip():
-def generateDailyPrecip(month:int = 9, year:int = 2020):
-    # month = 5
-    # year = 2023
+def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
+    """ Generates Daily Precipitation and Total Precipitation for a state.
+
+    Parameters
+    ----------
+    month : int, optional
+        by default 9
+    year : int, optional
+        by default 2020
+
+    Returns
+    ---------
+    daily_precip_table_rec : dict[dict]
+        Records with their GHCN-ID as the key. Contains total_pcn, daily_pcn
+
+    Notes
+    ---------
+
+    This should eventually be updated to recieve the month year (and possibly state) codes so they aren't hardcoded. 
+
+    """
+
     
     # Get Station List
     db_stations = QueryDB(DailyPrecipQuery)
     print(bool(db_stations))
-    # for station in db_stations[-50:]:
-    # for station in db_stations[:50]:
     for station in db_stations:
         print(station)
-        write_to_file(station, "station_list_from_db.txt")
 
     all_filtered_dfs = []
     noDataCount = 0
     full_station_id_list = []
 
-    # for row in db_stations[:10]:
-    # # for row in db_stations:
-    #     ghcn_id = row[4]
-    #     file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
-    #     full_station_id_list.append(ghcn_id)
+    for row in db_stations[:10]:
+    # for row in db_stations:
+        ghcn_id = row[4]
+        file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+        full_station_id_list.append(ghcn_id)
 
-    #     if not os.path.exists(file_path):
-    #         print(f"Missing file: {file_path}")
-    #         continue
+        if not os.path.exists(file_path):
+            print(f"Missing file: {file_path}")
+            continue
 
-    #     try:
-    #         filtered_data = parse_and_filter(
-    #             station_code=ghcn_id,
-    #             file_path=file_path,
-    #             correction_type="table",
-    #             month=month,
-    #             year=year
-    #         )
+        try:
+            filtered_data = parse_and_filter(
+                station_code=ghcn_id,
+                file_path=file_path,
+                correction_type="table",
+                month=month,
+                year=year
+            )
 
-    #         filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+            filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
 
-    #         if filtered_df.is_empty():
-    #             print(f"Skipping station {ghcn_id} due to no data.")
-    #             noDataCount += 1
-    #             continue
+            if filtered_df.is_empty():
+                print(f"Skipping station {ghcn_id} due to no data.")
+                noDataCount += 1
+                continue
 
-    #         if all_filtered_dfs:
-    #             existing_columns = all_filtered_dfs[0].columns
-    #             current_columns = filtered_df.columns
+            if all_filtered_dfs:
+                existing_columns = all_filtered_dfs[0].columns
+                current_columns = filtered_df.columns
 
-    #             missing_columns = set(existing_columns) - set(current_columns)
-    #             for col in missing_columns:
-    #                 filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+                missing_columns = set(existing_columns) - set(current_columns)
+                for col in missing_columns:
+                    filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
 
-    #             filtered_df = filtered_df.select(existing_columns)
+                filtered_df = filtered_df.select(existing_columns)
 
-    #         all_filtered_dfs.append(filtered_df)
-    #         print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+            all_filtered_dfs.append(filtered_df)
+            print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
 
-    #     except Exception as e:
-    #         print(f"Error parsing {ghcn_id}: {e}")
-    #         continue
+        except Exception as e:
+            print(f"Error parsing {ghcn_id}: {e}")
+            continue
 
-    # if not all_filtered_dfs:
-    #     print("No valid station files found.")
-    #     # return?
+    if not all_filtered_dfs:
+        print("No valid station files found.")
+        # return?
     
         
 
-    # combined_df = pl.concat(all_filtered_dfs, how="vertical")
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
-    # json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = json.dumps(combined_df.to_dicts(), indent=2)
 
     # Optional: write JSON string to file
     output_file = f"combined_data_{month}_{year}.json"
-    # with open(output_file, "w") as f:
-    #     f.write(json_data)
-    
+    with open(output_file, "w") as f:
+        f.write(json_data)
     
     
     
     print(f"Data saved to {output_file}")
-    
-
-    # # Testing getting just the station list. 
-    # json_data = json.loads(json_data)
-    # print(json_data)
-
-    # # db_stations = list db_stations[2] to a new list. 
-    # # Update
-    # for key in db_stations:  
-    #     if key not in json:
-    #         prcp_data[key] = None
-
-    # # Output the updated A
-    # print(f" Updated prcp data: {prcp_data}")
-
-    # return
-
     # print(json_data)
 
 
-    #####################################################
-    #  Read the JSON file. 
+    ########################################
+    #  Read the JSON file for Testing
 
+    # json_data = None
 
-    json_data = None
-
-    # with open('combined_data_2_2023.json') as f:
+    # with open(output_file) as f:
     #     json_data = json.load(f)
     #     # print(d)
-    with open(output_file) as f:
-        json_data = json.load(f)
-        # print(d)
-
 
     #########################################
 
@@ -154,24 +147,20 @@ def generateDailyPrecip(month:int = 9, year:int = 2020):
         station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
         obs_type = row["observation_type"]
 
-        # List Comprehesion
         daily_values = [
             int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
             for i in range(1, num_days + 1)    
         ]
         daily_flags = [
-            row[f"flag_{i}"] # if row[f"day_{i}"] is not None else None
+            row[f"flag_{i}"]
             for i in range(1, num_days + 1)
         ]
 
         if obs_type == "PRCP":
-            # prcp_data.setdefault(station_id, []).extend(daily_values)
             prcp_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
         elif obs_type == "MDPR":
-            # prcp_data.setdefault(station_id, []).extend(daily_values)
             mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
         elif obs_type == "DAPR":
-            # prcp_data.setdefault(station_id, []).extend(daily_values)
             dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
             
 
@@ -673,6 +662,21 @@ def generateDailyPrecip(month:int = 9, year:int = 2020):
 
 
 def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
+    """ Checks the next month for accumulated precipitation.
+
+    Parameters
+    ----------
+    station_id : str
+        GHCN-ID
+    month, year : int
+
+    ieommd : int
+        Honestly I don't know what this stands for. I tried. 
+
+    Returns
+    -------
+    bool
+    """
     all_filtered_dfs = []
     noDataCount = 0
 

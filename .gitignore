@@ -165,3 +165,9 @@ cython_debug/
 #.idea/
 
 
+station_list_from_db.txt
+program_output2.txt
+program_output.txt
+tprcp_output.txt
+venv2/
+temp/
