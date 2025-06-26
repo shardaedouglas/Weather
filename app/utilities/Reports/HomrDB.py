@@ -2,6 +2,7 @@ import os
 from flask import Flask
 import oracledb
 from dotenv import load_dotenv
+import traceback
 
 # This file establishes a connection with the HOMR Database and acts as a store house for queries related to the CD Pubs
 
@@ -74,7 +75,7 @@ def QueryDB(query):
     #     cursor.close()
     
     try:
-        cursor.execute(SomQuery)
+        cursor.execute(query)
         rows = cursor.fetchall()
         cursor.close()
         connection.close()
