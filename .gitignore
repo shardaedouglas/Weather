@@ -166,3 +166,9 @@ app/ghcndata/__pycache__/routes.cpython-39.pyc
 app/resources/__pycache__/routes.cpython-39.pyc
 app/__pycache__/__init__.cpython-39.pyc
 
+station_list_from_db.txt
+program_output2.txt
+program_output.txt
+tprcp_output.txt
+venv2/
+temp/
