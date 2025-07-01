@@ -43,7 +43,7 @@ FROM (
     FROM main_query
 )
 WHERE rn = 1
-ORDER BY nws_CLIM_DIV,  coop_id;     
+ORDER BY nws_CLIM_DIV,  coop_id    
 
 """
 
