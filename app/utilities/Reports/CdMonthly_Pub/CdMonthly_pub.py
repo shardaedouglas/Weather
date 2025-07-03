@@ -1080,6 +1080,227 @@ def get_soil_refernce_notes(rows: List[tuple]) -> List[Dict[str, Any]]:
 
 
 
+def getWindMovement(wind_df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if wind_df.is_empty():
+        print("No wind data available.")
+        return []
+
+    # Determine year and month from first row
+    year = wind_df[0, "year"]
+    month = wind_df[0, "month"]
+    num_days = monthrange(year, month)[1]
+    total_wind = 0
+    for row in wind_df.iter_rows(named=True):
+        obs_type = row["observation_type"]
+        if obs_type != "WDMV":
+            continue
+
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        daily_values = []
+
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                km = float(val)
+                miles = round(km * 0.621371)
+                daily_values.append(miles)
+                total_wind = total_wind + miles
+            except Exception:
+                daily_values.append("-")
+
+        # Pad to 31 days
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        grouped[ghcn_id].append({
+            "WIND": daily_values,
+            "total_wind": total_wind
+        })
+
+    return [{"ghcn_id": ghcn_id, "wind_data": entries} for ghcn_id, entries in grouped.items()]
+
+
+def getEvaporation(df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if df.is_empty():
+        return []
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    for row in df.iter_rows(named=True):
+        if row["observation_type"] != "EVAP":
+            continue
+
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        daily_values = []
+        total_evap = 0.0
+
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                mm = int(val) / 10
+                hundredths_in = round(mm * 0.0393701, 2)
+                daily_values.append(hundredths_in)
+                total_evap += hundredths_in
+            except Exception:
+                daily_values.append("-")
+
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        grouped[ghcn_id].append({
+            "EVAP": daily_values,
+            "total_evap": round(total_evap, 2)
+        })
+
+    return [{"ghcn_id": ghcn_id, "evap_data": entries} for ghcn_id, entries in grouped.items()]
+
+def getPanMaxTemp(df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if df.is_empty():
+        return []
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    for row in df.iter_rows(named=True):
+        if row["observation_type"] != "MXPN":
+            continue
+        print("MXPN found for:", row["country_code"], row["network_code"], row["station_code"])
+
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        daily_values = []
+        total_max = 0
+        count = 0
+
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            flag = row.get(f"flag_{day}", "").strip()
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                celsius = int(val) * 0.1
+                fahrenheit = round((celsius * 9 / 5) + 32)
+                suffix = "".join(c for c in flag if c.isalpha())
+                value = f"{fahrenheit}{suffix}" if suffix else fahrenheit
+                daily_values.append(value)
+                total_max += fahrenheit
+                count += 1
+            except Exception:
+                daily_values.append("-")
+
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        avg_max = round(total_max / count, 1) if count > 0 else "-"
+        grouped[ghcn_id].append({
+            "MAX": daily_values,
+            "avg_max": avg_max
+        })
+
+    return [{"ghcn_id": ghcn_id, "pan_max_data": entries} for ghcn_id, entries in grouped.items()]
+
+
+
+def getPanMinTemp(df: pl.DataFrame) -> list[dict]:
+    grouped = defaultdict(list)
+
+    if df.is_empty():
+        return []
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    for row in df.iter_rows(named=True):
+        if row["observation_type"] != "MNPN":
+            continue
+        print("MNPN found for:", row["country_code"], row["network_code"], row["station_code"])
+
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        daily_values = []
+        total_min = 0
+        count = 0
+
+        for day in range(1, num_days + 1):
+            val = row.get(f"day_{day}")
+            flag = row.get(f"flag_{day}", "").strip()
+            if val is None or str(val).strip() == "-9999":
+                daily_values.append("-")
+                continue
+            try:
+                celsius = int(val) * 0.1
+                fahrenheit = round((celsius * 9 / 5) + 32)
+                suffix = "".join(c for c in flag if c.isalpha())
+                value = f"{fahrenheit}{suffix}" if suffix else fahrenheit
+                daily_values.append(value)
+                total_min += fahrenheit
+                count += 1
+            except Exception:
+                daily_values.append("-")
+
+        while len(daily_values) < 31:
+            daily_values.append("")
+
+        if all(v == "-" for v in daily_values[:num_days]):
+            continue
+
+        avg_min = round(total_min / count, 1) if count > 0 else "-"
+        grouped[ghcn_id].append({
+            "MIN": daily_values,
+            "avg_min": avg_min
+        })
+
+    return [{"ghcn_id": ghcn_id, "pan_min_data": entries} for ghcn_id, entries in grouped.items()]
+
+
+
+
+def getPanEvapTable(df: pl.DataFrame) -> list[dict]:
+    wind = getWindMovement(df)
+    evap = getEvaporation(df)
+    pan_max = getPanMaxTemp(df)
+    pan_min = getPanMinTemp(df)
+
+    by_id = defaultdict(list)
+
+    for group in wind:
+        by_id[group["ghcn_id"]].extend(group.get("wind_data", []))
+    for group in evap:
+        by_id[group["ghcn_id"]].extend(group.get("evap_data", []))
+    for group in pan_max:
+        by_id[group["ghcn_id"]].extend(group.get("pan_max_data", []))
+    for group in pan_min:
+        by_id[group["ghcn_id"]].extend(group.get("pan_min_data", []))
+
+    return [{"ghcn_id": ghcn_id, "pan_evap_data": entries} for ghcn_id, entries in by_id.items()]
+
+
+
+
 # def generateMonthlyPub_hardcoded(date_param=None):
 #     """
 #     Reads a Parquet file using Polars, processes it for graphing, 
@@ -1975,6 +2196,7 @@ def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: 
 def generateMonthlyPub():
     month = 2
     year = 2023
+    target_ghcn_id = "USC00049026"
 
     try:
         stations = QuerySoM("som")
@@ -1982,15 +2204,15 @@ def generateMonthlyPub():
         
         tobs_data = QuerySoM("tobs")
         print("TOBS metadata retrieved.")
-        
+
         soils_data = QuerySoM("soil")
         print("Soil metadata retrieved.")
         print("soils_data", soils_data)
-        
+
         soils_ref_data = QuerySoM("soilref")
         print("Soil REF metadata retrieved.")
         print("soils_REF_data", soils_ref_data)
-        
+
         # Build TOBS metadata lookup by coop_id
         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
@@ -2001,6 +2223,11 @@ def generateMonthlyPub():
             coop_id = row[0]
             ghcn_id = row[4]
             file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+
+             # TEMP: Skip all but the target station
+            if ghcn_id != target_ghcn_id:
+                continue
+
 
             if not os.path.exists(file_path):
                 print(f"Missing file: {file_path}")
@@ -2076,13 +2303,14 @@ def generateMonthlyPub():
         # print("MonthlyHDD:", getMonthlyHDD(combined_df))
         # print("Precip Number of Days:", getNumOfDays(json.loads(json_data)))
         # print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
-
-
-        print("#" * 30)
-        print(f"Daily Precip: {generateDailyPrecip(month, year)}")
-
-
-        # getMonthlyHDD
+        # print("TotalSnowAndIcePellets:", getTotalSnowAndIcePellets(combined_df))
+        # print("maxDepthOnGround:", getMaxDepthOnGround(combined_df))
+        # print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
+        # print("TemperatureTable:", getTemperatureTable(combined_df))
+       
+        #tempTableData = getTemperatureTable(combined_df)
+        #tempTableDataWithNames = add_station_names(tempTableData)
+        #print(tempTableDataWithNames)
 
         soils_combined_df = getSoilsData(month, year)
         with open(f"soil_data_{month}_{year}.json", "w") as f:
@@ -2090,17 +2318,20 @@ def generateMonthlyPub():
         
         print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df))
         
-        
-        soilRefNotes = get_soil_refernce_notes(soils_ref_data)
-        for item in soilRefNotes:
-            print("SoilRefNotes: ", item)
- 
-            
+
+
+        # soilRefNotes = get_soil_refernce_notes(soils_ref_data)
+        # for item in soilRefNotes:
+            # print("SoilRefNotes: ", item)
+
+        # print("WindMovement", getWindMovement(combined_df))
+
+        print("PanEvapTable", getPanEvapTable(combined_df))
+
+
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
         pass
-
-
 
 
 
