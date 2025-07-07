@@ -117,6 +117,42 @@ def cm_tenths_to_inches(val: str) -> str:
     except:
         return val
     
+def mm_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        inches = ivalue / 25.4
+        return format(inches, ".2f")
+    except:
+        return val
+
+def tenths_mm_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        mm = ivalue / 10
+        inches = mm / 25.4
+        return format(inches, ".2f")
+    except:
+        return val
+    
+def wind_tenths_to_mph(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round((int(val) / 10) * 2.23694, 2):.2f}"
+
+def cm_to_inches(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round(float(val) / 2.54, 2):.2f}"
+
+def km_to_miles(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round(float(val) * 0.621371, 2):.2f}"
+    
     
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
 def get_data_for_GHCN_table():
@@ -166,17 +202,27 @@ def get_data_for_GHCN_table():
         
         data = JSONformattedData.get_json()  # this gives us the dict
 
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+        
         for day in data:
-            # Temp conversions
-            for key in ["TMAX", "TMIN"]:
-                if key in data[day]:
+            for key in data[day]:
+                if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
                     data[day][key] = c_tenths_to_f(data[day][key])
-            
-            # Precip/snow conversions
-            for key in ["PRCP", "SNOW", "SNWD"]:
-                if key in data[day]:
-                    data[day][key] = cm_tenths_to_inches(data[day][key])
-
+                elif key in tenths_mm_keys:
+                    data[day][key] = tenths_mm_to_inches(data[day][key])
+                elif key in mm_keys:
+                    data[day][key] = mm_to_inches(data[day][key])
+                elif key in wind_keys:
+                    data[day][key] = wind_tenths_to_mph(data[day][key])
+                elif key in cm_keys:
+                    data[day][key] = cm_to_inches(data[day][key])
+                elif key in km_keys:
+                    data[day][key] = km_to_miles(data[day][key])
 
         # Replace the original Response with new one containing converted values
         JSONformattedData = jsonify(data)
