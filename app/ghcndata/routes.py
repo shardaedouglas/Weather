@@ -94,6 +94,28 @@ def send_email():
     mail.send(msg)
     return "Email sent!"    
 
+
+def c_tenths_to_f(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        celsius = ivalue / 10
+        fahrenheit = (celsius * 9/5) + 32
+        return str(round(fahrenheit, 1))  # You can change to `0` if you want whole degrees
+    except:
+        return val
+    
+def cm_tenths_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        cm = ivalue / 10
+        inches = cm / 2.54
+        return format(inches, ".2f")  # always 2 decimal places
+    except:
+        return val
     
     
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
@@ -139,9 +161,26 @@ def get_data_for_GHCN_table():
         # # Print results
         # print("filtered_df in ghcndata routes",filtered_df)
         
-        JSONformattedData = format_as_json(filtered_df, return_response=True)
+        JSONformattedData = format_as_json(filtered_df, return_response=True)        
+        print("JSONformattedData in ghcndata routes", JSONformattedData.get_data(as_text=True))
+        
+        data = JSONformattedData.get_json()  # this gives us the dict
 
-        # print("JSONformattedData in ghcndata routes",JSONformattedData)
+        for day in data:
+            # Temp conversions
+            for key in ["TMAX", "TMIN"]:
+                if key in data[day]:
+                    data[day][key] = c_tenths_to_f(data[day][key])
+            
+            # Precip/snow conversions
+            for key in ["PRCP", "SNOW", "SNWD"]:
+                if key in data[day]:
+                    data[day][key] = cm_tenths_to_inches(data[day][key])
+
+
+        # Replace the original Response with new one containing converted values
+        JSONformattedData = jsonify(data)
+        print("New JSON in ghcndata routes", JSONformattedData.get_data(as_text=True))
 
         # Return
         return JSONformattedData
