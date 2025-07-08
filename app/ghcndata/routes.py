@@ -94,6 +94,64 @@ def send_email():
     mail.send(msg)
     return "Email sent!"    
 
+
+def c_tenths_to_f(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        celsius = ivalue / 10
+        fahrenheit = (celsius * 9/5) + 32
+        return str(round(fahrenheit, 1))  # You can change to `0` if you want whole degrees
+    except:
+        return val
+    
+def cm_tenths_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        cm = ivalue / 10
+        inches = cm / 2.54
+        return format(inches, ".2f")  # always 2 decimal places
+    except:
+        return val
+    
+def mm_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        inches = ivalue / 25.4
+        return format(inches, ".2f")
+    except:
+        return val
+
+def tenths_mm_to_inches(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        mm = ivalue / 10
+        inches = mm / 25.4
+        return format(inches, ".2f")
+    except:
+        return val
+    
+def wind_tenths_to_mph(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round((int(val) / 10) * 2.23694, 2):.2f}"
+
+def cm_to_inches(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round(float(val) / 2.54, 2):.2f}"
+
+def km_to_miles(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round(float(val) * 0.621371, 2):.2f}"
     
     
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
@@ -139,9 +197,36 @@ def get_data_for_GHCN_table():
         # # Print results
         # print("filtered_df in ghcndata routes",filtered_df)
         
-        JSONformattedData = format_as_json(filtered_df, return_response=True)
+        JSONformattedData = format_as_json(filtered_df, return_response=True)        
+        print("JSONformattedData in ghcndata routes", JSONformattedData.get_data(as_text=True))
+        
+        data = JSONformattedData.get_json()  # this gives us the dict
 
-        # print("JSONformattedData in ghcndata routes",JSONformattedData)
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+        
+        for day in data:
+            for key in data[day]:
+                if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
+                    data[day][key] = c_tenths_to_f(data[day][key])
+                elif key in tenths_mm_keys:
+                    data[day][key] = tenths_mm_to_inches(data[day][key])
+                elif key in mm_keys:
+                    data[day][key] = mm_to_inches(data[day][key])
+                elif key in wind_keys:
+                    data[day][key] = wind_tenths_to_mph(data[day][key])
+                elif key in cm_keys:
+                    data[day][key] = cm_to_inches(data[day][key])
+                elif key in km_keys:
+                    data[day][key] = km_to_miles(data[day][key])
+
+        # Replace the original Response with new one containing converted values
+        JSONformattedData = jsonify(data)
+        print("New JSON in ghcndata routes", JSONformattedData.get_data(as_text=True))
 
         # Return
         return JSONformattedData
