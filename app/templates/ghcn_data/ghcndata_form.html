@@ -201,69 +201,6 @@
         table.style.display = "block";
     }
 
-    // function getDataFromURL(urlParams) {
-    //         // Extract the query parameters
-    //         const idOption = urlParams.get('id-option');
-        
-    //         if (idOption === 'State') {
-    //             // If the id-option is "State", use state-based parameters
-    //             const state = urlParams.get('state');
-    //             const stationType = urlParams.get('station_type');
-    //             const date = urlParams.get('date');
-        
-    //             var requestData = {
-    //                 state: state,
-    //                 date: date,
-    //                 station_type: stationType,
-    //             };
-        
-    //             // Send the state-based request
-    //             $.ajax({
-    //                 url: '/get_state_for_GHCN_table_df',
-    //                 method: 'POST',
-    //                 data: $.param(requestData),
-    //                 success: function(response) {
-    //                     console.log("Success:", response);
-    //                     showComparisonTable(response);
-    //                 },
-    //                 error: function(xhr, status, error) {
-    //                     console.error("Error:", error);
-    //                     alert("There was an error processing your request.");
-    //                 }
-    //             });
-        
-    //         } else {
-    //             // Default behavior using GHCN ID
-    //             const ghcnId = urlParams.get('ghcn_id');
-    //             const stationType = urlParams.get('station_type');
-    //             const date = urlParams.get('date');
-        
-    //             var requestData = {
-    //                 ghcn_id: ghcnId,
-    //                 date: date,
-    //                 station_type: stationType
-    //             };
-        
-    //             // Send the request
-    //             $.ajax({
-    //                 url: '/get_data_for_GHCN_table',
-    //                 method: 'POST',
-    //                 data: $.param(requestData),
-    //                 success: function(response) {
-    //                     console.log("Success:", response);
-    //                     showComparisonTable(response);
-    //                 },
-    //                 error: function(xhr, status, error) {
-    //                     console.error("Error:", error);
-    //                     alert("There was an error processing your request.");
-    //                 }
-    //             });
-    //         }
-    //     }
-
-    
-
-
         function populateYearDropdown(response) {
             const yearDropdown = document.getElementById("year-selector");
             yearDropdown.innerHTML = '<option selected>--Select--</option>';
@@ -285,6 +222,36 @@
                 });
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("year-selector").addEventListener("change", function () {
+                const selectedYear = this.value;
+                if (selectedYear && selectedYear !== "--Select--") {
+                    const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
+                    const stationType = new URLSearchParams(window.location.search).get("station_type");
+                    
+                    // Fake a correction_date using just year + dummy month/day
+                    const correctionDate = `${selectedYear}-01-01`;
+
+                    $.ajax({
+                        url: '/get_data_for_GHCN_table',
+                        method: 'POST',
+                        data: $.param({
+                            ghcn_id: ghcnId,
+                            date: correctionDate,
+                            station_type: stationType
+                        }),
+                        success: function (response) {
+                            showComparisonTable(response.data);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error reloading year:", error);
+                            alert("Could not load data for selected year.");
+                        }
+                    });
+                }
+            });
+        });
 
         function getDataFromURL(urlParams) {
             const idOption = urlParams.get('id-option');
@@ -331,7 +298,7 @@
                     data: $.param(requestData),
                     success: function(response) {
                         console.log("Success:", response);
-                        showComparisonTable(response);
+                        showComparisonTable(response.data);
                         populateYearDropdown(response);
                     },
                     error: function(xhr, status, error) {
