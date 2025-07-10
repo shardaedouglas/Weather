@@ -83,7 +83,6 @@ def view_ghcn_metadata():
 
 
 
-
 # Route to Send Emails
 @ghcndata_bp.route('/send_email') # Need to be removed from this directory and added into Utilities...
 def send_email():
@@ -152,6 +151,23 @@ def km_to_miles(val: str) -> str:
     if val == "-9999":
         return val
     return f"{round(float(val) * 0.621371, 2):.2f}"
+
+def extract_years_from_dly(file_path: str) -> list[int]:
+    """
+    Parses a .dly file and returns a sorted list of unique 4-digit years present in the file.
+    """
+    years = set()
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                if len(line) >= 17:
+                    year = line[11:15]
+                    if year.isdigit():
+                        years.add(int(year))
+    except Exception as e:
+        print(f"Error reading years from {file_path}: {e}")
+    
+    return sorted(years, reverse=True)
     
     
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
@@ -226,14 +242,19 @@ def get_data_for_GHCN_table():
 
         # Replace the original Response with new one containing converted values
         JSONformattedData = jsonify(data)
+        
         print("New JSON in ghcndata routes", JSONformattedData.get_data(as_text=True))
 
-        # Return
-        return JSONformattedData
-        # return jsonify({
-        #     "message": f"Correction processed successfully for GHCN ID: {ghcn_id}!",
-        #     "filtered_data": filtered_df
-        # }), 201
+        years = extract_years_from_dly(file_path)
+        print("YEARS!!!!!!!!!!!!!: ", years)
+        response = {
+            "data": data,
+            "years": years
+        }
+        
+        return jsonify(response)
+            
+            
         
     except Exception as e:
         print(f"Error in get_data_for_GHCN_table: {e}")
@@ -443,7 +464,6 @@ def test_monthlyPub():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  
 
-    
     
     
 @ghcndata_bp.route('/ghcn_hourly')

@@ -201,23 +201,106 @@
         table.style.display = "block";
     }
 
-    function getDataFromURL(urlParams) {
-            // Extract the query parameters
+    // function getDataFromURL(urlParams) {
+    //         // Extract the query parameters
+    //         const idOption = urlParams.get('id-option');
+        
+    //         if (idOption === 'State') {
+    //             // If the id-option is "State", use state-based parameters
+    //             const state = urlParams.get('state');
+    //             const stationType = urlParams.get('station_type');
+    //             const date = urlParams.get('date');
+        
+    //             var requestData = {
+    //                 state: state,
+    //                 date: date,
+    //                 station_type: stationType,
+    //             };
+        
+    //             // Send the state-based request
+    //             $.ajax({
+    //                 url: '/get_state_for_GHCN_table_df',
+    //                 method: 'POST',
+    //                 data: $.param(requestData),
+    //                 success: function(response) {
+    //                     console.log("Success:", response);
+    //                     showComparisonTable(response);
+    //                 },
+    //                 error: function(xhr, status, error) {
+    //                     console.error("Error:", error);
+    //                     alert("There was an error processing your request.");
+    //                 }
+    //             });
+        
+    //         } else {
+    //             // Default behavior using GHCN ID
+    //             const ghcnId = urlParams.get('ghcn_id');
+    //             const stationType = urlParams.get('station_type');
+    //             const date = urlParams.get('date');
+        
+    //             var requestData = {
+    //                 ghcn_id: ghcnId,
+    //                 date: date,
+    //                 station_type: stationType
+    //             };
+        
+    //             // Send the request
+    //             $.ajax({
+    //                 url: '/get_data_for_GHCN_table',
+    //                 method: 'POST',
+    //                 data: $.param(requestData),
+    //                 success: function(response) {
+    //                     console.log("Success:", response);
+    //                     showComparisonTable(response);
+    //                 },
+    //                 error: function(xhr, status, error) {
+    //                     console.error("Error:", error);
+    //                     alert("There was an error processing your request.");
+    //                 }
+    //             });
+    //         }
+    //     }
+
+    
+
+
+        function populateYearDropdown(response) {
+            const yearDropdown = document.getElementById("year-selector");
+            yearDropdown.innerHTML = '<option selected>--Select--</option>';
+
+            if (response.years && Array.isArray(response.years)) {
+                response.years.forEach(yr => {
+                    const opt = document.createElement("option");
+                    opt.value = yr;
+                    opt.textContent = yr;
+                    yearDropdown.appendChild(opt);
+                });
+            } else {
+                const placeholderYears = [2021, 2022, 2023];
+                placeholderYears.forEach(yr => {
+                    const opt = document.createElement("option");
+                    opt.value = yr;
+                    opt.textContent = yr;
+                    yearDropdown.appendChild(opt);
+                });
+            }
+        }
+
+        function getDataFromURL(urlParams) {
             const idOption = urlParams.get('id-option');
-        
+
+            const stationType = urlParams.get('station_type');
+            const date = urlParams.get('date');
+
             if (idOption === 'State') {
-                // If the id-option is "State", use state-based parameters
                 const state = urlParams.get('state');
-                const stationType = urlParams.get('station_type');
-                const date = urlParams.get('date');
-        
-                var requestData = {
+
+                const requestData = {
                     state: state,
                     date: date,
                     station_type: stationType,
                 };
-        
-                // Send the state-based request
+
                 $.ajax({
                     url: '/get_state_for_GHCN_table_df',
                     method: 'POST',
@@ -225,26 +308,23 @@
                     success: function(response) {
                         console.log("Success:", response);
                         showComparisonTable(response);
+                        populateYearDropdown(response);
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
                         alert("There was an error processing your request.");
                     }
                 });
-        
+
             } else {
-                // Default behavior using GHCN ID
                 const ghcnId = urlParams.get('ghcn_id');
-                const stationType = urlParams.get('station_type');
-                const date = urlParams.get('date');
-        
-                var requestData = {
+
+                const requestData = {
                     ghcn_id: ghcnId,
                     date: date,
                     station_type: stationType
                 };
-        
-                // Send the request
+
                 $.ajax({
                     url: '/get_data_for_GHCN_table',
                     method: 'POST',
@@ -252,6 +332,7 @@
                     success: function(response) {
                         console.log("Success:", response);
                         showComparisonTable(response);
+                        populateYearDropdown(response);
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
@@ -260,6 +341,7 @@
                 });
             }
         }
+
         
     
 
