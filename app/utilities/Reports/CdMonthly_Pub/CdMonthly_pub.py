@@ -200,14 +200,13 @@ def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
         for day_num, col in enumerate(day_columns, start=1):
             val = row[col]
             if val is not None:
-                temp_c = val / 10.0
-                if temp_c > max_temp:
-                    max_temp = temp_c
+                temp_f = (val / 10.0) * 9 / 5 + 32
+                if temp_f > max_temp:
+                    max_temp = round(temp_f)
                     station_day_map = defaultdict(list)
                     station_day_map[ghcn_id].append(day_num)
-                elif temp_c == max_temp:
+                elif temp_f == max_temp:
                     station_day_map[ghcn_id].append(day_num)
-
     # Combine tied days and stations
     tied_days = sorted({day for days in station_day_map.values() for day in days})
     tied_stations = list(station_day_map.keys())
@@ -248,12 +247,12 @@ def getLowestTemperatureExtreme(df: pl.DataFrame) -> dict:
         for day_num, col in enumerate(day_columns, start=1):
             val = row[col]
             if val is not None:
-                temp_c = val / 10.0
-                if temp_c < min_temp:
-                    min_temp = temp_c
+                temp_f = (val / 10.0) * 9 / 5 + 32
+                if temp_f < min_temp:
+                    min_temp = round(temp_f)
                     station_day_map = defaultdict(list)
                     station_day_map[ghcn_id].append(day_num)
-                elif temp_c == min_temp:
+                elif temp_f == min_temp:
                     station_day_map[ghcn_id].append(day_num)
 
     # Combine tied days and stations
@@ -302,7 +301,7 @@ def getGreatestTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     tied_stations = [station for station, total in station_totals.items() if total == max_total]
 
     return {
-        "value": round(max_total / 10.0, 1),  # Convert to mm
+        "value": round(float(max_total) / 10 / 25.4, 2),
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
 
@@ -393,7 +392,7 @@ def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
     tied_records = [r for r in records if r[0] == max_val]
 
     return {
-        "value": round(max_val / 10.0, 1),  # Convert tenths of mm to mm
+        "value": round(float(max_val) / 10 / 25.4, 2),
         "day": "+".join(sorted(r[1].split("_")[1].zfill(2) for r in tied_records)),
         "station": tied_records[0][2] if len(set(r[2] for r in tied_records)) == 1 else "MULTIPLE STATIONS"
     }
@@ -432,7 +431,7 @@ def getGreatestTotalSnowfallExtreme(df: pl.DataFrame) -> dict:
     tied_stations = [s for s, v in station_totals.items() if v == max_total]
 
     return {
-        "value": round(max_total / 10.0, 1),  # Convert tenths of mm to mm
+        "value": round((max_total / 10.0) / 2.54, 1),  # Convert tenths of mm to mm
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
 
@@ -470,9 +469,230 @@ def getGreatestSnowDepthExtreme(df: pl.DataFrame) -> dict:
     tied_stations = [station for station, val in station_max_depth.items() if val == max_value]
 
     return {
-        "value": round(max_value / 10.0, 1),  # Convert tenths of mm to mm
+        "value": round((max_value / 10.0) / 2.54),  # Convert tenths of mm to mm
         "station": "MULTIPLE STATIONS" if len(tied_stations) > 1 else tied_stations[0]
     }
+    
+  ####################
+  ####END EXTREMES####
+  #################### 
+    
+  
+  
+def dataframe_to_json(df: pl.DataFrame) -> str:
+    # Convert to list of dicts
+    records = df.to_dicts()
+
+    # Convert list to dict keyed by 'station_code'
+    json_dict = {
+        row["station_code"]: {
+            key: value for key, value in row.items() if key != "station_code"
+        }
+        for row in records
+    }
+
+    # Dump as JSON string
+    return json.dumps(json_dict, indent=4)
+  
+  
+  
+def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
+    
+    df = df.with_columns([
+        (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("station_code")
+    ])
+
+    year = df[0, "year"]
+    month = df[0, "month"]
+    num_days = monthrange(year, month)[1]
+
+    tmax_df = df.filter(pl.col("observation_type") == "TMAX")
+    tmin_df = df.filter(pl.col("observation_type") == "TMIN")
+
+    day_columns = [f"day_{i}" for i in range(1, 32)]
+
+    def count_valid(obs_df, colname):
+        return (
+            obs_df.select(["station_code"] + day_columns)
+            .melt(id_vars=["station_code"], variable_name="day", value_name=colname)
+            .with_columns((pl.col(colname) != "-9999").cast(pl.Int8))
+            .group_by("station_code").agg(pl.col(colname).sum().alias(f"valid_{colname}"))
+        )
+
+    valid_tmax = count_valid(tmax_df, "tmax")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valid_tmax", valid_tmax)
+    valid_tmin = count_valid(tmin_df, "tmin")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valid_tmin", valid_tmin)
+
+    tmax_long = tmax_df.unpivot(index=["station_code"], on=day_columns, variable_name="day", value_name="tmax").filter(pl.col("tmax") != "-9999")
+    tmin_long = tmin_df.unpivot(index=["station_code"], on=day_columns, variable_name="day", value_name="tmin").filter(pl.col("tmin") != "-9999")
+
+    tmax_long = tmax_long.with_columns([((pl.col("tmax").cast(pl.Int64) / 10) * 9 / 5 + 32).alias("tmax")])
+    tmin_long = tmin_long.with_columns([((pl.col("tmin").cast(pl.Int64) / 10) * 9 / 5 + 32).alias("tmin")])
+
+    tmax_avg = tmax_long.group_by("station_code").agg(pl.col("tmax").mean().alias("tmax_avg"))
+    tmin_avg = tmin_long.group_by("station_code").agg(pl.col("tmin").mean().alias("tmin_avg"))
+
+    tmax_90 = tmax_long.filter(pl.col("tmax") >= 90).group_by("station_code").len().rename({"len": "TMAX>=90"})
+    tmax_32 = tmax_long.filter(pl.col("tmax") <= 32).group_by("station_code").len().rename({"len": "TMAX<=32"})
+    tmin_32 = tmin_long.filter(pl.col("tmin") <= 32).group_by("station_code").len().rename({"len": "TMIN<=32"})
+    tmin_0 = tmin_long.filter(pl.col("tmin") <= 0).group_by("station_code").len().rename({"len": "TMIN<=0"})
+
+    result = tmax_avg.join(tmin_avg, on="station_code", how="full")
+    result = result.join(tmax_90, on="station_code", how="left")
+    result = result.join(tmax_32, on="station_code", how="left")
+    result = result.join(tmin_32, on="station_code", how="left")
+    result = result.join(tmin_0, on="station_code", how="left")
+    result = result.join(valid_tmax, on="station_code", how="left")
+    result = result.join(valid_tmin, on="station_code", how="left")
+
+    result = result.fill_null(0)
+    result = result.with_columns(((pl.col("tmax_avg") + pl.col("tmin_avg")) / 2).alias("overall_avg"))
+
+    def label_avg(value, valid_days):
+        missing = num_days - valid_days
+        if missing >= 10:
+            return "M"
+        elif missing > 0:
+            return f"{round(value, 1)}M"
+        else:
+            return round(value, 1)
+    
+    return {
+    row["station_code"]: {
+        "Average Maximum": label_avg(row["tmax_avg"], row["valid_tmax"]),
+        "Average Minimum": label_avg(row["tmin_avg"], row["valid_tmin"]),
+        ">=90_MAX": int(round(row["TMAX>=90"], 1)),
+        "<=32_MAX": int(round(row["TMAX<=32"], 1)),
+        "<=32_MIN": int(round(row["TMIN<=32"], 1)),
+        "<=0_MIN": int(round(row["TMIN<=0"], 1)),
+        "Average": label_avg(row["overall_avg"], min(row["valid_tmax"], row["valid_tmin"])),
+    }
+    for row in result.iter_rows(named=True)
+}
+
+    
+    
+    
+
+
+
+
+
+    
+    
+def highestRecordedTemp(df: pl.DataFrame) -> dict:
+    # Filter only TMAX observation type
+    # print(df.select("observation_type").unique())
+    
+    tmax_df = df.filter(df["observation_type"] == "TMAX")
+    
+    # If no TMAX data is found, return an empty dict
+    if tmax_df.is_empty():
+        print("EMPTY DATA")
+        return {}
+
+    # Convert day columns to numeric and ignore missing values (-9999)
+    day_columns = [col for col in df.columns if col.startswith("day_")]
+    tmax_df = tmax_df.with_columns([ 
+        pl.col(day_columns).cast(pl.Int64, strict=False).fill_null(-9999)
+    ])
+
+    # Replace missing values (-9999) with nulls so they don't interfere with max calculations
+    tmax_df = tmax_df.with_columns([ 
+        pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col) 
+        for col in day_columns
+    ])
+
+    # Find the highest TMAX for each station and the corresponding date
+    result = {}
+    for row in tmax_df.iter_rows(named=True):
+        station = row["station_code"]
+        country_code = row["country_code"]
+        network_code = row["network_code"]
+
+        combined_station_code = f"{country_code}{network_code}{station}"
+
+        values = [(i + 1, row[col]) for i, col in enumerate(day_columns) if row[col] is not None]
+        if not values:
+            continue
+
+        max_val = max(v for _, v in values)
+        max_days = [day for day, val in values if val == max_val]
+        max_temp = round((max_val / 10) * 9 / 5 + 32)
+
+        year = row["year"]
+        month = row["month"]
+        last_day = max(max_days)
+        date = f"{year}-{month:02d}-{last_day:02d}" + ("+" if len(max_days) > 1 else "")
+
+        if combined_station_code not in result:
+            result[combined_station_code] = {"value": max_temp, "date": date}
+
+
+    return result
+
+
+
+
+def lowestRecordedTemp(df: pl.DataFrame) -> dict:
+    # Filter only TMIN observation type
+    # print(df.select("observation_type").unique())
+    
+    tmin_df = df.filter(df["observation_type"] == "TMIN")
+    
+    # If no TMIN data is found, return an empty dict
+    if tmin_df.is_empty():
+        print("EMPTY DATA")
+        return {}
+
+    # Convert day columns to numeric and ignore missing values (-9999)
+    day_columns = [col for col in df.columns if col.startswith("day_")]
+    tmin_df = tmin_df.with_columns([ 
+        pl.col(day_columns).cast(pl.Int64, strict=False).fill_null(-9999)
+    ])
+
+    # Replace missing values (-9999) with nulls so they don't interfere with min calculations
+    tmin_df = tmin_df.with_columns([ 
+        pl.when(pl.col(col) != -9999).then(pl.col(col)).otherwise(None).alias(col) 
+        for col in day_columns
+    ])
+
+    # Find the lowest TMIN for each station and the corresponding date
+    result = {}
+    for row in tmin_df.iter_rows(named=True):
+        station = row["station_code"]
+        country_code = row["country_code"]
+        network_code = row["network_code"]
+        
+        # Combine the codes into one identifier (e.g., US1CAAL0001)
+        combined_station_code = f"{country_code}{network_code}{station}"
+
+        values = [(i + 1, row[col]) for i, col in enumerate(day_columns) if row[col] is not None]
+        if not values:
+            continue
+
+        min_val = min(v for _, v in values)
+        min_days = [day for day, val in values if val == min_val]
+        min_temp = round((min_val / 10) * 9 / 5 + 32)
+        
+        year = row["year"]
+        month = row["month"]
+        last_day = max(min_days)
+        date = f"{year}-{month:02d}-{last_day:02d}" + ("+" if len(min_days) > 1 else "")
+
+        if combined_station_code not in result:
+            result[combined_station_code] = {"value": min_temp, "date": date}
+
+    return result
+
+    
+
+    
+    
+    
+    
+    
     
 
 def getMonthlyHDD(df: pl.DataFrame) -> dict:
@@ -502,13 +722,13 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
         elif obs_type == "TMIN":
             tmin_data.setdefault(station_id, []).extend(daily_values)
 
-    print("Stations with TMAX:", list(tmax_data.keys()))
-    print("Stations with TMIN:", list(tmin_data.keys()))
+    # print("Stations with TMAX:", list(tmax_data.keys()))
+    # print("Stations with TMIN:", list(tmin_data.keys()))
 
     # Step 2: Use all stations regardless of missing data
     valid_stations = {}
     all_stations = sorted(set(tmax_data) | set(tmin_data))
-    print("All candidate stations:", all_stations)
+    # print("All candidate stations:", all_stations)
 
     for station in all_stations:
         valid_stations[station] = {
@@ -516,7 +736,7 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             "TMIN": tmin_data.get(station, []),
         }
 
-    print("Valid stations after missing value check:", list(valid_stations.keys()))
+    # print("Valid stations after missing value check:", list(valid_stations.keys()))
 
     # Step 3: Convert to Fahrenheit
     for station in valid_stations:
@@ -560,7 +780,7 @@ def getMonthlyHDD(df: pl.DataFrame) -> dict:
             "total_HDD": total_hdd
         }
 
-    print("Final stations in HDD results:", list(hdd_results.keys()))
+    # print("Final stations in HDD results:", list(hdd_results.keys()))
 
     return hdd_results
 
@@ -757,8 +977,8 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
     month = df[0, "month"]
     num_days = monthrange(year, month)[1]
 
-    # Filter for SNOW and SNWD only
-    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "SNWD"]))
+    # Filter for SNOW, SNWD, WESD
+    snow_df = df.filter(pl.col("observation_type").is_in(["SNOW", "SNWD", "WESD"]))
 
     # Create full station ID
     snow_df = snow_df.with_columns([
@@ -777,12 +997,15 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
             try:
                 num_val = float(raw_val)
             except (TypeError, ValueError):
-                num_val = -9999  # fallback if conversion fails
+                num_val = -9999
 
             if num_val in (0, -9999):
                 converted_val = num_val
             else:
-                converted_val = round(num_val / 25.4, 1)
+                if obs_type == "WESD":
+                    converted_val = round((num_val / 100.0) / 2.54, 1)
+                else:  
+                    converted_val = round(num_val / 25.4, 1)
 
             flag_val = row.get(f"flag_{i}", None)
             daily_data.append((converted_val, flag_val))
@@ -793,17 +1016,19 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
         result[ghcn_id][obs_type] = daily_data
 
     converted_result = {}
-    # Keep track of stations already processed
     processed_stations = set()
 
     for row in df.iter_rows(named=True):
+        if not all([row.get("country_code"), row.get("network_code"), row.get("station_code")]):
+            continue
+
         ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
         if ghcn_id in processed_stations:
             continue
         processed_stations.add(ghcn_id)
 
         converted_result[ghcn_id] = {}
-        for obs_type in ["SNOW", "SNWD"]:
+        for obs_type in ["SNOW", "SNWD", "WESD"]:
             if ghcn_id in result and obs_type in result[ghcn_id]:
                 daily_list = result[ghcn_id][obs_type]
                 converted_values = []
@@ -824,8 +1049,8 @@ def getSnowAndSnwdTable(df: pl.DataFrame) -> dict:
                 converted_result[ghcn_id][obs_type] = ["MISSING DATA"]
 
     print("SnowAndSnwdTable:", converted_result)
-
     return converted_result
+
 
 
 
@@ -1045,7 +1270,7 @@ def getSoilTemperatureTable(soils_combined_df: pl.DataFrame) -> list[dict]:
             "calc_type": calc_type,
             "ground_cover": GROUND_COVER_MAP.get(ground_cover_code, "unknown"),
             "depth_in": in_val,
-            "daily_values_f": daily_values
+            "values": daily_values
         })
 
     return [{"ghcn_id": ghcn_id, "soil_temperatures": entries} for ghcn_id, entries in grouped.items()]
@@ -1081,6 +1306,7 @@ def get_soil_refernce_notes(rows: List[tuple]) -> List[Dict[str, Any]]:
 
 
 def getWindMovement(wind_df: pl.DataFrame) -> list[dict]:
+    
     grouped = defaultdict(list)
 
     if wind_df.is_empty():
@@ -1279,211 +1505,579 @@ def getPanMinTemp(df: pl.DataFrame) -> list[dict]:
 
 
 
+# def getPanEvapTable(df: pl.DataFrame) -> list[dict]:
+        
+#     wind = getWindMovement(df)
+#     evap = getEvaporation(df)
+#     pan_max = getPanMaxTemp(df)
+#     pan_min = getPanMinTemp(df)
+    
+#     # dump json to file
+#     output_file = f"TESTwindDATA.json"
+#     with open(output_file, "w") as f:
+#         f.write(json.dumps(wind, indent=2))
+        
+#         # dump json to file
+#     output_file = f"TESTevapDATA.json"
+#     with open(output_file, "w") as f:
+#         f.write(json.dumps(evap, indent=2))
+        
+#         # dump json to file
+#     output_file = f"TESTpan_maxDATA.json"
+#     with open(output_file, "w") as f:
+#         f.write(json.dumps(pan_max, indent=2))
+        
+#         # dump json to file
+#     output_file = f"TESTpan_minDATA.json"
+#     with open(output_file, "w") as f:
+#         f.write(json.dumps(pan_min, indent=2))
+
+
+#     by_id = defaultdict(list)
+
+       
+#     for group in wind:
+#         by_id[group["ghcn_id"]].extend(group.get("wind_data", []))
+#     for group in evap:
+#         by_id[group["ghcn_id"]].extend(group.get("evap_data", []))
+#     for group in pan_max:
+#         by_id[group["ghcn_id"]].extend(group.get("pan_max_data", []))
+#     for group in pan_min:
+#         by_id[group["ghcn_id"]].extend(group.get("pan_min_data", []))
+        
+
+#     return [{"ghcn_id": ghcn_id, "pan_evap_data": entries} for ghcn_id, entries in by_id.items()]
+
+
 def getPanEvapTable(df: pl.DataFrame) -> list[dict]:
     wind = getWindMovement(df)
     evap = getEvaporation(df)
     pan_max = getPanMaxTemp(df)
     pan_min = getPanMinTemp(df)
 
-    by_id = defaultdict(list)
+    # Build lookup dicts keyed by ghcn_id for fast access
+    wind_lookup = {g["ghcn_id"]: g.get("wind_data", []) for g in wind}
+    evap_lookup = {g["ghcn_id"]: g.get("evap_data", []) for g in evap}
+    pan_max_lookup = {g["ghcn_id"]: g.get("pan_max_data", []) for g in pan_max}
+    pan_min_lookup = {g["ghcn_id"]: g.get("pan_min_data", []) for g in pan_min}
 
-    for group in wind:
-        by_id[group["ghcn_id"]].extend(group.get("wind_data", []))
-    for group in evap:
-        by_id[group["ghcn_id"]].extend(group.get("evap_data", []))
-    for group in pan_max:
-        by_id[group["ghcn_id"]].extend(group.get("pan_max_data", []))
-    for group in pan_min:
-        by_id[group["ghcn_id"]].extend(group.get("pan_min_data", []))
+    # Extract station order exactly as in original df
+    ordered_ids = []
+    seen = set()
+    for row in df.iter_rows(named=True):
+        ghcn_id = row["country_code"] + row["network_code"] + row["station_code"]
+        if ghcn_id not in seen:
+            ordered_ids.append(ghcn_id)
+            seen.add(ghcn_id)
 
-    return [{"ghcn_id": ghcn_id, "pan_evap_data": entries} for ghcn_id, entries in by_id.items()]
+    combined_list = []
+    for ghcn_id in ordered_ids:
+        combined_data = []
+        combined_data.extend(wind_lookup.get(ghcn_id, []))
+        combined_data.extend(evap_lookup.get(ghcn_id, []))
+        combined_data.extend(pan_max_lookup.get(ghcn_id, []))
+        combined_data.extend(pan_min_lookup.get(ghcn_id, []))
+
+        combined_list.append({
+            "ghcn_id": ghcn_id,
+            "pan_evap_data": combined_data
+        })
+
+    return combined_list
+
+
+def merge_SOM_data(
+    high_temp: dict,
+    low_temp: dict,
+    avg_data: dict,
+    snow_data: dict,
+    depth_data: dict
+) -> dict:
+    merged = {}
+    all_ids = list(dict.fromkeys(
+        list(high_temp) + list(low_temp) + list(avg_data) + list(snow_data) + list(depth_data)
+    ))
+    for ghcn_id in all_ids:
+        entry = {}
+
+        if ghcn_id in high_temp:
+            entry["Highest_Temp"] = high_temp[ghcn_id]
+        if ghcn_id in low_temp:
+            entry["Lowest_Temp"] = low_temp[ghcn_id]
+        if ghcn_id in avg_data:
+            entry.update(avg_data[ghcn_id])  # <- unpack directly here
+        if ghcn_id in snow_data:
+            entry["Total_SnowIce"] = snow_data[ghcn_id]
+        if ghcn_id in depth_data:
+            val = depth_data[ghcn_id]
+            if isinstance(val, tuple):
+                entry["Max_Depth_On_Ground"] = {"value": val[0], "day": val[1]}
+            else:
+                entry["Max_Depth_On_Ground"] = {"value": val, "day": ""}
+
+        merged[ghcn_id] = entry
+
+    return merged
 
 
 
+def build_combined_df(station_rows, tobs_lookup, month, year):
+    """
+    Build a combined Polars DataFrame from station rows,
+    parsing and filtering each station's .dly file.
+    Returns the combined DataFrame.
+    """
 
-# def generateMonthlyPub_hardcoded(date_param=None):
-#     """
-#     Reads a Parquet file using Polars, processes it for graphing, 
-#     and then prepares data for charting.
+    all_filtered_dfs = []
+    noDataCount = 0
+
+    for row in station_rows[:10]:  # Keep limiting to first 10 for debug/safety
+        print("Station row: ", row)
+        coop_id = row[0]
+        ghcn_id = row[4]
+        file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
+
+        # # TEMP: Skip all but the target station
+        # if ghcn_id != target_ghcn_id:
+        #     continue
+
+        if not os.path.exists(file_path):
+            print(f"Missing file: {file_path}")
+            continue
+
+        try:
+            filtered_data = parse_and_filter(
+                station_code=ghcn_id,
+                file_path=file_path,
+                correction_type="table",
+                month=month,
+                year=year
+            )
+
+            filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+            if filtered_df.is_empty():
+                print(f"Skipping station {ghcn_id} due to no data.")
+                noDataCount += 1
+                continue
+
+            # Add TOBS metadata if available
+            if coop_id in tobs_lookup:
+                meta_fields = [
+                    "data_program", "element", "time_of_obs", "equipment", "shield_flag",
+                    "roof_flag", "j_flag", "r_flag", "c_flag", "g_flag"
+                ]
+                metadata = dict(zip(meta_fields, tobs_lookup[coop_id]))
+                for key, val in metadata.items():
+                    filtered_df = filtered_df.with_columns(pl.lit(val).cast(pl.String).alias(key))
+            else:
+                print(f"No TOBS metadata for {coop_id}")
+
+            if all_filtered_dfs:
+                existing_columns = all_filtered_dfs[0].columns
+                current_columns = filtered_df.columns
+
+                missing_columns = set(existing_columns) - set(current_columns)
+                for col in missing_columns:
+                    filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+                filtered_df = filtered_df.select(existing_columns)
+
+            all_filtered_dfs.append(filtered_df)
+            print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+
+        except Exception as e:
+            print(f"Error parsing {ghcn_id}: {e}")
+            continue
+
+    if not all_filtered_dfs:
+        print("No valid station files found.")
+        return pl.DataFrame([])  # Return empty DataFrame to avoid crashes
+
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
+    return combined_df
+
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
+
+    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+
+    # Optional: write JSON string to file
+    # output_file = f"combined_data_{month}_{year}_flask.json"
+    # with open(output_file, "w") as f:
+    #     f.write(json_data)
     
-#     Args:
-#         date_param (optional): A date parameter (currently unused).
-#     """
-#     parquet_path = "/data/ops/ghcnd/TestData_pub/full_data/CA/2/CA_table_data.parquet"
-#     final_data = {}
     
-#     try:
-#         # Load the data lazily using scan_parquet for efficiency
-#         df = pl.scan_parquet(parquet_path).collect()
+    
+    # print(f"Data saved to {output_file}")
+    # print(json_data)
+
+
+    ########################################
+    #  Read the JSON file for Testing
+
+    # json_data = None
+
+    # with open(output_file) as f:
+    #     json_data = json.load(f)
+    #     # print(d)
+
+    #########################################
+    
+    json_data = json.loads(json_data)
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    prcp_data = {}
+    mdpr_data = {}
+    dapr_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+        daily_flags = [
+            row[f"flag_{i}"]
+            for i in range(1, num_days + 1)
+        ]
+
+        if obs_type == "PRCP":
+            prcp_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "MDPR":
+            mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "DAPR":
+            dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+            
+
+    # for key, data in prcp_data.items():
+    #     print(f"{key}:\t{data}")
+    # print(f"-"*30)
+    # for key, data in mdpr_data.items():
+    #     print(f"{key}:\t{data}")
+    # print(f"-"*30)
+    # for key, data in dapr_data.items():
+    #     print(f"{key}:\t{data}")
+
+
+    ############################################
+
+
+    # Update the PRCP dictionary with stations that have no PRCP data (but have MDPR and DAPR)
+    
+
+
+    for key in set(mdpr_data) | set(dapr_data) | set(full_station_id_list):  
+        if key not in prcp_data:
+            prcp_data[key] = None
+
+    
+    # Sort the prcp data in the same order as the station list from the DB.
+    prcp_data = {key: prcp_data[key] for key in full_station_id_list if key in prcp_data}
+
+
+    
+# Daily Calculations
+
+    daily_precip_table_rec = {}
+    for station, data in prcp_data.items():
+        print(station)
+
+        pcnrec = [""] * 33 # Station Name, Precip Total, pcn record, pcn record, etc. 
+    
+        idy = 1     # Integer for current day
+        inullct = 0 # Integer for null number of days??
+        idyct = 0   # ???
+        ptrace = False
+        pcnFlagged = False
+        total_pcn = 0
+        pcn_count = 0 # each valid and non Q flagged PRCP data day
+        ieommd = 0 # ???
+        pcn_acc = False # Accumulated Precip flag
+        pcn_missing = False
         
-#         test_json_data = [
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A001",
-#                 "observation_type": "TMAX",
-#                 "day_1": 210,
-#                 "day_2": -9999,
-#                 "day_3": 750,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A002",
-#                 "observation_type": "TMAX",
-#                 "day_1": 300,
-#                 "day_2": 350,
-#                 "day_3": -9999,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A003",
-#                 "observation_type": "TMIN", 
-#                 "day_1": -100,   
-#                 "day_2": -9999,
-#                 "day_3": -100,  
-#                 "day_4": -50
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A004",
-#                 "observation_type": "TMIN",
-#                 "day_1": -9999,
-#                 "day_2": -100,
-#                 "day_3": -9999,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A005",
-#                 "observation_type": "PRCP",
-#                 "day_1": 50,
-#                 "day_2": 100,
-#                 "day_3": 80,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A006",
-#                 "observation_type": "PRCP",
-#                 "day_1": 225, 
-#                 "day_2": 50,
-#                 "day_3": -9999,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A007",
-#                 "observation_type": "PRCP",
-#                 "day_1": 0,
-#                 "day_2": 0,
-#                 "day_3": 5,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A008",
-#                 "observation_type": "PRCP",
-#                 "day_1": 2,
-#                 "day_2": 0,
-#                 "day_3": 0,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A009",
-#                 "observation_type": "SNOW",
-#                 "day_1": 300,
-#                 "day_2": 200,
-#                 "day_3": 55,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A010",
-#                 "observation_type": "SNOW",
-#                 "day_1": 10,
-#                 "day_2": 15,
-#                 "day_3": -9999,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A011",
-#                 "observation_type": "SNWD",
-#                 "day_1": 300,
-#                 "day_2": 200,
-#                 "day_3": 500,
-#                 "day_4": -9999
-#             },
-#             {
-#                 "country_code": "US",
-#                 "network_code": "1",
-#                 "station_code": "A012",
-#                 "observation_type": "SNWD",
-#                 "day_1": 400,
-#                 "day_2": 550,
-#                 "day_3": -9999,
-#                 "day_4": -9999
-#             }
+        pcnrec[0] = station
 
-#         ]
+        for i in range(31):             
+            if data is not None:
+                try:    
+                    pcn = data[i][0]
+                    flg = data[i][1][:1]
+                    qflg = data[i][1][1:2]
+                    
+                    # print(f"pcn:{pcn}  flg:{flg}  qflg:{qflg}")
+                except IndexError as err:
+                    # Handling months without 31 days
+                    pcnrec[idy+1] = "  "
+                    idy+=1
+                    continue
+
+                if pcn != -9999:
+                    if qflg == " ":
+                        d = float(pcn) * 0.1
+                        d = round_it(get_mm_to_in(d),2)
+                        pcnrec[idy+1] = d
+                        
+                        if pcnrec[idy+1] == '0.00':
+                            pcnrec[idy+1] = " "
+
+                        total_pcn += float(d) 
+                        
+                        total_pcn = float(round_it(total_pcn, 2)) #Is this rounding required? 
+
+                        pcn_count += 1
+                        ieommd = 0
+
+                        if flg == "T":
+                            ptrace = True
 
 
+                    else:
+                        d = float(pcn) * 0.1
+                        d = get_mm_to_in(d)
+                        pcnrec[idy+1] = round_it(d,2)
+                        pcnFlagged = True
 
-#         # Convert to Polars DataFrame
-#         testDF = pl.from_dicts(test_json_data)
+                    idyct += 1
 
-#         # Call your function
-#         result = getHighestTemperatureExtreme(testDF)
-#         print("Highest Temp Test Results: ", json.dumps(result, indent=2))
+                    if flg == "T":
+                        pcnrec[idy+1] = "T  "
+
+                    
+                    # print(f"Line: pcnrec[idy+1]:{pcnrec[idy+1]} \ttotal_pcn:{total_pcn} \tpcn_count:{pcn_count} \tieommd:{ieommd}\tptrace:{ptrace} pcnFlagged:{pcnFlagged}")
+                
+                
+                else:  # pcn == -9999
+                    try:
+                        if mdpr_data[station] is not None: # Check MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
+                            pcn = mdpr_data[station][i][0]
+                            flg = mdpr_data[station][i][1][:1]
+                            qflg = mdpr_data[station][i][1][1:2]
+                            ndays = 0
+
+
+                            # print(f"MDPR: pcn {pcn}  flg {flg}  qflg {qflg}")
+
+                            if pcn != -9999:
+                                if qflg == " ":
+                                    d = float(pcn) * 0.1
+                                    d = get_mm_to_in(d)
+                                    pcnrec[idy+1] = round_it(d,2) + "a"
+
+                                    #  DAPR
+                                    try:
+                                        if dapr_data[station]:
+                                            days = dapr_data[station][i][0]
+
+                                            if days != -9999:
+                                                ix = i+1 # Index for this calculation
+                                                for i2 in range(1, days):
+                                                    try:
+                                                        pcnrec[ix] = "* "
+                                                        ix -= 1
+                                                        idyct += 1
+                                                    except (ValueError, IndexError):
+                                                        print("Too many days")
+
+                                    except KeyError as err:
+                                        pass 
+                                
+                                else:
+                                    d = float(pcn) * 0.1
+                                    d = get_mm_to_in(d)
+                                    pcnrec[idy+1] = round_it(d,2) + "a"
+
+                                if flg == "T":
+                                    pcnrec[idy+1] = "Ta"
+                            else:
+                                pcnrec[idy+1] = "-  "
+
+                            try:
+                                if dapr_data[station]is not None:
+                                    try:
+                                        ndays = dapr_data[station][i][0]
+                                        # print(f"ndays: {ndays}")
+                                        if ndays != -9999:
+                                            if i >= ndays - 1:
+                                                pcn_count += ndays
+                                                pcn_acc = True
+                                            else:
+                                                pcn_count = i + 1
+                                                pcn_acc = True
+
+                                            if pcn != -9999:
+                                                if qflg == " ": 
+                                                    d = float(pcn) * 0.1
+                                                    d = get_mm_to_in(d)
+                                                    d = float(round_it(d, 2))
+
+                                                    total_pcn += d
+                                                    ieommd = 0
+                                                else:
+                                                    pcnFlagged = True
+                                            else:
+                                                ieommd += 1
+                                                pcn_missing = True    
+
+                                        else:
+                                            # print(f"ndays == -9999")
+                                            ndays = 0
+                                            pcn_missing = True
+                                            ieommd += 1
+
+                                    except ValueError as err:
+                                        print("error: {}".format(traceback.format_exc()))
+                                        pass
+                                else:
+                                    raise KeyError(f"{station} has DAPR key but no data.")
+
+                            except KeyError as err:
+                                # print("error: {}".format(traceback.format_exc()))
+                                print(f"NOTE: No DAPR data")
+                                pcn_missing = True
+                                ieommd += 1
+                        else:
+                            raise KeyError(f"{station} has MDPR key but no data.")
+
+                            
+                    except KeyError as err:
+                        # print("error: {}".format(traceback.format_exc()))
+                        # print(f"No MDPR Data")
+                        pcnrec[idy+1] = "-  "
+                        pcn_missing = True
+                        ieommd += 1
+
+                # print(f"Line2: total_pcn: {total_pcn} pcn_count: {pcn_count} pcn_acc: {pcn_acc} pcn_missing:{pcn_missing} ieommd:{ieommd}")
+            else:
+                if i < num_days:
+                    inullct += 1
+                    pcnrec[idy+1] = "-  "
+
+            
+                    try:
+                        if mdpr_data[station]is not None: # MDPR (Number of days with non-zero precipitation included in multiday precipitation total)
+                            try:
+                                pcn = mdpr_data[station][i][0]
+                                qflg = mdpr_data[station][i][1][1:2]
+                            except IndexError as err: # Handling months with less than 31 days.
+                                print("error: {}".format(traceback.format_exc()))
+                                pcn = None 
+                                qflg = None                             
+                            try:
+                                ndays = dapr_data[station][i][0] if dapr_data[station] is not None else 0
+                            except KeyError as err:
+                                print("error: {}".format(traceback.format_exc()))
+                                ndays = 0
+                            except IndexError as err:
+                                print("error: {}".format(traceback.format_exc()))
+                                ndays = None
+
+                            # Index is past the number of days for a month.
+                            if (pcn or qflg or ndays) is None: 
+                                print(f"Skipping because of index {i}")
+                                continue
+                            
+
+                            if pcn != -9999:
+                                if qflg == " ":
+
+                                    pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
+                                    total_pcn = float(round_it(total_pcn +  pcn, 2))
+
+                                    ndays = int(ndays)
+                                    if ndays < i:
+                                        pcn_count += ndays if ndays != -9999 else 0
+                                    else:
+                                        pcn_count = i
+                                        pcn_acc = True
+
+                                    if pcn != -9999:
+                                        if qflg == " ":
+                                            pcn = float(round_it(get_mm_to_in(pcn * 0.1), 2))
+                                            total_pcn = float(round_it(total_pcn +  pcn, 2))
+                                            ieommd = 0
+                                    else: # This clause is unreachable.
+                                        ieommd += 1
+                                        pcn_missing = True
+                                else:
+                                    pcnFlagged = True
+                                    # ieommd += 1 # I feel like this should be here, but it isn't. 
+                            else:
+                                pcn_missing = True
+
+                            # print(f"NOTE: Else.if mdpr_data[station].inches: pcn {pcn} qflg {qflg} ndays {ndays} total_pcn {total_pcn} " 
+                            #         + f"\npcn_count {pcn_count} pcn_acc {pcn_acc} pcnFlagged {pcnFlagged} pcn_missing {pcn_missing} ieommd {ieommd} iteration {i}")
+                        
+                        else:
+                            pcn_missing = True
+                                
+                    except KeyError as err:
+                        print("error: {}".format(traceback.format_exc()))
+                        pcn_missing = True
+
+
+
+
+
+            
+            idy+=1   
+
+
         
-#         result = getLowestTemperatureExtreme(testDF)
-#         print("Lowest Temp Test Results: ", json.dumps(result, indent=2))
+        # Add Flags to the Total Precip Calculation
+        day_diff = monthrange(year, month)[1] - pcn_count
+
+        if day_diff == 0:
+            pcn_missing = False
         
-#         result = getGreatestTotalPrecipitationExtreme(testDF)
-#         print("Greatest Total Precipitation Test: ", json.dumps(result, indent=2))
-        
-#         result = getLeastTotalPrecipitationExtreme(testDF)
-#         print("Least Total Precipitation Test: ", json.dumps(result, indent=2))
-        
-#         result = getGreatest1DayPrecipitationExtreme(testDF)
-#         print("Greatest 1 Day Precipitation Test: ", json.dumps(result, indent=2))
-        
-#         result = getGreatestTotalSnowfallExtreme(testDF)
-#         print("Greatest Total Snowfall Test ", json.dumps(result, indent=2))
-        
-#         result = getGreatestSnowDepthExtreme(testDF)
-#         print("Greatest Snow Depth Test ", json.dumps(result, indent=2))
+        setAstr = False # Set Asterisk
+        still_missing = True
+
+        if day_diff <= 9:
+            flag_total_pcn = round_it(total_pcn, 2)
+
+            if day_diff == ieommd and ieommd > 0:
+                still_missing = check_next_month_for_acc_pcn(station, month, year, ieommd)
+                if not still_missing:
+                    pcn_missing = False
+                    setAstr = True
+
+            # print(f"NOTE: flag_total_pcn={flag_total_pcn} ptrace={ptrace} day_diff={day_diff} pcn_missing={pcn_missing} setAstr={setAstr} still_missing={still_missing}" )
+
+            if ptrace and flag_total_pcn == "0.00":
+                flag_total_pcn = "T"
+
+            label = ""
 
 
-#         # #Highest Temperature for Exremes data
-#         # highestTempExtremeValue = getHighestTemperatureExtreme(df)
-#         # print("getHighestTemperatureExtreme: ", highestTempExtremeValue)
+            #######
+            # FOR TESTING FLAG LOGIC
+            # label = True
+            # setAstr = True
 
-        
-#         # Pass data to graphing function
-#         makeGraph(df)
+            #####
+            if pcn_acc:
+                if pcn_missing:
+                    label = "FMA" if pcnFlagged else "MA"
+                else:
+                    label = "FA" if pcnFlagged else "A"
+            else:
+                if pcn_missing:
+                    label = "FM" if pcnFlagged else "M"
+                else:
+                    label = "F" if pcnFlagged else ""
 
-#         # Pass data to chart processing function
-#         processDataForTable()
-        
-#         with open("JSONresults.json", "w") as json_file:
-#             json.dump(final_data, json_file, indent=4)
-
-#     except Exception as e:
-#         print(f"Error reading or processing the Parquet file: {e}")
+            if label:
+                if setAstr:
+                    flag_total_pcn = f"{label}* {flag_total_pcn}"
+                else:
+                    flag_total_pcn = f"{label} {flag_total_pcn}"
+            elif setAstr:
+                flag_total_pcn = f"* {flag_total_pcn}"
         
 
 def get_mm_to_in(mm: float) -> float:
@@ -1573,6 +2167,233 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
         # return?
     
         
+        station_name = None
+        if station in load_station_data():
+            station_name = load_station_data()[station][1]
+
+        
+        # print(f"station: {station} {station_name}: {total_pcn} flag_total_pcn={flag_total_pcn}", "tprcp_output.txt")
+
+        pcnrec[1] = flag_total_pcn
+
+    
+        # print(
+        #     f"station={str(station):<13}  {str(station_name):<40}"
+        #     f"  flag_total_pcn={str(flag_total_pcn):<5}"
+        #     f"  total_pcn={str(total_pcn):<5}"
+        #     f"  idy={str(idy):<3}"
+        #     f"  inullct={str(inullct):<2}"
+        #     f"  idyct={str(idyct):<3}"
+        #     f"  ptrace={str(ptrace):<5}"
+        #     f"  pcnFlagged={str(pcnFlagged):<5}"
+        #     f"  pcn_count={str(pcn_count):<2}"
+        #     f"  ieommd={str(ieommd):<1}"
+        #     f"  pcn_acc={str(pcn_acc):<5}"
+        #     f"  pcn_missing={str(pcn_missing):<5}"
+        #     f"\n{str(station_name)} {str(pcnrec)}"
+        # )
+
+        ##############################
+        # Printing the results for each station to a file to QA them. 
+        # result = {}
+        # result['station_id'] = pcnrec[0]
+        # result['tprcp'] = pcnrec[1].strip()
+
+        # for i, value in enumerate(pcnrec[2:], start=1):
+        #     label = f"{i:02d}"
+        #     result[label] = value.strip()
+
+        # print(
+        #      f"{str(station_name)} {str(result)}\n"
+        #      , "tprcp_output.txt"
+        # )
+        ############################
+        
+        # End result format
+        result = {}
+        result['total_pcn'] = pcnrec[1].strip()
+
+        daily_pcn = {}
+        for i, value in enumerate(pcnrec[2:], start=1):
+            label = f"{i:02d}"
+            daily_pcn[label] = value.strip()
+
+        result["daily_pcn"] = daily_pcn
+
+        daily_precip_table_rec.setdefault(station, {}).update(result)
+
+
+
+    return daily_precip_table_rec
+
+
+
+
+def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
+    """ Checks the next month for accumulated precipitation.
+
+    Parameters
+    ----------
+    station_id : str
+        GHCN-ID
+    month, year : int
+
+    ieommd : int
+        Honestly I don't know what this stands for. I tried. 
+
+    Returns
+    -------
+    bool
+    """
+    all_filtered_dfs = []
+    noDataCount = 0
+
+    still_missing = True
+
+    # Parse month and increment
+    month = month
+    year = year
+
+    if month < 12:
+        month += 1
+    else:
+        month = 1
+        year += 1
+
+    ######################
+    # Get next month's data
+
+    file_path = f"/data/ops/ghcnd/data/ghcnd_all/{station_id}.dly"
+
+    if not os.path.exists(file_path):
+        print(f"Missing file: {file_path}")
+        return still_missing
+
+    try:
+        filtered_data = parse_and_filter(
+            station_code=station_id,
+            file_path=file_path,
+            correction_type="table",
+            month=month,
+            year=year
+        )
+
+        filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+        if filtered_df.is_empty():
+            print(f"Skipping station {station_id} due to no data.")
+            noDataCount += 1
+            return still_missing
+
+        if all_filtered_dfs:
+            existing_columns = all_filtered_dfs[0].columns
+            current_columns = filtered_df.columns
+
+            missing_columns = set(existing_columns) - set(current_columns)
+            for col in missing_columns:
+                filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+            filtered_df = filtered_df.select(existing_columns)
+
+        all_filtered_dfs.append(filtered_df)
+        print(f"Parsed {len(filtered_df)} records from {station_id}")
+
+    except Exception as e:
+        print(f"Error parsing {station_id}: {e}")
+        return still_missing
+
+    if not all_filtered_dfs:
+        print("No valid station files found.")
+        return still_missing
+
+    combined_df = pl.concat(all_filtered_dfs, how="vertical")
+
+    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = json.loads(json_data)
+
+    # # Optional: write JSON string to file
+    # output_file = f"combined_data_{month}_{year}.json"
+    # with open(output_file, "w") as f:
+    #     f.write(json_data)
+
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    prcp_data = {}
+    mdpr_data = {}
+    dapr_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # List Comprehesion
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+        daily_flags = [
+            row[f"flag_{i}"] # if row[f"day_{i}"] is not None else None
+            for i in range(1, num_days + 1)
+        ]
+
+        if obs_type == "PRCP":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            prcp_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "MDPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+        elif obs_type == "DAPR":
+            # prcp_data.setdefault(station_id, []).extend(daily_values)
+            dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
+
+
+
+    for i in range(32):
+
+        try:
+            try:
+                pcn = prcp_data[station_id][i][0] if prcp_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                pcn = None
+            
+            try:
+                pcn_mdpr = mdpr_data[station_id][i][0] if mdpr_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                pcn_mdpr = -9999
+            
+            try:
+                days = dapr_data[station_id][i][0] if dapr_data[station_id][i][0] is not None else None
+            except KeyError as err:
+                print("error: {}".format(traceback.format_exc()))
+                days = None
+            
+
+        except IndexError as err:
+            print(f"Breaking from next month acc loop.")
+            break # Exit early if data is shorter than expected
+    
+        # print(f"pcn={pcn} pcn_mdpr={pcn_mdpr} days={days}")
+
+        if pcn_mdpr != -9999 and days != -9999:
+            try:
+                days = int(days)
+                day_diff = days - (i + 1)
+                if day_diff == ieommd:
+                    still_missing = False
+                
+            except TypeError:
+                pass   
+            break # Exit loop if accumulated value found
+
+        if pcn != -9999:
+            break # Exit loop if direct value found
+
+    return still_missing
 
     combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
@@ -2196,121 +3017,43 @@ def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: 
 def generateMonthlyPub():
     month = 2
     year = 2023
-    target_ghcn_id = "USC00049026"
+    # target_ghcn_id = "USC00049026"
 
     try:
         stations = QuerySoM("som")
-        print("Station list retrieved.")
+        print("Station list retrieved.", stations)
+
+        temperature_data = QuerySoM("temp")
+        print("Temp data retrieved.", temperature_data)
         
+        evaporation_data = QuerySoM("evap")
+        print("Evap data retrieved.", evaporation_data)
+        
+         
+        precipitation_data = QuerySoM("precip")
+        print("Precipitation data retrieved.", precipitation_data)
+
         tobs_data = QuerySoM("tobs")
-        print("TOBS metadata retrieved.")
+        # print("TOBS data retrieved.")
 
         soils_data = QuerySoM("soil")
-        print("Soil metadata retrieved.")
-        print("soils_data", soils_data)
+        # print("Soil data retrieved.")
+        # print("soils_data", soils_data)
 
         soils_ref_data = QuerySoM("soilref")
-        print("Soil REF metadata retrieved.")
-        print("soils_REF_data", soils_ref_data)
+        # print("Soil REF metadata retrieved.")
+        # print("soils_REF_data", soils_ref_data)
 
-        # Build TOBS metadata lookup by coop_id
+        # # Build TOBS metadata lookup by coop_id
         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
-        all_filtered_dfs = []
-        noDataCount = 0
-
-        for row in stations:
-            coop_id = row[0]
-            ghcn_id = row[4]
-            file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
-
-             # TEMP: Skip all but the target station
-            if ghcn_id != target_ghcn_id:
-                continue
-
-
-            if not os.path.exists(file_path):
-                print(f"Missing file: {file_path}")
-                continue
-
-            try:
-                filtered_data = parse_and_filter(
-                    station_code=ghcn_id,
-                    file_path=file_path,
-                    correction_type="table",
-                    month=month,
-                    year=year
-                )
-
-                filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
-
-                if filtered_df.is_empty():
-                    print(f"Skipping station {ghcn_id} due to no data.")
-                    noDataCount += 1
-                    continue
-
-                # Add TOBS metadata if available
-                if coop_id in tobs_lookup:
-                    meta_fields = [
-                        "data_program", "element", "time_of_obs", "equipment", "shield_flag",
-                        "roof_flag", "j_flag", "r_flag", "c_flag", "g_flag"
-                    ]
-                    metadata = dict(zip(meta_fields, tobs_lookup[coop_id]))
-                    for key, val in metadata.items():
-                        filtered_df = filtered_df.with_columns(pl.lit(val).cast(pl.String).alias(key))
-                else:
-                    print(f"No TOBS metadata for {coop_id}")
-
-                if all_filtered_dfs:
-                    existing_columns = all_filtered_dfs[0].columns
-                    current_columns = filtered_df.columns
-
-                    missing_columns = set(existing_columns) - set(current_columns)
-                    for col in missing_columns:
-                        filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
-
-                    filtered_df = filtered_df.select(existing_columns)
-
-                all_filtered_dfs.append(filtered_df)
-                print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
-
-            except Exception as e:
-                print(f"Error parsing {ghcn_id}: {e}")
-                continue
-
-        if not all_filtered_dfs:
-            print("No valid station files found.")
-            return
-
-        combined_df = pl.concat(all_filtered_dfs, how="vertical")
-
-        json_data = json.dumps(combined_df.to_dicts(), indent=2)
-
-        # Optional: write JSON string to file
-        output_file = f"combined_data_{month}_{year}.json"
-        with open(output_file, "w") as f:
-            f.write(json_data)
-
-        print(f"Data saved to {output_file}")
+        # Build combined_df for temperature stations
+        combined_temp_df = build_combined_df(temperature_data, tobs_lookup, month, year)
+        json_data = json.dumps(combined_temp_df.to_dicts(), indent=2)
         
-        # print("Highest Temperature:", getHighestTemperatureExtreme(combined_df))
-        # print("Lowest Temperature:", getLowestTemperatureExtreme(combined_df))
-        # print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_df))
-        # print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_df))
-        # print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_df))
-        # print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_df))
-        # print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_df))
-        # print("MonthlyHDD:", getMonthlyHDD(combined_df))
-        # print("Precip Number of Days:", getNumOfDays(json.loads(json_data)))
-        # print("MonthlyTempThresholdCounts:", getMonthlyTemperatureThresholdCounts(combined_df))
-        # print("TotalSnowAndIcePellets:", getTotalSnowAndIcePellets(combined_df))
-        # print("maxDepthOnGround:", getMaxDepthOnGround(combined_df))
-        # print("SnowAndSnwdTable:", getSnowAndSnwdTable(combined_df))
-        # print("TemperatureTable:", getTemperatureTable(combined_df))
-       
-        #tempTableData = getTemperatureTable(combined_df)
-        #tempTableDataWithNames = add_station_names(tempTableData)
-        #print(tempTableDataWithNames)
+        # Build combined_df for evaporation stations (som)
+        combined_evap_df = build_combined_df(evaporation_data, tobs_lookup, month, year)
+        json_data = json.dumps(combined_evap_df.to_dicts(), indent=2)
 
         soils_combined_df = getSoilsData(month, year)
         with open(f"soil_data_{month}_{year}.json", "w") as f:
@@ -2318,15 +3061,137 @@ def generateMonthlyPub():
         
         print("soilTemperatureTable", getSoilTemperatureTable(soils_combined_df))
         
+        # # Write JSON to file for testing/viewing
+        # output_file = f"SoMDATA_dly.json"
+        # with open(output_file, "w") as f:
+        #     f.write(json_data)
+        
+        # # Write JSON to file for testing/viewing
+        # output_file = f"tempDATA_dly.json"
+        # with open(output_file, "w") as f:
+        #     f.write(json_data)
+
+        # # Write JSON to file for testing/viewing
+        # output_file = f"evapDATA_dly.json"
+        # with open(output_file, "w") as f:
+        #     f.write(json_data)
+        
+        # # Write JSON to file for testing/viewing
+        # output_file = f"precipDATA_dly.json"
+        # with open(output_file, "w") as f:
+        #     f.write(json_data)
+        
+  
+##########################################
+############## EXTREMES ##################
+##########################################
+
+        print("Highest Temperature:", getHighestTemperatureExtreme(combined_som_df))
+        print("Lowest Temperature:", getLowestTemperatureExtreme(combined_som_df))
+        print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_som_df))
+        print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_som_df))
+        print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_som_df))
+        print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_som_df))
+        print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_som_df))
+
+        
+#############################################
+### MONTHLY STATION AND DIVISION SUMMARY ####
+#############################################
+        
+        Highest = highestRecordedTemp(combined_som_df)
+        print("Highest:", Highest)
+
+        Lowest = lowestRecordedTemp(combined_som_df)
+        print("Lowest:", Lowest)
+
+        Average = calculate_station_avg(combined_som_df)
+        print("Average:", Average)
+
+        Total_IcePelletsAndSnow = getTotalSnowAndIcePellets(combined_som_df)
+        print("Total_IcePelletsAndSnow:", Total_IcePelletsAndSnow)
+
+        maxDepthOnGround = getMaxDepthOnGround(combined_som_df)
+        print("maxDepthOnGround:", maxDepthOnGround)
+        
+        merged_SOM_data = merge_SOM_data(Highest, Lowest, Average, Total_IcePelletsAndSnow, maxDepthOnGround)
+        print("merged_SOM_data:", merged_SOM_data)
+
+        with open("SoMTable.json", "w") as f:
+            json.dump(merged_SOM_data, f, indent=2)
+            
+#############################################
+############ DAILY PRECIPITATION ############
+#############################################
+        
+        
+        ##TBD##
+        
+        
+#############################################
+########### DAILY TEMPERATURES ##############
+#############################################
+
+        TemperatureTable = getTemperatureTable(combined_temp_df)
+        print("TemperatureTable:", TemperatureTable)
+
+        tempTableData = getTemperatureTable(combined_temp_df)
+        tempTableDataWithNames = add_station_names(tempTableData)
+        print("TemperatureTable w names:", tempTableDataWithNames)
+        
+        with open("tempTable_wNames.json", "w") as f:
+            json.dump(tempTableDataWithNames, f, indent=2)
+            
+#############################################
+####### SNOWFALL AND SNOW ON GROUND #########
+#############################################
+
+        SnowAndSnwdTable = getSnowAndSnwdTable(combined_precip_df)
+        print("SnowAndSnwdTable:", SnowAndSnwdTable)
+
+        with open("SnowAndSnwdTable.json", "w") as f:
+            json.dump(SnowAndSnwdTable, f, indent=2)
 
 
-        # soilRefNotes = get_soil_refernce_notes(soils_ref_data)
-        # for item in soilRefNotes:
-            # print("SoilRefNotes: ", item)
+#############################################
+######## DAILY SOIL TEMPERATURES ############
+#############################################
 
-        # print("WindMovement", getWindMovement(combined_df))
+        
+        soils_combined_df = getSoilsData(month, year)
+        
+        # # Write JSON to file for testing/viewing
+        # with open(f"soilDATA_dly.json", "w") as f:
+        #     f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
 
-        print("PanEvapTable", getPanEvapTable(combined_df))
+        soilTemperatureTable = getSoilTemperatureTable(soils_combined_df)
+        print("soilTemperatureTable", soilTemperatureTable)
+        
+        with open("soilTemperatureTable.json", "w") as f:
+            json.dump(soilTemperatureTable, f, indent=2)
+        
+#############################################
+######## SOIL REFERENCE NOTES ############
+#############################################  
+        
+        
+        soilRefNotes = get_soil_refernce_notes(soils_ref_data)
+        print("SoilRefNotes: ", soilRefNotes)
+
+        with open("soilRefNotes.json", "w") as f:
+            json.dump(soilRefNotes, f, indent=2)
+
+#############################################
+######## PAN EVAPORATION AND WIND ###########
+#############################################
+
+
+        PanEvaporationTable = getPanEvapTable(combined_evap_df)
+        print("PanEvapTable", PanEvaporationTable)
+
+
+        with open("PanEvaporationTable.json", "w") as f:
+            json.dump(PanEvaporationTable, f, indent=2)
 
 
     except Exception as e:

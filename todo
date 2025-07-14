@@ -1,0 +1,18 @@
+Reports:
+
+[X] Check that the right stations return for each query.
+[X] Function for each table to gather data / format unique json output for each table.  
+[X] Order of SoM return Data
+[X] M's on Average calculations
+[] Check rounding for Averages
+[] Come up with header naming conventions
+[] Add station name to json output
+[] Update Report generation to handle above.
+
+
+[] Percip
+[] HDD + CDD
+[] Ice Pellets/Snow (double check whole section)
+[] Add region to json output
+[] Add state conditions for queries "if (stNo.equals("70"))...... else if (stNo.equals("71"))...."
+
