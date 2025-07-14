@@ -94,6 +94,11 @@ def send_email():
     return "Email sent!"    
 
 
+
+#########################################################################################
+################  UNIT CONVERSIONS   ####################################################  
+#########################################################################################
+
 def c_tenths_to_f(val: str) -> str:
     try:
         ivalue = int(val)
@@ -101,7 +106,7 @@ def c_tenths_to_f(val: str) -> str:
             return val
         celsius = ivalue / 10
         fahrenheit = (celsius * 9/5) + 32
-        return str(round(fahrenheit, 1))  # You can change to `0` if you want whole degrees
+        return str(round(fahrenheit))  # You can change to `0` if you want whole degrees
     except:
         return val
     
@@ -147,10 +152,79 @@ def cm_to_inches(val: str) -> str:
         return val
     return f"{round(float(val) / 2.54, 2):.2f}"
 
-def km_to_miles(val: str) -> str:
-    if val == "-9999":
+# def km_to_miles(val: str) -> str:
+#     if val == "-9999":
+#         return val
+#     return f"{round(float(val) * 0.621371, 2):.2f}"
+
+# def raw_tenths_c_to_c(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # °C
+#     except:
+#         return val
+
+# def raw_tenths_mm_to_mm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # mm
+#     except:
+#         return val
+
+# def raw_mm_to_mm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # mm
+#     except:
+#         return val
+
+# def raw_wind_tenths_to_ms(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # m/s
+#     except:
+#         return val
+
+# def raw_cm_to_cm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # cm
+#     except:
+#         return val
+
+# def raw_km_to_km(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # km
+#     except:
+#         return val
+    
+def raw_to_metric_simple(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        return f"{ivalue / 10:.1f}"
+    except:
         return val
-    return f"{round(float(val) * 0.621371, 2):.2f}"
+
+
+    
+################################################################################################################    
+#################################################################################################################
+
 
 def extract_years_from_dly(file_path: str) -> list[int]:
     """
@@ -181,6 +255,8 @@ def get_data_for_GHCN_table():
         # state = request.form.get('state')
         station_type = request.form.get('station_type')
         correction_date = request.form.get('date')
+        unit_mode = request.form.get('unit_mode')
+        display_group = request.form.get('display_group')
         
         if correction_date:
             correction_year, correction_month, correction_day = correction_date.split('-')
@@ -218,6 +294,20 @@ def get_data_for_GHCN_table():
         
         data = JSONformattedData.get_json()  # this gives us the dict
 
+        all_keys = {
+            "TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD",
+            "WT01", "WT02", "WT03", "WT04", "WT05",
+            "SN01", "SN02", "SX01", "SX02",
+            "TAVG", "AVG", "DFN", "HDD", "CDD",
+            "MDPR", "DAPR", "MDSF", "DASF",
+            "AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF",
+            "TSUN", "PSUN",
+            "MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM",
+            "WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "AWND",
+            "PKWT", "PKSP", "PKSD", "MXGS", "MXSD", "MXSP", "MXSW"
+        }
+        
+        
         temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
         tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
         mm_keys = {"SNOW", "SNWD", "MDSF"}
@@ -225,20 +315,55 @@ def get_data_for_GHCN_table():
         cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
         km_keys = {"MDWM", "WDMV"}
         
-        for day in data:
-            for key in data[day]:
-                if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
-                    data[day][key] = c_tenths_to_f(data[day][key])
-                elif key in tenths_mm_keys:
-                    data[day][key] = tenths_mm_to_inches(data[day][key])
-                elif key in mm_keys:
-                    data[day][key] = mm_to_inches(data[day][key])
-                elif key in wind_keys:
-                    data[day][key] = wind_tenths_to_mph(data[day][key])
-                elif key in cm_keys:
-                    data[day][key] = cm_to_inches(data[day][key])
-                elif key in km_keys:
-                    data[day][key] = km_to_miles(data[day][key])
+        ELEMENT_GROUPS = {
+            "1": {"TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD"},  # Core base keys, WTXX dynamically added below   
+            "2": {"TMAX", "TMIN", "TOBS", "TAVG", "AVG", "DFN", "HDD", "CDD"},  # Temp Elements
+            "3": {"PRCP", "MDPR", "DAPR", "SNOW", "MDSF", "DASF", "SNWD"},  # Precipitation Elements
+            "4": {"AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF"},  # Other: Avg Temps, Pan Temp, Evaporation, Wind
+            "5": {"TSUN", "PSUN"}, # Sunshine
+            "6": set(), # soils, dynamically added below
+            "7": {"MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM"}, # Multi Day
+            "8": {"WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "AWND", "WTXX", "PKWT", "PKSP", "PKSD", "MXGS", "MXSD", "MXSP", "MXSW"} # ASOS Winds, WTXX dynamically added below
+        }
+        
+        # Add WTXX to group 1:
+        ELEMENT_GROUPS["1"].update({e for e in all_keys if re.match(r"WT\d{2}", e)})
+
+        ELEMENT_GROUPS["6"] = {e for e in all_keys if re.match(r"S[NX]\d{2}", e) and e not in {"SNOW", "SNWD"}}
+
+        # Add WTXX to group 8:
+        ELEMENT_GROUPS["8"].update({e for e in all_keys if re.match(r"WT\d{2}", e)})
+        
+        
+        if unit_mode == "imperial":  # Convert to U.S. (Imperial)
+            for day in data:
+                for key in data[day]:
+                    if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
+                        data[day][key] = c_tenths_to_f(data[day][key])
+                    elif key in tenths_mm_keys:
+                        data[day][key] = tenths_mm_to_inches(data[day][key])
+                    elif key in mm_keys:
+                        data[day][key] = mm_to_inches(data[day][key])
+                    elif key in wind_keys:
+                        data[day][key] = wind_tenths_to_mph(data[day][key])
+                    elif key in cm_keys:
+                        data[day][key] = cm_to_inches(data[day][key])
+                    elif key in km_keys:
+                        data[day][key] = km_to_miles(data[day][key])
+
+        elif unit_mode == "metric":  # Convert raw to Metric
+             for day in data:
+                for key in data[day]:
+                    data[day][key] = raw_to_metric_simple(data[day][key])
+        else: #Raw mode — no conversion
+            pass 
+
+        if display_group and display_group in ELEMENT_GROUPS:
+            allowed_keys = ELEMENT_GROUPS[display_group]
+            for day, day_data in data.items():
+                keys_to_remove = [k for k in day_data if k not in allowed_keys and k != "Day"]
+                for k in keys_to_remove:
+                    day_data.pop(k, None)
 
         # Replace the original Response with new one containing converted values
         JSONformattedData = jsonify(data)

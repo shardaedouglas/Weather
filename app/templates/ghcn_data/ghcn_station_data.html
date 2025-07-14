@@ -144,16 +144,16 @@
         </div>
         <div class="col">
             Display: 
-            <select class="form-select">
+            <select class="form-select" id="display-selector">
                 <option selected>--Select--</option>
                 <option value="1">Core Elements</option>
                 <option value="2">Temp Elements</option>
                 <option value="3">Precip Elements</option>
-                <option value="3">Evap/Pan Temp/Wind</option>
-                <option value="3">Sunshine</option>
-                <option value="3">Soils</option>
-                <option value="3">Multi Day</option>
-                <option value="3">ASOS Winds</option>
+                <option value="4">Evap/Pan Temp/Wind</option>
+                <option value="5">Sunshine</option>
+                <option value="6">Soils</option>
+                <option value="7">Multi Day</option>
+                <option value="8">ASOS Winds</option>
             </select>
         </div>
         
@@ -177,11 +177,11 @@
         </div>
         <div class="col">
             Units:
-            <select class="form-select">
-                <option selected>--Select--</option>
-                <option value="1">U.S. (Imperial)</option>
-                <option value="2">Metric</option>
-                <option value="3">Raw</option>
+            <select class="form-select" id="unit-selector">
+                <option value="imperial" selected>--Select--</option>
+                <option value="imperial">U.S. (Imperial)</option>
+                <option value="metric">Metric</option>
+                <option value="raw">Raw</option>
             </select>
         </div>
         <div class="row justify-content-center" id="button-row">

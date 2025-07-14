@@ -222,6 +222,7 @@
                 });
             }
         }
+        
 
         document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("year-selector").addEventListener("change", function () {
@@ -251,7 +252,77 @@
                     });
                 }
             });
+            
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const unitSelector = document.getElementById("unit-selector");
+
+            unitSelector.addEventListener("change", function () {
+                const unitMode = this.value;
+                const urlParams = new URLSearchParams(window.location.search);
+                const ghcnId = urlParams.get("ghcn_id");
+                const stationType = urlParams.get("station_type");
+                const date = urlParams.get("date");
+
+                if (ghcnId && stationType && date && unitMode) {
+                    $.ajax({
+                        url: '/get_data_for_GHCN_table',
+                        method: 'POST',
+                        data: $.param({
+                            ghcn_id: ghcnId,
+                            date: date,
+                            station_type: stationType,
+                            unit_mode: unitMode,
+                            display_group: selectedDisplayGroup
+                        }),
+                        success: function (response) {
+                            showComparisonTable(response.data);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Unit change error:", error);
+                            alert("Failed to reload data with selected units.");
+                        }
+                    });
+                }
+            });
+        });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const displaySelector = document.getElementById("display-selector");
+
+            displaySelector.addEventListener("change", function () {
+                const selectedDisplayGroup = this.value;
+                const urlParams = new URLSearchParams(window.location.search);
+                const ghcnId = urlParams.get("ghcn_id");
+                const stationType = urlParams.get("station_type");
+                const date = urlParams.get("date");
+                const unitMode = document.getElementById("unit-selector").value;
+
+                if (ghcnId && stationType && date && selectedDisplayGroup) {
+                    $.ajax({
+                        url: '/get_data_for_GHCN_table',
+                        method: 'POST',
+                        data: $.param({
+                            ghcn_id: ghcnId,
+                            date: date,
+                            station_type: stationType,
+                            unit_mode: unitMode,
+                            display_group: selectedDisplayGroup
+                        }),
+                        success: function (response) {
+                            showComparisonTable(response.data);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Display group change error:", error);
+                            alert("Failed to reload data with selected display group.");
+                        }
+                    });
+                }
+            });
+        });
+
 
         function getDataFromURL(urlParams) {
             const idOption = urlParams.get('id-option');
@@ -285,11 +356,13 @@
 
             } else {
                 const ghcnId = urlParams.get('ghcn_id');
-
+                const unitMode = document.getElementById("unit-selector").value;
+                
                 const requestData = {
                     ghcn_id: ghcnId,
                     date: date,
-                    station_type: stationType
+                    station_type: stationType,
+                    unit_mode: unitMode
                 };
 
                 $.ajax({

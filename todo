@@ -8,7 +8,7 @@ Reports:
 [] Come up with header naming conventions
 [] Add station name to json output
 [] Update Report generation to handle above.
-
+[] seperate conversion functions into their own file
 
 [] Percip
 [] HDD + CDD
