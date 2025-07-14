@@ -11,7 +11,7 @@ Reports:
 [] seperate conversion functions into their own file
 
 [] Percip
-[] HDD + CDD
+[] HDD + CDD (CDD USES roundit() function to add or subtract .5 for various conditions.)
 [] Ice Pellets/Snow (double check whole section)
 [] Add region to json output
 [] Add state conditions for queries "if (stNo.equals("70"))...... else if (stNo.equals("71"))...."
