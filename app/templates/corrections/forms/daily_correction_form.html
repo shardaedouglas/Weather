@@ -61,7 +61,7 @@
             
             <div class="col-sm">
                 <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;">Submit</button>
+                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
 
             </div>
 
@@ -81,6 +81,9 @@
     <div id="correction-comparison-table" style="display:none;">
         {% include "corrections/data_tables/correction_comparison_table.html" %}
     </div>
+</div>
+<div id="submission-element" style="display: none;">
+    {% include "corrections/correction_submitted_element.html" %}
 </div>
 
 <script>
@@ -115,6 +118,8 @@
             // console.log("SUBMIT Params: ", params);
 
             submitCorrections(params); // Call the submit function separately
+            // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
+            
         });
 
 
@@ -335,15 +340,59 @@
             success: function(response) {
                 // Handle processing
                 alert("Corrections Submitted Successfully");
+                // Return true?
+                // If correction was successful, show the submission confirmation screen. 
+                showSubmissionConfirmation("daily");
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
                 alert("There was an error processing your request.");
+                // Return false?
+                // FOR TESTING 
+                showSubmissionConfirmation("daily");
             }
         });
+
+
     }
     
-    
+    // function showSubmissionConfirmation(type) {
+    //     $("#form-daily").hide(); 
+        
+    //     $(".correction-type-text-target").text(type);
+        
+    //     var element_name = "submitted-" + type + "-link";
+    //     //Hide that element
+
+    //     var link = "";
+    //     if (type == "daily") {
+    //         link = '{{ url_for('corrections.daily_corrections') }}';
+    //         $("#submitted-daily-link").hide();
+            
+            
+    //     } else if (type == "monthly") {
+    //         link = '{{ url_for('corrections.monthly_corrections') }}';
+    //         $("#submitted-monthly-link").hide();
+    //     } else if (type == "ranged") {
+    //         link = '{{ url_for('corrections.range_corrections') }}';
+    //         $("#submitted-ranged-link").hide();
+    //     } else if (type == "hourly") {
+    //         link = '{{ url_for('corrections.hourly_corrections') }}';
+    //         $("#submitted-hourly-link").hide();
+    //     }
+
+    //     console.log(link);
+
+    //     $("#submit-another-correction").click(function() {
+    //         window.location.href = link;
+    //     });
+
+
+
+    //     $("#submission-element").show(); 
+
+
+    // }
 
 
 </script>

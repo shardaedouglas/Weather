@@ -51,7 +51,9 @@
     </div>
 
 </div>
-
+<div id="submission-element" style="display: none;">
+    {% include "corrections/correction_submitted_element.html" %}
+</div>
 
 <script>
 
@@ -76,6 +78,9 @@
             
             // Process the form's data
             // getDataforStationsAndShowTable(params);
+
+            // Upon successful form submission
+            showSubmissionConfirmation("hourly");
  
         })
 
