@@ -212,8 +212,18 @@
                             }
                         });
                     }
-
+            
+            /**
+             * Displays a confirmation page after corrections have been successfully submitted.
+             *
+             * This function presents a "Corrections have been submitted successfully" page to the user.
+             * It provides options for the user to submit another correction of the same type or to
+             * select a different type of correction.
+             *
+             * @param {string} type - The type of correction that was submitted (e.g., 'daily', 'monthly', 'ranged', 'hourly').
+             */
             function showSubmissionConfirmation(type) {
+
                 $("#form-daily").hide(); 
                 $("#form-hourly").hide(); 
                 $("#form-monthly").hide(); 

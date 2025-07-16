@@ -327,7 +327,14 @@
     }
 
 
-
+    /**
+     * Submits daily correction data to the backend.
+     *
+     * This function handles the submission of correction data collected from the daily correction form.
+     * It will alert an error if the submission process fails.
+     *
+     * @param {object} correctionData - An object containing the daily correction data to be submitted.
+     */
     function submitCorrections(correctionData) {
         console.log("Submitting correction data:", JSON.stringify(correctionData));
     
