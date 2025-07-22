@@ -9,6 +9,7 @@ Reports:
 [] Add station name to json output
 [] Update Report generation to handle above.
 [] seperate conversion functions into their own file
+[] Check pagignation
 
 [] Percip
 [] HDD + CDD (CDD USES roundit() function to add or subtract .5 for various conditions.)
@@ -16,3 +17,10 @@ Reports:
 [] Add region to json output
 [] Add state conditions for queries "if (stNo.equals("70"))...... else if (stNo.equals("71"))...."
 
+
+[]How does the csv look?
+USW00024216
+USW00093193
+USW00023174
+USW00023232
+USW00023234

@@ -63,6 +63,9 @@
 </div>  
 
 <script>
+
+    let lastFetchedData = null;
+
     
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
@@ -119,6 +122,49 @@
         });
     })
 
+    function downloadCSVFromJSON(jsonData, filename) {
+        if (!jsonData || Object.keys(jsonData).length === 0) {
+            alert("No data to export.");
+            return;
+        }
+
+        // Extract all unique keys for CSV columns
+        const allKeysSet = new Set();
+        Object.values(jsonData).forEach(dayData => {
+            Object.keys(dayData).forEach(key => allKeysSet.add(key));
+        });
+        const allKeys = Array.from(allKeysSet).sort();
+
+        // Build CSV header
+        let csv = "Day," + allKeys.join(",") + "\n";
+
+        // Build CSV rows
+            Object.keys(jsonData)
+                .sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')))
+                .forEach(dayKey => {
+                    const dayNumber = String(parseInt(dayKey.replace('Day ', ''))).padStart(2, '0');
+                    const dayData = jsonData[dayKey];
+                    let row = [dayNumber];
+                    allKeys.forEach(key => {
+                        let val = dayData[key] !== undefined ? dayData[key] : "";
+                        if (typeof val === "string" && (val.includes(",") || val.includes('"'))) {
+                            val = `"${val.replace(/"/g, '""')}"`;
+                        }
+                        row.push(val);
+                    });
+                    csv += row.join(",") + "\n";
+                });
+
+            // Trigger file download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
     //Form Submission and Show data table
     // $(document).ready(function () {
     //     $("form").submit(function (event) {
@@ -157,32 +203,98 @@
 
     //     document.getElementById("station-data-view").style.display = "block";
     // }
+    
 
 
+//     function showComparisonTable(data) {
+//         const table = document.getElementById("station-data-view");
+//         const thead = table.querySelector("thead");
+//         const tbody = table.querySelector("tbody");
+//         tbody.innerHTML = ""; // clear old rows
+//         thead.innerHTML = ""; // clear old headers
+//         lastFetchedData = data;
+//         selectedDisplayGroup = 1;
+//         // Sort days numerically
+//         const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
 
-    function showComparisonTable(data) {
+//         // Collect all unique keys from data (except day label)
+//         const allKeysSet = new Set();
+//         sortedDays.forEach(dayKey => {
+//             Object.keys(data[dayKey]).forEach(k => allKeysSet.add(k));
+//         });
+
+//         // Convert to array and sort keys alphabetically or keep custom order
+//         const allKeys = Array.from(allKeysSet).sort();
+
+//         // Build table header row dynamically
+//         let headerRow = `<tr><th>Day</th>`;
+//         allKeys.forEach(key => {
+//             headerRow += `<th>${key}</th>`;
+//         });
+//         headerRow += `</tr>`;
+//         thead.insertAdjacentHTML('beforeend', headerRow);
+
+//         // Build table rows dynamically
+//         sortedDays.forEach(dayKey => {
+//             const dayData = data[dayKey];
+//             let row = `<tr><td>${dayKey}</td>`;
+//             allKeys.forEach(key => {
+//                 row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
+//             });
+//             row += `</tr>`;
+//             tbody.insertAdjacentHTML('beforeend', row);
+//         });
+
+//         table.style.display = "block";
+
+//          // Attach save button event handler fresh to avoid duplicates
+//         const saveBtn = document.getElementById("save-button");
+//         if (saveBtn) {
+//             // Remove previous listeners by cloning the node and replacing it
+//             const newSaveBtn = saveBtn.cloneNode(true);
+//             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+
+//             newSaveBtn.addEventListener("click", function () {
+//                 if (!lastFetchedData || lastFetchedData.length === 0) {
+//                     alert("No data available to save.");
+//                     return;
+//                 }
+//                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
+//             });
+//         }
+
+// }
+    let selectedDisplayGroup = 1;
+
+
+    function showComparisonTable(data, orderedKeys) {
         const table = document.getElementById("station-data-view");
         const thead = table.querySelector("thead");
         const tbody = table.querySelector("tbody");
         tbody.innerHTML = ""; // clear old rows
         thead.innerHTML = ""; // clear old headers
+        lastFetchedData = data;
 
         // Sort days numerically
-        const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
+        const sortedDays = Object.keys(data).sort(
+            (a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', ''))
+        );
 
-        // Collect all unique keys from data (except day label)
-        const allKeysSet = new Set();
-        sortedDays.forEach(dayKey => {
-            Object.keys(data[dayKey]).forEach(k => allKeysSet.add(k));
-        });
-
-        // Convert to array and sort keys alphabetically or keep custom order
-        const allKeys = Array.from(allKeysSet).sort();
+        // Use orderedKeys from backend or fallback to keys from data
+        const allKeys = orderedKeys && orderedKeys.length > 0
+            ? orderedKeys
+            : (() => {
+                const keysSet = new Set();
+                sortedDays.forEach(dayKey => {
+                    Object.keys(data[dayKey]).forEach(k => keysSet.add(k));
+                });
+                return Array.from(keysSet).sort();
+            })();
 
         // Build table header row dynamically
         let headerRow = `<tr><th>Day</th>`;
         allKeys.forEach(key => {
-            headerRow += `<th>${key}</th>`;
+            if (key !== "Day") headerRow += `<th>${key}</th>`;
         });
         headerRow += `</tr>`;
         thead.insertAdjacentHTML('beforeend', headerRow);
@@ -192,14 +304,32 @@
             const dayData = data[dayKey];
             let row = `<tr><td>${dayKey}</td>`;
             allKeys.forEach(key => {
-                row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
+                if (key !== "Day") {
+                    row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
+                }
             });
             row += `</tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
 
         table.style.display = "block";
+
+        // Attach save button event handler fresh to avoid duplicates
+        const saveBtn = document.getElementById("save-button");
+        if (saveBtn) {
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+
+            newSaveBtn.addEventListener("click", function () {
+                if (!lastFetchedData || Object.keys(lastFetchedData).length === 0) {
+                    alert("No data available to save.");
+                    return;
+                }
+                downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
+            });
+        }
     }
+
 
         function populateYearDropdown(response) {
             const yearDropdown = document.getElementById("year-selector");
@@ -243,7 +373,12 @@
                             station_type: stationType
                         }),
                         success: function (response) {
-                            showComparisonTable(response.data);
+                            console.log("RESPONSE.DATA = ", response.data)
+                            lastFetchedData = response.data;
+                            console.log("lastFetchedData = ", lastFetchedData)
+                            console.log("response keys 1:", Object.keys(response));
+                            console.log("orderedKeys 1:", response.orderedKeys);
+                            showComparisonTable(response.data, response.ordered_keys);
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
@@ -257,13 +392,19 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const unitSelector = document.getElementById("unit-selector");
-
+            
             unitSelector.addEventListener("change", function () {
                 const unitMode = this.value;
                 const urlParams = new URLSearchParams(window.location.search);
                 const ghcnId = urlParams.get("ghcn_id");
                 const stationType = urlParams.get("station_type");
                 const date = urlParams.get("date");
+
+                console.log("unitMode:", unitMode);
+                console.log("ghcn_id from URL:", ghcnId);
+                console.log("station_type from URL:", stationType);
+                console.log("date from URL:", date);
+
 
                 if (ghcnId && stationType && date && unitMode) {
                     $.ajax({
@@ -277,7 +418,14 @@
                             display_group: selectedDisplayGroup
                         }),
                         success: function (response) {
-                            showComparisonTable(response.data);
+                            console.log("RESPONSE.DATA = ", response.data)
+
+                            lastFetchedData = response.data;
+                            console.log("lastFetchedData = ", lastFetchedData)
+                            console.log("response keys 2:", Object.keys(response));
+                            console.log("orderedKeys 2:", response.orderedKeys);
+                            showComparisonTable(response.data, response.ordered_keys);
+
                         },
                         error: function (xhr, status, error) {
                             console.error("Unit change error:", error);
@@ -293,13 +441,15 @@
             const displaySelector = document.getElementById("display-selector");
 
             displaySelector.addEventListener("change", function () {
-                const selectedDisplayGroup = this.value;
+                selectedDisplayGroup = this.value;
                 const urlParams = new URLSearchParams(window.location.search);
                 const ghcnId = urlParams.get("ghcn_id");
                 const stationType = urlParams.get("station_type");
                 const date = urlParams.get("date");
                 const unitMode = document.getElementById("unit-selector").value;
+                console.log("selectedDisplayGroup:", selectedDisplayGroup);
 
+                
                 if (ghcnId && stationType && date && selectedDisplayGroup) {
                     $.ajax({
                         url: '/get_data_for_GHCN_table',
@@ -312,7 +462,12 @@
                             display_group: selectedDisplayGroup
                         }),
                         success: function (response) {
-                            showComparisonTable(response.data);
+                            console.log("RESPONSE.DATA = ", response.data)
+                            lastFetchedData = response.data;
+                            console.log("lastFetchedData = ", lastFetchedData)
+                            console.log("response keys 3 :", Object.keys(response));
+                            console.log("orderedKeys 3:", response.orderedKeys);
+                            showComparisonTable(response.data, response.ordered_keys);
                         },
                         error: function (xhr, status, error) {
                             console.error("Display group change error:", error);
@@ -344,8 +499,12 @@
                     method: 'POST',
                     data: $.param(requestData),
                     success: function(response) {
-                        console.log("Success:", response);
-                        showComparisonTable(response);
+                        console.log("RESPONSE.DATA = ", response.data)
+                        lastFetchedData = response.data;
+                        console.log("lastFetchedData = ", lastFetchedData)
+                        console.log("response keys 4:", Object.keys(response));
+                        console.log("orderedKeys 4:", response.orderedKeys);
+                        showComparisonTable(response, response.ordered_keys);
                         populateYearDropdown(response);
                     },
                     error: function(xhr, status, error) {
@@ -357,12 +516,14 @@
             } else {
                 const ghcnId = urlParams.get('ghcn_id');
                 const unitMode = document.getElementById("unit-selector").value;
-                
+
                 const requestData = {
                     ghcn_id: ghcnId,
                     date: date,
                     station_type: stationType,
-                    unit_mode: unitMode
+                    unit_mode: unitMode,
+                    display_group: selectedDisplayGroup || 1
+
                 };
 
                 $.ajax({
@@ -370,8 +531,13 @@
                     method: 'POST',
                     data: $.param(requestData),
                     success: function(response) {
-                        console.log("Success:", response);
-                        showComparisonTable(response.data);
+
+                        console.log("RESPONSE.DATA = ", response.data)                       
+                        lastFetchedData = response.data;
+                        console.log("lastFetchedData = ", lastFetchedData)    
+                        console.log("response keys 5:", Object.keys(response));
+                        console.log("orderedKeys 5:", response.orderedKeys);                   
+                        showComparisonTable(response.data, response.ordered_keys);
                         populateYearDropdown(response);
                     },
                     error: function(xhr, status, error) {
@@ -382,8 +548,6 @@
             }
         }
 
-        
-    
 
     </script>
 

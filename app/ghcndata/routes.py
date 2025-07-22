@@ -1,5 +1,5 @@
 from app.ghcndata import ghcndata_bp
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, send_file
 from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
@@ -11,6 +11,7 @@ import os
 import re
 import json
 import polars as pl
+import csv
 
 
 # Route to Render GHCN Station Page
@@ -152,10 +153,10 @@ def cm_to_inches(val: str) -> str:
         return val
     return f"{round(float(val) / 2.54, 2):.2f}"
 
-# def km_to_miles(val: str) -> str:
-#     if val == "-9999":
-#         return val
-#     return f"{round(float(val) * 0.621371, 2):.2f}"
+def km_to_miles(val: str) -> str:
+    if val == "-9999":
+        return val
+    return f"{round(float(val) * 0.621371, 2):.2f}"
 
 # def raw_tenths_c_to_c(val: str) -> str:
 #     try:
@@ -221,7 +222,7 @@ def raw_to_metric_simple(val: str) -> str:
         return val
 
 
-    
+
 ################################################################################################################    
 #################################################################################################################
 
@@ -243,7 +244,7 @@ def extract_years_from_dly(file_path: str) -> list[int]:
     
     return sorted(years, reverse=True)
     
-    
+ 
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
 def get_data_for_GHCN_table():
     try:
@@ -316,24 +317,28 @@ def get_data_for_GHCN_table():
         km_keys = {"MDWM", "WDMV"}
         
         ELEMENT_GROUPS = {
-            "1": {"TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD"},  # Core base keys, WTXX dynamically added below   
-            "2": {"TMAX", "TMIN", "TOBS", "TAVG", "AVG", "DFN", "HDD", "CDD"},  # Temp Elements
-            "3": {"PRCP", "MDPR", "DAPR", "SNOW", "MDSF", "DASF", "SNWD"},  # Precipitation Elements
-            "4": {"AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF"},  # Other: Avg Temps, Pan Temp, Evaporation, Wind
-            "5": {"TSUN", "PSUN"}, # Sunshine
+            "1": ["TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD"],  # Core base keys, WTXX dynamically added below   
+            "2": ["TMAX", "TMIN", "TOBS", "AVG", "DFN", "HDD", "CDD", "TAVG"],  # Temp Elements
+            "3": ["PRCP", "MDPR", "DAPR", "SNOW", "MDSF", "DASF", "SNWD"],  # Precipitation Elements
+            "4": ["AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF", "TOBS", "WDMV", "WESD"],  # Other: Avg Temps, Pan Temp, Evaporation, Wind /////  TWSF? TOBS WDMV WESD needed
+            "5": ["TSUN", "PSUN"], # Sunshine
             "6": set(), # soils, dynamically added below
-            "7": {"MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM"}, # Multi Day
-            "8": {"WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "AWND", "WTXX", "PKWT", "PKSP", "PKSD", "MXGS", "MXSD", "MXSP", "MXSW"} # ASOS Winds, WTXX dynamically added below
+            "7": ["MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM"], # Multi Day
+            "8": ["AWND", "WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "WDF2", "WDF1", "WDF5", "WDFM", "FMTM"] # ASOS Winds, WTXX dynamically added below //// Needs wdf2?  wd values?
+            
+
+
+
         }
         
-        # Add WTXX to group 1:
-        ELEMENT_GROUPS["1"].update({e for e in all_keys if re.match(r"WT\d{2}", e)})
-
-        ELEMENT_GROUPS["6"] = {e for e in all_keys if re.match(r"S[NX]\d{2}", e) and e not in {"SNOW", "SNWD"}}
+        wtxx_keys = sorted([e for e in all_keys if re.match(r"WT\d{2}", e)])
+        ELEMENT_GROUPS["1"] = ELEMENT_GROUPS["1"] + wtxx_keys
+        
+        ELEMENT_GROUPS["6"] = sorted([e for e in all_keys if re.match(r"S[NX]\d{2}", e) and e not in {"SNOW", "SNWD"}])
 
         # Add WTXX to group 8:
-        ELEMENT_GROUPS["8"].update({e for e in all_keys if re.match(r"WT\d{2}", e)})
-        
+        ELEMENT_GROUPS["8"].extend(wtxx_keys)
+
         
         if unit_mode == "imperial":  # Convert to U.S. (Imperial)
             for day in data:
@@ -359,11 +364,16 @@ def get_data_for_GHCN_table():
             pass 
 
         if display_group and display_group in ELEMENT_GROUPS:
-            allowed_keys = ELEMENT_GROUPS[display_group]
+            allowed_keys = list(ELEMENT_GROUPS[display_group])  # convert to list for order
             for day, day_data in data.items():
-                keys_to_remove = [k for k in day_data if k not in allowed_keys and k != "Day"]
-                for k in keys_to_remove:
-                    day_data.pop(k, None)
+                # keep keys in allowed_keys order if present, always keep 'Day'
+                ordered_day_data = {}
+                if "Day" in day_data:
+                    ordered_day_data["Day"] = day_data["Day"]
+                for key in allowed_keys:
+                    if key in day_data:
+                        ordered_day_data[key] = day_data[key]
+                data[day] = ordered_day_data
 
         # Replace the original Response with new one containing converted values
         JSONformattedData = jsonify(data)
@@ -372,11 +382,23 @@ def get_data_for_GHCN_table():
 
         years = extract_years_from_dly(file_path)
         print("YEARS!!!!!!!!!!!!!: ", years)
+        
+        ordered_keys = []
+        if display_group and display_group in ELEMENT_GROUPS:
+            # Convert to list with order, filter to keys actually in the data
+            allowed_keys = list(ELEMENT_GROUPS[display_group])
+            # Optional: filter to keys that exist in data at all
+            data_keys = set()
+            for day_data in data.values():
+                data_keys.update(day_data.keys())
+            ordered_keys = [k for k in allowed_keys if k in data_keys or k == "Day"]
+            print("ordered_keys", ordered_keys)
         response = {
             "data": data,
-            "years": years
+            "years": years,
+            "ordered_keys": ordered_keys,
         }
-        
+
         return jsonify(response)
             
             
@@ -651,5 +673,10 @@ def format_as_json(filtered_df, return_response=True):
         return jsonify(formatted_data)
     else:
         return formatted_data  # Return raw dictionary
+    
+
+    
+
+
 
 
