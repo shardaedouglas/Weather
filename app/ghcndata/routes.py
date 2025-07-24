@@ -4,7 +4,7 @@ from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
-from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, lowestRecordedTemp, getLowestTemperatureExtreme, getTemperatureTable, calculate_station_avg
 
 from datetime import datetime
 import os
@@ -430,7 +430,139 @@ def get_state_for_GHCN_table_df():
         print(f"Error in get_state_for_GHCN_table_df: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@ghcndata_bp.route('/get_station_calc_for_GHCND', methods=['POST'])
+def  get_station_calc_for_GHCND():
+
+    ghcn_id = request.form.get('ghcn_id')
+    # country = request.form.get('country')
+    # state = request.form.get('state')
+    station_type = request.form.get('station_type')
+    correction_date = request.form.get('date')
     
+    if correction_date:
+        correction_year, correction_month, correction_day = correction_date.split('-')
+        correction_year = int(correction_year)
+        correction_month = int(correction_month)
+        correction_day = int(correction_day)
+    else:
+        correction_year, correction_month, correction_day = None, None, None
+    
+    ghcn_id = 'USC00040212'
+    correction_year = 2023
+    correction_month = 2
+
+
+    file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly" # I THINK THIS IS HARD CODED IN THE PARSER STILL
+    
+    # print("ghcn_id:", ghcn_id)
+    print("file_path: ", file_path)
+    # print("correction_year: ", correction_year)
+    # print("correction_month: ", correction_month)
+    # print("station_type: ", station_type)
+
+
+
+    # # Run parser with form data
+    filtered_data = parse_and_filter(
+        station_code = ghcn_id,
+        file_path=file_path,
+        year=correction_year,
+        month=correction_month,
+        # observation_type = station_type,
+        correction_type=""
+    )
+    
+    
+    # Template for getting data.
+    # filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+    # result = lowestRecordedTemp(filtered_df)
+    # print(f"lowest temp result {result}")
+    # print(f"lowest temp Extreme: {getLowestTemperatureExtreme(filtered_df)}")
+    # from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, getHighestTemperatureExtreme, build_combined_df
+
+    filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+    filtered_json = json.dumps(filtered_df.to_dicts(), indent=2)
+
+    # # Attempting to match the CDMonthlyPub Dataframe.
+    # from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
+
+    # # tobs_data = QuerySoM("tobs")
+    # # # Build TOBS metadata lookup by coop_id
+    # tobs_lookup = {}
+    # stations = [('0', '0', 'N/A', '0', ghcn_id, '0', '0')]
+    # combined_som_df = build_combined_df(stations, tobs_lookup, correction_month, correction_year)
+    # json_data = json.dumps(combined_som_df.to_dicts(), indent=2)
+    # print(f"json_data: \n{json_data}")
+
+
+    # print("filtered dataframe", filtered_df)
+    # print("combined dataframe", combined_som_df)
+    # # print("json", filtered_json)
+    
+    
+
+    # # print(getTemperatureTable(filtered_df))
+
+    # result = calculate_station_avg(combined_som_df)
+    
+    # print(f"{type(result)}\n{result}")
+    station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
+    
+    result = station_avgs
+    print(f"{type(result)}\n{result}")
+
+    # result = getHighestTemperatureExtreme(filtered_df)
+    # print(f"{type(result)}")
+
+    # Max and Min Precipitation
+
+
+    comp_calcs = { 
+        "AvMax" : station_avgs["Average Maximum"],
+        "AvMin" : station_avgs["Average Minimum"],
+        "AvTmp" : station_avgs["Average"],
+        # "MaxTp" : {
+        #     "MaxTp": None,
+        #     "Day": None
+        # },
+        # "MinTp" : {
+        #     "MinTp": None,
+        #     "Day": None
+        # },
+        # "Max24Hr" : {
+        #     "Max24Hr": None,
+        #     "Day": None
+        # },
+        "TotPcn" : None,
+        "Snow" : None,
+        "S Depth" : None,
+        "HDD" : None,
+        "CDD " : None,
+        # "NOD Pcn": {
+        #     ">.01": None,
+        #     ">.10": None,
+        #     ">1": None,
+        # },
+        "NOD Tmp": {
+            "MxT>=90": station_avgs[">=90_MAX"],
+            "MxT<=32": station_avgs["<=32_MAX"],
+            # "MnT<=32": station_avgs["<=32_MIN"],
+            "MnT<=0": station_avgs["<=0_MIN"],
+        },
+        "SF>1=" : None, # NOD Snowfall >= one inch
+        "SD>=" : None, # NOD Snow Depth >= (one inch???)
+        
+
+
+
+
+    }
+
+
+    for k, v in comp_calcs.items():
+        if v is not None:
+            print(f"{k}: {v}")
+    return "7"
     
 @ghcndata_bp.route('/test_monthlyPub')
 def test_monthlyPub():
