@@ -175,6 +175,46 @@ def add_station_names(data_dict, station_file_path='/data/ops/ghcnd/data/ghcnd-s
 
 
 def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
+    """
+    Finds the highest temperature extreme recorded across all stations in a DataFrame.
+
+    Returns the station and the date associated with the absolute highest temperature
+    observed within the provided dataset. This identifies the single highest
+    temperature among all stations included in the parameter,
+    whether it's for one station or many.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        A Polars DataFrame containing temperature data. This DataFrame is
+        expected to include relevant columns for temperature values, dates,
+        and station identifiers.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+        - value : int
+            The highest temperature recorded.
+        - day : str
+            The date (as a string) when the highest temperature occurred.
+        - station : str
+            The GHCN_ID of the station where the highest temperature was recorded.
+
+    Notes
+    -----
+    This function specifically returns the single highest temperature extreme
+    found across the *entire* dataset provided, not the highest temperature
+    at individual stations.
+
+    Examples
+    --------
+
+    Example Output: 
+    
+    {'value': 70, 'day': '19', 'station': 'USC00040212'}
+
+    """
     # Filter only TMAX records (maximum temperature)
     tmax_df = df.filter(pl.col("observation_type") == "TMAX")
     if tmax_df.is_empty():
@@ -222,6 +262,45 @@ def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
 
 
 def getLowestTemperatureExtreme(df: pl.DataFrame) -> dict:
+    """
+    Finds the lowest temperature extreme recorded across all stations in a DataFrame.
+
+    Returns the station and the date associated with the absolute lowest temperature
+    observed within the provided dataset. This identifies the single lowest
+    temperature among all stations included in the parameter,
+    whether it's for one station or many.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        A Polars DataFrame containing temperature data. This DataFrame is
+        expected to include relevant columns for temperature values, dates,
+        and station identifiers.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+        - value : int
+            The lowest temperature recorded.
+        - day : str
+            The date (as a string) when the lowest temperature occurred.
+        - station : str
+            The identifier of the station where the lowest temperature was recorded.
+
+    Notes
+    -----
+    This function specifically returns the single lowest temperature extreme
+    found across the *entire* dataset provided, not the lowest temperature
+    at individual stations.
+
+    Examples
+    --------
+
+    Example Output: 
+    
+    {'value': 70, 'day': '19', 'station': 'USC00040212'}
+    """
     # Filter only TMIN records (minimum temperature)
     tmin_df = df.filter(pl.col("observation_type") == "TMIN")
     if tmin_df.is_empty():
@@ -498,6 +577,27 @@ def dataframe_to_json(df: pl.DataFrame) -> str:
   
 # def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
 def calculate_station_avg(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+
+    Examples
+    --------
+
+    Example Output
+
+    {'USC00040212': {'Average Maximum': 53.2, 'Average Minimum': 36.1, '>=90_MAX': 0, '<=32_MAX': 0, '<=32_MIN': 8, '<=0_MIN': 0, 'Average': 44.7}}
+
+
+    """
     
     df = df.with_columns([
         (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("station_code")
@@ -585,6 +685,20 @@ def calculate_station_avg(df: pl.DataFrame) -> dict:
     
     
 def highestRecordedTemp(df: pl.DataFrame) -> dict:
+    """Returns highest recorded temperature for station(s).
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        { str(GHCN_ID): {'value': int, 'date': 'YYYY-MM-DD'}}
+    """
+
+
     # Filter only TMAX observation type
     # print(df.select("observation_type").unique())
     
@@ -639,6 +753,21 @@ def highestRecordedTemp(df: pl.DataFrame) -> dict:
 
 
 def lowestRecordedTemp(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+
+
+        {'USC00040212': {'value': 70, 'date': '2023-02-19'}}
+    """
     # Filter only TMIN observation type
     # print(df.select("observation_type").unique())
     

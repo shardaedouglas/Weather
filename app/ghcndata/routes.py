@@ -478,7 +478,7 @@ def  get_station_calc_for_GHCND():
     # result = lowestRecordedTemp(filtered_df)
     # print(f"lowest temp result {result}")
     # print(f"lowest temp Extreme: {getLowestTemperatureExtreme(filtered_df)}")
-    # from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, getHighestTemperatureExtreme, build_combined_df
+    
 
     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
     filtered_json = json.dumps(filtered_df.to_dicts(), indent=2)
@@ -500,19 +500,20 @@ def  get_station_calc_for_GHCND():
     # # print("json", filtered_json)
     
     
-
+    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getHighestTemperatureExtreme
     # # print(getTemperatureTable(filtered_df))
 
     # result = calculate_station_avg(combined_som_df)
     
     # print(f"{type(result)}\n{result}")
     station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
-    
-    result = station_avgs
-    print(f"{type(result)}\n{result}")
+    max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
+    min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
 
-    # result = getHighestTemperatureExtreme(filtered_df)
-    # print(f"{type(result)}")
+    
+
+    result = getLowestTemperatureExtreme(filtered_df)
+    print(f"{type(result)}\n{result}")
 
     # Max and Min Precipitation
 
@@ -521,14 +522,14 @@ def  get_station_calc_for_GHCND():
         "AvMax" : station_avgs["Average Maximum"],
         "AvMin" : station_avgs["Average Minimum"],
         "AvTmp" : station_avgs["Average"],
-        # "MaxTp" : {
-        #     "MaxTp": None,
-        #     "Day": None
-        # },
-        # "MinTp" : {
-        #     "MinTp": None,
-        #     "Day": None
-        # },
+        "MaxTp" : {
+            "MaxTp": max_temp['value'],
+            "Day": max_temp['date']
+        },
+        "MinTp" : {
+            "MinTp": min_temp['value'],
+            "Day": min_temp['date']
+        },
         # "Max24Hr" : {
         #     "Max24Hr": None,
         #     "Day": None
