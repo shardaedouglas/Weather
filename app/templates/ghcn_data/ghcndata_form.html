@@ -56,8 +56,14 @@
 <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
 </div>
 
-<div id="station-data-view" style="display:none;">
+<div id="station-data-view" style="display: none;">
     {% include "ghcn_data/ghcn_station_data.html" %}
+</div>
+
+<div id="station-metadata-view" style="display: none;">
+    <!-- {% if station_data %} -->
+        <!-- {% include "ghcn_data/station_metadata.html" %} -->
+    <!-- {% endif %} -->
 </div>
 
 </div>  
@@ -379,6 +385,8 @@
                             console.log("response keys 1:", Object.keys(response));
                             console.log("orderedKeys 1:", response.orderedKeys);
                             showComparisonTable(response.data, response.ordered_keys);
+                            print(response.data)
+                            fetchAndRenderStationMetadata(ghcnId);
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
@@ -421,10 +429,13 @@
                             console.log("RESPONSE.DATA = ", response.data)
 
                             lastFetchedData = response.data;
+                            // ghcnID = "USC00049026"
                             console.log("lastFetchedData = ", lastFetchedData)
                             console.log("response keys 2:", Object.keys(response));
                             console.log("orderedKeys 2:", response.orderedKeys);
                             showComparisonTable(response.data, response.ordered_keys);
+                            fetchAndRenderStationMetadata(ghcnId);
+
 
                         },
                         error: function (xhr, status, error) {
@@ -464,10 +475,13 @@
                         success: function (response) {
                             console.log("RESPONSE.DATA = ", response.data)
                             lastFetchedData = response.data;
+                            // ghcnID = "USC00049026"
                             console.log("lastFetchedData = ", lastFetchedData)
                             console.log("response keys 3 :", Object.keys(response));
                             console.log("orderedKeys 3:", response.orderedKeys);
                             showComparisonTable(response.data, response.ordered_keys);
+                            fetchAndRenderStationMetadata(ghcnId);
+
                         },
                         error: function (xhr, status, error) {
                             console.error("Display group change error:", error);
@@ -501,11 +515,13 @@
                     success: function(response) {
                         console.log("RESPONSE.DATA = ", response.data)
                         lastFetchedData = response.data;
+                        // ghcnID = "USC00049026"
                         console.log("lastFetchedData = ", lastFetchedData)
                         console.log("response keys 4:", Object.keys(response));
                         console.log("orderedKeys 4:", response.orderedKeys);
                         showComparisonTable(response, response.ordered_keys);
                         populateYearDropdown(response);
+                        fetchAndRenderStationMetadata(ghcnId);
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
@@ -534,11 +550,14 @@
 
                         console.log("RESPONSE.DATA = ", response.data)                       
                         lastFetchedData = response.data;
+                        // ghcnID = "USC00049026"
                         console.log("lastFetchedData = ", lastFetchedData)    
                         console.log("response keys 5:", Object.keys(response));
                         console.log("orderedKeys 5:", response.orderedKeys);                   
                         showComparisonTable(response.data, response.ordered_keys);
                         populateYearDropdown(response);
+                        fetchAndRenderStationMetadata(ghcnId);
+
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
@@ -549,6 +568,32 @@
         }
 
 
+        function fetchAndRenderStationMetadata(ghcnId) {
+            if (!ghcnId) return;
+
+            const container = document.getElementById("station-metadata-view");
+            container.style.display = "none";
+            container.innerHTML = "";
+
+            fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    container.style.display = "block";
+                    // If you use tooltips, initialize here, otherwise omit:
+                    // $('[data-toggle="tooltip"]').tooltip();
+                })
+                .catch(err => {
+                    console.error("Failed to load station metadata:", err);
+                });
+        }
+
+
+
     </script>
 
 {% endblock content %}
+

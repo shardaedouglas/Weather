@@ -5,6 +5,7 @@ from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub
+from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
 
 from datetime import datetime
 import os
@@ -23,14 +24,32 @@ def view_ghcn_data():
     return render_template('/ghcn_data/ghcndata_form.html', ghcnForm=form)
 
 
-# Route to Render Station Metadata Page
+
+
+    # station_data = {
+    #     'WMO ID': DB - WMO-ID,
+    #     'State': DB - STATE_PROV,
+    #     'Country': DB - FIPS_COUNTRY_NAME,
+    #     # 'Longitude': File,
+    #     # 'Latitude': File,
+    #     # 'GSN Flag': File,
+    #     # 'HCN Flag': File,
+    #     'Station': DB - NAME_PRINCIPAL,
+    #     'WBAN ID': DB - WBAN_ID,
+    #     'FAA ID': DB - FAA ID,
+    #     'Division (Num-Name)': DB - NWS_CLIM_DIV + " " + NWS_CLIM_DIV_NAME,
+    #     'County': DB - COUNTY,
+    #     'NWS Region': DB - NWS_REGION,
+    #     'NWS WFO': DB - NWS_WFO,
+    #     'NWSLI ID': DB - NWSLI_ID,
+    #     'Platform': DB - PLATFORM,
+    #     # 'Elevation': File,
+    #     'Time Offset': DB - UTC_OFFSET,
+    #     #'Lat/Lon': File
+    # }
+
 @ghcndata_bp.route('/station_metadata')
 def view_ghcn_metadata():
-    
-    ghcn_id = request.args.get('ghcn_id')  # Retrieves 'ghcn_id' from the URL query params
-    
-    station_metadata_file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt' # I THINK THIS IS HARD CODED IN THE PARSER STILL
-    
     station_data = {
         'GHCN ID': None,
         'WMO ID': None,
@@ -39,48 +58,76 @@ def view_ghcn_metadata():
         'Longitude': None,
         'Latitude': None,
         'GSN Flag': None,
-        'HCN Flag': None
+        'HCN Flag': None,
+        'Station': None,
+        'WBAN ID': None,
+        'FAA ID': None,
+        'Division': None,
+        'County': None,
+        'NWS Region': None,
+        'NWS WFO': None,
+        'NWSLI ID': None,
+        'Platform': None,
+        'Elevation': None,
+        'Time Offset': None,
+        'Lat/Lon': None
     }
-    
- # Open the file and read lines
+
+    ghcn_id = request.args.get('ghcn_id')
+    print("GHCN ID:", ghcn_id)
+
+    metadataQuery = QuerySoM("meta")
+    print(metadataQuery)
+    for row in metadataQuery:
+        if row[0] == ghcn_id[-6:]:
+            print("MATCHED ROW:", row)
+            station_data.update({
+                'WMO ID': row[9],
+                'State': row[3],
+                'Country': row[6].title(),
+                'Station': row[1],
+                'WBAN ID': row[17],
+                'FAA ID': row[18],                 
+                'Division': row[4] + "-" + row[5],
+                'County': row[7],
+                'NWS Region': row[8],
+                'NWS WFO': row[15],
+                'NWSLI ID': row[19],
+                'Platform': row[16],
+                'Time Offset': row[14],
+            })
+            break
+
+
+
+    # Read from ghcnd-stations.txt
+    station_metadata_file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
     with open(station_metadata_file_path, 'r') as file:
         for line in file:
-            # Check if the line contains the target GHCN ID
             if ghcn_id in line:
-                # Split the line into components
+                print("line", line)
                 fields = line.split()
-                
-                # GHCN ID is the first part of the line
                 station_data['GHCN ID'] = fields[0]
-                
-                # Country is derived from the first two characters of GHCN ID
-                station_data['Country'] = station_data['GHCN ID'][:2]
-                
-                # Latitude and Longitude are the next two values
                 station_data['Latitude'] = float(fields[1])
                 station_data['Longitude'] = float(fields[2])
+                station_data['Elevation'] = round(float(fields[3]) * 3.28084)
                 
-                # State is present only for US/Canadian stations and is the fourth value for those stations
-                if len(fields) > 4 and len(fields[4]) == 2:  # Checks if state code is present
-                    station_data['State'] = fields[4]
-                
-                # WMO ID, GSN Flag, and HCN Flag can be found at the end of the line
-                if len(fields) > 5:
-                    # Check if there's a WMO ID (numeric and 5 digits)
-                    if len(fields[-1]) == 5 and fields[-1].isdigit():
-                        station_data['WMO ID'] = fields[-1]
-                        fields.pop()  # Remove the WMO ID from the list of fields
-                
-                # Look for the GSN and HCN flags in the remaining parts
+                if len(fields) > 4 and len(fields[4]) == 2:
+                    station_data['State'] = fields[4]    
                 if 'GSN' in fields:
                     station_data['GSN Flag'] = 'GSN'
                 if 'HCN' in fields or 'CRN' in fields:
                     station_data['HCN Flag'] = 'HCN' if 'HCN' in fields else 'CRN'
-                
-                return render_template('/ghcn_data/station_metadata.html', station_data=station_data)
+                break
 
-    print("GHCN ID not found.")    
-    return render_template('/ghcn_data/station_metadata.html', station_data=None)
+    if station_data['Latitude'] is not None and station_data['Longitude'] is not None:
+        station_data['Lat/Lon'] = f"{station_data['Latitude']:.4f}, {station_data['Longitude']:.4f}"
+
+    print(station_data)
+
+
+    return render_template('ghcn_data/station_metadata.html', station_data=station_data, show_navbar=False)
+
 
 
 

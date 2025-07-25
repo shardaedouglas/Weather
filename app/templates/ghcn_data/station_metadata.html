@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+<!-- {% extends "base.html" %} -->
 
 {% block content %}
 
@@ -13,7 +13,7 @@
         </div>
         <div class="col-sm">
             <label><b>WMO ID: </b></label><br>
-            <span data-toggle="tooltip" title="World Meteorological Organization (WMO) ID, used for global station identification.">{{ station_data['WMO ID'] if station_data else 'N/A' }}</span>
+            <span>{{ station_data['WMO ID'] if station_data else 'N/A' }}</span>
         </div>
     </div>
     <div class="row">
@@ -39,13 +39,76 @@
     <div class="row">
         <div class="col-sm">
             <label><b>GSN Flag: </b></label><br>
-            <span data-toggle="tooltip" title="GCOS Surface Network (GSN) Flag indicating if the station is part of the GCOS network.">{{ station_data['GSN Flag'] if station_data else 'N/A' }}</span>
+            <span>{{ station_data['GSN Flag'] if station_data else 'N/A' }}</span>
         </div>
         <div class="col-sm">
             <label><b>HCN Flag: </b></label><br>
-            <span data-toggle="tooltip" title="Historical Climatology Network (HCN) or Climate Reference Network (CRN) Flag.">{{ station_data['HCN Flag'] if station_data else 'N/A' }}</span>
+            <span>{{ station_data['HCN Flag'] if station_data else 'N/A' }}</span>
         </div>
     </div>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-sm">
+            <label><b>Station: </b></label><br>
+            <p>{{ station_data['Station'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>WBAN ID: </b></label><br>
+            <p>{{ station_data['WBAN ID'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>FAA ID: </b></label><br>
+            <p>{{ station_data['FAA ID'] if station_data else 'N/A' }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm">
+            <label><b>Division (Num-Name): </b></label><br>
+            <p>{{ station_data['Division'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>County: </b></label><br>
+            <p>{{ station_data['County'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>NWS Region: </b></label><br>
+            <p>{{ station_data['NWS Region'] if station_data else 'N/A' }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm">
+            <label><b>NWS WFO: </b></label><br>
+            <p>{{ station_data['NWS WFO'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>NWSLI ID: </b></label><br>
+            <p>{{ station_data['NWSLI ID'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>Platform: </b></label><br>
+            <p>{{ station_data['Platform'] if station_data else 'N/A' }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm">
+            <label><b>Elevation: </b></label><br>
+            <p>{{ station_data['Elevation'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>Time Offset: </b></label><br>
+            <p>{{ station_data['Time Offset'] if station_data else 'N/A' }}</p>
+        </div>
+        <div class="col-sm">
+            <label><b>Lat/Lon: </b></label><br>
+            <p>{{ station_data['Lat/Lon'] if station_data else 'N/A' }}</p>
+        </div>
+    </div>
+
     <div class="row justify-content-center" id="button-row">
         <div class="col">
             <button type="button" class="btn btn-secondary">GHCND Inventory</button>
@@ -55,12 +118,5 @@
         </div>
     </div>
 </div>
-
-<!-- Add JavaScript to enable tooltips -->
-<script>
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
 
 {% endblock content %}
