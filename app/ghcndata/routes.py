@@ -449,9 +449,9 @@ def  get_station_calc_for_GHCND():
     
     # FOR TESTING
     # ghcn_id = 'USC00040212' # Angwin
-    ghcn_id = 'USC00040820' #ASPENDELL
-    correction_year = 2023
-    correction_month = 2
+    # ghcn_id = 'USC00040820' #ASPENDELL
+    # correction_year = 2023
+    # correction_month = 2
 
 
     file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly" # I THINK THIS IS HARD CODED IN THE PARSER STILL
@@ -516,7 +516,7 @@ def  get_station_calc_for_GHCND():
     max_snow_depth = getMaxDepthOnGround(filtered_df)[ghcn_id]
     max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
     nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
-    hdd = getMonthlyHDD(filtered_df)[ghcn_id]
+    hdd = getMonthlyHDD(filtered_df)[ghcn_id]['total_HDD']
     total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
 
     
@@ -572,7 +572,7 @@ def  get_station_calc_for_GHCND():
     for k, v in comp_calcs.items():
         if v is not None:
             print(f"{k}: {v}")
-    return "7"
+    return comp_calcs
     
 @ghcndata_bp.route('/test_monthlyPub')
 def test_monthlyPub():
