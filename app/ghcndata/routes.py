@@ -471,7 +471,7 @@ def  get_station_calc_for_GHCND():
         year=correction_year,
         month=correction_month,
         # observation_type = station_type,
-        correction_type=""
+        correction_type="table"
     )
     
     
@@ -503,7 +503,7 @@ def  get_station_calc_for_GHCND():
     # # print("json", filtered_json)
     
     
-    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD
+    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip
     # # print(getTemperatureTable(filtered_df))
 
     # result = calculate_station_avg(combined_som_df)
@@ -517,11 +517,12 @@ def  get_station_calc_for_GHCND():
     max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
     nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
     hdd = getMonthlyHDD(filtered_df)[ghcn_id]
+    total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
 
     
     # print(filtered_json)
-    # result = getMonthlyHDD(filtered_df)
-    print(f"{type(result)}\n{result}")
+    # result = generateDailyPrecip(filtered_json, [str(ghcn_id)])
+    # print(f"{type(result)}\n{result}")
 
     # Max and Min Precipitation
 
@@ -542,7 +543,7 @@ def  get_station_calc_for_GHCND():
             "Max24Hr": max_24hr_prcp['value'],
             "Day": max_24hr_prcp['day']
         },
-        "TotPcn" : None,
+        "TotPcn" : total_pcn,
         "Snow" : max_snow,
         "S Depth" : max_snow_depth[0],
         "HDD" : hdd,

@@ -1887,30 +1887,42 @@ def get_mm_to_in(mm: float) -> float:
     return mm * 0.03937 # 1 inch = 25.4 mm
 
 
-def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
-    """ Generates Daily Precipitation and Total Precipitation for a state.
 
-    Parameters
-    ----------
-    month : int, optional
-        by default 9
-    year : int, optional
-        by default 2020
+def generate_daily_precip_input(month:int = 2, year:int = 2023) -> dict:
+    """_summary_
 
     Returns
-    ---------
-    daily_precip_table_rec : dict[dict]
-        Records with their GHCN-ID as the key. Contains total_pcn, daily_pcn
-
-    Notes
-    ---------
-
-    This should eventually be updated to recieve the month year (and possibly state) codes so they aren't hardcoded. 
-    Change to take json_data as input? 
-
+    -------
+    dict
+        A dictionary containing the parsed weather observation data and a list of stations.
+        The dictionary has the following keys:
+        - json_data : list of dict
+            A list where each dictionary represents a month's worth of daily
+            observational data for a specific station and observation type.
+            Each inner dictionary contains the following keys:
+            - country_code : str
+                The country code 
+            - network_code : str
+                The network code 
+            - station_code : str
+                The unique identifier for the weather station.
+            - year : int
+                The year of the observations.
+            - month : int
+                The month of the observations (1-12).
+            - observation_type : str
+                The type of observation 
+            - day_X : str
+                The observation value for day X (1-31) of the month. Values are strings;
+                '-9999' indicates missing data. 
+            - flag_X : str
+                The quality control flag associated with the observation for day X
+        - full_station_id_list : list of str
+            A list of all the station codes (e.g., 'USC00040212') returned from 
+            the DailyPrecipQuery. This list may include stations that are not 
+            present in json_data.
     """
 
-    
     # Get Station List for Precipitation Query
     db_stations = QueryDB(DailyPrecipQuery)
     # print(bool(db_stations))
@@ -1921,7 +1933,7 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
     noDataCount = 0
     full_station_id_list = []
 
-    for row in db_stations[:10]:
+    for row in db_stations[:2]:
     # for row in db_stations:
         ghcn_id = row[4]
         file_path = f"/data/ops/ghcnd/data/ghcnd_all/{ghcn_id}.dly"
@@ -1972,7 +1984,8 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
 
     combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
-    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    # json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = combined_df.to_dicts()
 
     # Optional: write JSON string to file
     # output_file = f"combined_data_{month}_{year}_flask.json"
@@ -1996,7 +2009,70 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
 
     #########################################
     
-    json_data = json.loads(json_data)
+    return {
+        "json_data": json_data, 
+        "full_station_id_list": full_station_id_list
+    }
+
+
+def generateDailyPrecip(json_data, full_station_id_list) -> dict:
+    """ Generates Daily Precipitation and Total Precipitation for a dataset.
+
+    
+    Parameters
+    ----------
+    json_data : list of dict
+        A list where each dictionary represents a month's worth of daily
+        observational data for a specific station and observation type.
+        Each inner dictionary contains the following keys:
+        - country_code : str
+            The country code 
+        - network_code : str
+            The network code 
+        - station_code : str
+            The unique identifier for the weather station.
+        - year : int
+            The year of the observations.
+        - month : int
+            The month of the observations (1-12).
+        - observation_type : str
+            The type of observation 
+        - day_X : str
+            The observation value for day X (1-31) of the month. Values are strings;
+            '-9999' indicates missing data. 
+        - flag_X : str
+            The quality control flag associated with the observation for day X
+    full_station_id_list : list of str
+        A list of all the station codes (e.g., 'USC00040212') returned from 
+        the DailyPrecipQuery. This list may include stations that are not 
+        present in json_data.
+
+    Returns
+    -------
+    daily_precip_table_rec : dict
+        A dictionary where each key is a unique station code (e.g., 'USC00040212')
+        and its corresponding value is a dictionary containing precipitation data
+        for that station. Each station's dictionary includes:
+        - total_pcn : str
+            The total precipitation recorded for the period, represented as a string.
+            (e.g., '5.04').
+        - daily_pcn : dict
+            A dictionary mapping each day of the month (as a two-digit string from '01' to '31')
+            to its corresponding daily precipitation value. Precipitation
+            values are represented as strings (e.g., '0.45').
+        e.g.: {'USC00040212': {'total_pcn': '5.04', 'daily_pcn': {'01': '', '02': '', '03': '0.45', ... }, ...}
+
+
+    Notes
+    ---------
+    This function can be passed one station's data or multiple stations' data.
+
+    """
+
+    
+ 
+    
+    # json_data = json.loads(json_data)
     year = json_data[0]["year"]
     month = json_data[0]["month"]
     num_days = monthrange(year, month)[1]
@@ -2419,9 +2495,6 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
 
     return daily_precip_table_rec
 
-
-
-
 def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
     """ Checks the next month for accumulated precipitation.
 
@@ -2595,183 +2668,186 @@ def generateMonthlyPub():
     # target_ghcn_id = "USC00049026"
 
     try:
-        stations = QuerySoM("som")
-        print("Station list retrieved.", stations)
+        precip_data = generate_daily_precip_input(month, year)
 
-        # return
+        print(generateDailyPrecip(precip_data['json_data'], precip_data['full_station_id_list']))
+#         stations = QuerySoM("som")
+#         print("Station list retrieved.", stations)
 
-        temperature_data = QuerySoM("temp")
-        print("Temp data retrieved.", temperature_data)
+#         # return
+
+#         temperature_data = QuerySoM("temp")
+#         print("Temp data retrieved.", temperature_data)
         
-        evaporation_data = QuerySoM("evap")
-        print("Evap data retrieved.", evaporation_data)
+#         evaporation_data = QuerySoM("evap")
+#         print("Evap data retrieved.", evaporation_data)
         
          
-        precipitation_data = QuerySoM("precip")
-        print("Precipitation data retrieved.", precipitation_data)
+#         precipitation_data = QuerySoM("precip")
+#         print("Precipitation data retrieved.", precipitation_data)
 
-        tobs_data = QuerySoM("tobs")
-        # print("TOBS data retrieved.")
+#         tobs_data = QuerySoM("tobs")
+#         # print("TOBS data retrieved.")
 
-        soils_data = QuerySoM("soil")
-        # print("Soil data retrieved.")
-        # print("soils_data", soils_data)
+#         soils_data = QuerySoM("soil")
+#         # print("Soil data retrieved.")
+#         # print("soils_data", soils_data)
 
-        soils_ref_data = QuerySoM("soilref")
-        # print("Soil REF metadata retrieved.")
-        # print("soils_REF_data", soils_ref_data)
+#         soils_ref_data = QuerySoM("soilref")
+#         # print("Soil REF metadata retrieved.")
+#         # print("soils_REF_data", soils_ref_data)
 
-        # # Build TOBS metadata lookup by coop_id
-        tobs_lookup = {row[0]: row[1:] for row in tobs_data}
+#         # # Build TOBS metadata lookup by coop_id
+#         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
-        # Build combined_df for temperature stations
-        combined_temp_df = build_combined_df(temperature_data, tobs_lookup, month, year)
-        json_data = json.dumps(combined_temp_df.to_dicts(), indent=2)
+#         # Build combined_df for temperature stations
+#         combined_temp_df = build_combined_df(temperature_data, tobs_lookup, month, year)
+#         json_data = json.dumps(combined_temp_df.to_dicts(), indent=2)
         
-        # Build combined_df for evaporation stations (som)
-        combined_evap_df = build_combined_df(evaporation_data, tobs_lookup, month, year)
-        json_data = json.dumps(combined_evap_df.to_dicts(), indent=2)
+#         # Build combined_df for evaporation stations (som)
+#         combined_evap_df = build_combined_df(evaporation_data, tobs_lookup, month, year)
+#         json_data = json.dumps(combined_evap_df.to_dicts(), indent=2)
 
-        #Build combined_df for precipitation stations (som)
-        combined_precip_df = build_combined_df(precipitation_data, tobs_lookup, month, year)
-        json_data = json.dumps(combined_precip_df.to_dicts(), indent=2)
+#         #Build combined_df for precipitation stations (som)
+#         combined_precip_df = build_combined_df(precipitation_data, tobs_lookup, month, year)
+#         json_data = json.dumps(combined_precip_df.to_dicts(), indent=2)
         
-        # Build combined_df for general stations (som)
-        combined_som_df = build_combined_df(stations, tobs_lookup, month, year)
-        json_data = json.dumps(combined_som_df.to_dicts(), indent=2)
+#         # Build combined_df for general stations (som)
+#         combined_som_df = build_combined_df(stations, tobs_lookup, month, year)
+#         json_data = json.dumps(combined_som_df.to_dicts(), indent=2)
         
-        # # Write JSON to file for testing/viewing
-        # output_file = f"SoMDATA_dly.json"
-        # with open(output_file, "w") as f:
-        #     f.write(json_data)
+#         # # Write JSON to file for testing/viewing
+#         # output_file = f"SoMDATA_dly.json"
+#         # with open(output_file, "w") as f:
+#         #     f.write(json_data)
         
-        # # Write JSON to file for testing/viewing
-        # output_file = f"tempDATA_dly.json"
-        # with open(output_file, "w") as f:
-        #     f.write(json_data)
+#         # # Write JSON to file for testing/viewing
+#         # output_file = f"tempDATA_dly.json"
+#         # with open(output_file, "w") as f:
+#         #     f.write(json_data)
 
-        # # Write JSON to file for testing/viewing
-        # output_file = f"evapDATA_dly.json"
-        # with open(output_file, "w") as f:
-        #     f.write(json_data)
+#         # # Write JSON to file for testing/viewing
+#         # output_file = f"evapDATA_dly.json"
+#         # with open(output_file, "w") as f:
+#         #     f.write(json_data)
         
-        # # Write JSON to file for testing/viewing
-        # output_file = f"precipDATA_dly.json"
-        # with open(output_file, "w") as f:
-        #     f.write(json_data)
+#         # # Write JSON to file for testing/viewing
+#         # output_file = f"precipDATA_dly.json"
+#         # with open(output_file, "w") as f:
+#         #     f.write(json_data)
         
   
-##########################################
-############## EXTREMES ##################
-##########################################
+# ##########################################
+# ############## EXTREMES ##################
+# ##########################################
 
-        print("Highest Temperature:", getHighestTemperatureExtreme(combined_som_df))
-        print("Lowest Temperature:", getLowestTemperatureExtreme(combined_som_df))
-        print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_som_df))
-        print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_som_df))
-        print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_som_df))
-        print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_som_df))
-        print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_som_df))
+#         print("Highest Temperature:", getHighestTemperatureExtreme(combined_som_df))
+#         print("Lowest Temperature:", getLowestTemperatureExtreme(combined_som_df))
+#         print("Greatst Total Precip:", getGreatestTotalPrecipitationExtreme(combined_som_df))
+#         print("Least Total Precip:", getLeastTotalPrecipitationExtreme(combined_som_df))
+#         print("Greatest 1-Day Precip:", getGreatest1DayPrecipitationExtreme(combined_som_df))
+#         print("Greatest Snowfall:", getGreatestTotalSnowfallExtreme(combined_som_df))
+#         print("Greatest Snow Depth:", getGreatestSnowDepthExtreme(combined_som_df))
 
         
-#############################################
-### MONTHLY STATION AND DIVISION SUMMARY ####
-#############################################
+# #############################################
+# ### MONTHLY STATION AND DIVISION SUMMARY ####
+# #############################################
         
-        Highest = highestRecordedTemp(combined_som_df)
-        print("Highest:", Highest)
+#         Highest = highestRecordedTemp(combined_som_df)
+#         print("Highest:", Highest)
 
-        Lowest = lowestRecordedTemp(combined_som_df)
-        print("Lowest:", Lowest)
+#         Lowest = lowestRecordedTemp(combined_som_df)
+#         print("Lowest:", Lowest)
 
-        Average = calculate_station_avg(combined_som_df)
-        print("Average:", Average)
+#         Average = calculate_station_avg(combined_som_df)
+#         print("Average:", Average)
 
-        Total_IcePelletsAndSnow = getTotalSnowAndIcePellets(combined_som_df)
-        print("Total_IcePelletsAndSnow:", Total_IcePelletsAndSnow)
+#         Total_IcePelletsAndSnow = getTotalSnowAndIcePellets(combined_som_df)
+#         print("Total_IcePelletsAndSnow:", Total_IcePelletsAndSnow)
 
-        maxDepthOnGround = getMaxDepthOnGround(combined_som_df)
-        print("maxDepthOnGround:", maxDepthOnGround)
+#         maxDepthOnGround = getMaxDepthOnGround(combined_som_df)
+#         print("maxDepthOnGround:", maxDepthOnGround)
         
-        merged_SOM_data = merge_SOM_data(Highest, Lowest, Average, Total_IcePelletsAndSnow, maxDepthOnGround)
-        print("merged_SOM_data:", merged_SOM_data)
+#         merged_SOM_data = merge_SOM_data(Highest, Lowest, Average, Total_IcePelletsAndSnow, maxDepthOnGround)
+#         print("merged_SOM_data:", merged_SOM_data)
 
-        with open("SoMTable.json", "w") as f:
-            json.dump(merged_SOM_data, f, indent=2)
+#         with open("SoMTable.json", "w") as f:
+#             json.dump(merged_SOM_data, f, indent=2)
 
             
-#############################################
-############ DAILY PRECIPITATION ############
-#############################################
+# #############################################
+# ############ DAILY PRECIPITATION ############
+# #############################################
         
         
-        ##TBD##
+#         ##TBD##
         
         
-#############################################
-########### DAILY TEMPERATURES ##############
-#############################################
+# #############################################
+# ########### DAILY TEMPERATURES ##############
+# #############################################
 
-        TemperatureTable = getTemperatureTable(combined_temp_df)
-        print("TemperatureTable:", TemperatureTable)
+#         TemperatureTable = getTemperatureTable(combined_temp_df)
+#         print("TemperatureTable:", TemperatureTable)
 
-        tempTableData = getTemperatureTable(combined_temp_df)
-        tempTableDataWithNames = add_station_names(tempTableData)
-        print("TemperatureTable w names:", tempTableDataWithNames)
+#         tempTableData = getTemperatureTable(combined_temp_df)
+#         tempTableDataWithNames = add_station_names(tempTableData)
+#         print("TemperatureTable w names:", tempTableDataWithNames)
         
-        with open("tempTable_wNames.json", "w") as f:
-            json.dump(tempTableDataWithNames, f, indent=2)
+#         with open("tempTable_wNames.json", "w") as f:
+#             json.dump(tempTableDataWithNames, f, indent=2)
             
-#############################################
-####### SNOWFALL AND SNOW ON GROUND #########
-#############################################
+# #############################################
+# ####### SNOWFALL AND SNOW ON GROUND #########
+# #############################################
 
-        SnowAndSnwdTable = getSnowAndSnwdTable(combined_precip_df)
-        print("SnowAndSnwdTable:", SnowAndSnwdTable)
+#         SnowAndSnwdTable = getSnowAndSnwdTable(combined_precip_df)
+#         print("SnowAndSnwdTable:", SnowAndSnwdTable)
 
-        with open("SnowAndSnwdTable.json", "w") as f:
-            json.dump(SnowAndSnwdTable, f, indent=2)
+#         with open("SnowAndSnwdTable.json", "w") as f:
+#             json.dump(SnowAndSnwdTable, f, indent=2)
 
 
-#############################################
-######## DAILY SOIL TEMPERATURES ############
-#############################################
+# #############################################
+# ######## DAILY SOIL TEMPERATURES ############
+# #############################################
 
         
-        soils_combined_df = getSoilsData(month, year)
+#         soils_combined_df = getSoilsData(month, year)
         
-        # # Write JSON to file for testing/viewing
-        # with open(f"soilDATA_dly.json", "w") as f:
-        #     f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
+#         # # Write JSON to file for testing/viewing
+#         # with open(f"soilDATA_dly.json", "w") as f:
+#         #     f.write(json.dumps(soils_combined_df.to_dicts(), indent=2))
 
-        soilTemperatureTable = getSoilTemperatureTable(soils_combined_df)
-        print("soilTemperatureTable", soilTemperatureTable)
+#         soilTemperatureTable = getSoilTemperatureTable(soils_combined_df)
+#         print("soilTemperatureTable", soilTemperatureTable)
         
-        with open("soilTemperatureTable.json", "w") as f:
-            json.dump(soilTemperatureTable, f, indent=2)
+#         with open("soilTemperatureTable.json", "w") as f:
+#             json.dump(soilTemperatureTable, f, indent=2)
         
-#############################################
-######## SOIL REFERENCE NOTES ############
-#############################################  
+# #############################################
+# ######## SOIL REFERENCE NOTES ############
+# #############################################  
         
         
-        soilRefNotes = get_soil_refernce_notes(soils_ref_data)
-        print("SoilRefNotes: ", soilRefNotes)
+#         soilRefNotes = get_soil_refernce_notes(soils_ref_data)
+#         print("SoilRefNotes: ", soilRefNotes)
 
-        with open("soilRefNotes.json", "w") as f:
-            json.dump(soilRefNotes, f, indent=2)
+#         with open("soilRefNotes.json", "w") as f:
+#             json.dump(soilRefNotes, f, indent=2)
 
-#############################################
-######## PAN EVAPORATION AND WIND ###########
-#############################################
-
-
-        PanEvaporationTable = getPanEvapTable(combined_evap_df)
-        print("PanEvapTable", PanEvaporationTable)
+# #############################################
+# ######## PAN EVAPORATION AND WIND ###########
+# #############################################
 
 
-        with open("PanEvaporationTable.json", "w") as f:
-            json.dump(PanEvaporationTable, f, indent=2)
+#         PanEvaporationTable = getPanEvapTable(combined_evap_df)
+#         print("PanEvapTable", PanEvaporationTable)
+
+
+#         with open("PanEvaporationTable.json", "w") as f:
+#             json.dump(PanEvaporationTable, f, indent=2)
 
 
     except Exception as e:
