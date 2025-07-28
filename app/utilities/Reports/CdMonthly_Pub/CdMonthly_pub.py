@@ -440,6 +440,19 @@ def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     
     
 def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        {'value': 0.98, 'day': '22', 'station': 'USC00040820'}
+    """
     # Filter for daily precipitation observations only
     prcp_df = df.filter(pl.col("observation_type") == "PRCP")
     if prcp_df.is_empty():
@@ -828,6 +841,18 @@ def lowestRecordedTemp(df: pl.DataFrame) -> dict:
     
 
 def getMonthlyHDD(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        {'USC00040820': {'total_HDD': 1212}}
+    """
     if df.is_empty():
         return {}
 
@@ -984,6 +1009,19 @@ def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
 
 
 def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        {'USC00040820': 'M 2.8'}
+    """
     if df.is_empty():
         return {}
 
@@ -1053,6 +1091,20 @@ def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
 
 
 def getMaxDepthOnGround(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        key: (value, date)
+        {'USC00040820': (22, '02')}
+    """
     if df.is_empty():
         return {}
 

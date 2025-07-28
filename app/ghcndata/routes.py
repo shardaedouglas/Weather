@@ -447,7 +447,9 @@ def  get_station_calc_for_GHCND():
     else:
         correction_year, correction_month, correction_day = None, None, None
     
-    ghcn_id = 'USC00040212'
+    # FOR TESTING
+    # ghcn_id = 'USC00040212' # Angwin
+    ghcn_id = 'USC00040820' #ASPENDELL
     correction_year = 2023
     correction_month = 2
 
@@ -481,7 +483,8 @@ def  get_station_calc_for_GHCND():
     
 
     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
-    filtered_json = json.dumps(filtered_df.to_dicts(), indent=2)
+    # filtered_json = json.dumps(filtered_df.to_dicts(), indent=2)
+    filtered_json = filtered_df.to_dicts()
 
     # # Attempting to match the CDMonthlyPub Dataframe.
     # from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
@@ -500,7 +503,7 @@ def  get_station_calc_for_GHCND():
     # # print("json", filtered_json)
     
     
-    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getHighestTemperatureExtreme
+    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD
     # # print(getTemperatureTable(filtered_df))
 
     # result = calculate_station_avg(combined_som_df)
@@ -509,10 +512,15 @@ def  get_station_calc_for_GHCND():
     station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
     max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
     min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
+    max_snow = getTotalSnowAndIcePellets(filtered_df)[ghcn_id]
+    max_snow_depth = getMaxDepthOnGround(filtered_df)[ghcn_id]
+    max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
+    nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
+    hdd = getMonthlyHDD(filtered_df)[ghcn_id]
 
     
-
-    result = getLowestTemperatureExtreme(filtered_df)
+    # print(filtered_json)
+    # result = getMonthlyHDD(filtered_df)
     print(f"{type(result)}\n{result}")
 
     # Max and Min Precipitation
@@ -530,20 +538,20 @@ def  get_station_calc_for_GHCND():
             "MinTp": min_temp['value'],
             "Day": min_temp['date']
         },
-        # "Max24Hr" : {
-        #     "Max24Hr": None,
-        #     "Day": None
-        # },
+        "Max24Hr" : {
+            "Max24Hr": max_24hr_prcp['value'],
+            "Day": max_24hr_prcp['day']
+        },
         "TotPcn" : None,
-        "Snow" : None,
-        "S Depth" : None,
-        "HDD" : None,
+        "Snow" : max_snow,
+        "S Depth" : max_snow_depth[0],
+        "HDD" : hdd,
         "CDD " : None,
-        # "NOD Pcn": {
-        #     ">.01": None,
-        #     ">.10": None,
-        #     ">1": None,
-        # },
+        "NOD Pcn": {
+            ">.01": nod_prcp['.01 OR MORE'],
+            ">.10": nod_prcp['.10 OR MORE'],
+            ">1": nod_prcp['1.00 OR MORE'],
+        },
         "NOD Tmp": {
             "MxT>=90": station_avgs[">=90_MAX"],
             "MxT<=32": station_avgs["<=32_MAX"],
