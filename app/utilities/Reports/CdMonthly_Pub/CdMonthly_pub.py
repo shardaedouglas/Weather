@@ -1980,8 +1980,6 @@ def generate_daily_precip_input(month:int = 2, year:int = 2023) -> dict:
     if not all_filtered_dfs:
         print("No valid station files found.")
         # return?
-    
-        
 
     combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
@@ -1992,23 +1990,6 @@ def generate_daily_precip_input(month:int = 2, year:int = 2023) -> dict:
     # output_file = f"combined_data_{month}_{year}_flask.json"
     # with open(output_file, "w") as f:
     #     f.write(json_data)
-    
-    
-    
-    # print(f"Data saved to {output_file}")
-    # print(json_data)
-
-
-    ########################################
-    #  Read the JSON file for Testing
-
-    # json_data = None
-
-    # with open(output_file) as f:
-    #     json_data = json.load(f)
-    #     # print(d)
-
-    #########################################
     
     return {
         "json_data": json_data, 
@@ -2070,10 +2051,6 @@ def generateDailyPrecip(json_data, full_station_id_list) -> dict:
 
     """
 
-    
- 
-    
-    # json_data = json.loads(json_data)
     year = json_data[0]["year"]
     month = json_data[0]["month"]
     num_days = monthrange(year, month)[1]
@@ -2102,30 +2079,16 @@ def generateDailyPrecip(json_data, full_station_id_list) -> dict:
             mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
         elif obs_type == "DAPR":
             dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
-            
-
-    # for key, data in prcp_data.items():
-    #     print(f"{key}:\t{data}")
-    # print(f"-"*30)
-    # for key, data in mdpr_data.items():
-    #     print(f"{key}:\t{data}")
-    # print(f"-"*30)
-    # for key, data in dapr_data.items():
-    #     print(f"{key}:\t{data}")
 
 
     ############################################
 
 
     # Update the PRCP dictionary with stations that have no PRCP data (but have MDPR and DAPR)
-    
-
-
     for key in set(mdpr_data) | set(dapr_data) | set(full_station_id_list):  
         if key not in prcp_data:
             prcp_data[key] = None
-
-    
+ 
     # Sort the prcp data in the same order as the station list from the DB.
     prcp_data = {key: prcp_data[key] for key in full_station_id_list if key in prcp_data}
 

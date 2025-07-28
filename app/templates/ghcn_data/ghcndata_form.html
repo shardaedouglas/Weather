@@ -231,6 +231,8 @@
                         alert("There was an error processing your request.");
                     }
                 });
+
+
         
             } else {
                 // Default behavior using GHCN ID
@@ -259,7 +261,6 @@
                     }
                 });
 
-                // TEST Request for debugging
                 $.ajax({
                     url: '/get_station_calc_for_GHCND',
                     method: 'POST',
@@ -278,7 +279,44 @@
             }
         }
         
+        
+        /**
+         * Populates a data table with GHCND (Global Historical Climatology Network Daily) calculations.
+         *
+         * This function takes a structured data object containing various calculated
+         * meteorological statistics and uses it to populate an HTML element.
+         *
+         * @param {object} data - An object containing calculated GHCND statistics for display.
+         * @param {number} data.AvMax - The average maximum temperature.
+         * @param {number} data.AvMin - The average minimum temperature.
+         * @param {number} data.AvTmp - The overall average temperature.
+         * @param {object} data.MaxTp - Details for the highest temperature recorded.
+         * @param {number} data.MaxTp.MaxTp - The maximum temperature value.
+         * @param {string} data.MaxTp.Day - The date (e.g., 'YYYY-MM-DD') when the maximum temperature occurred.
+         * @param {object} data.MinTp - Details for the lowest temperature recorded.
+         * @param {number} data.MinTp.MinTp - The minimum temperature value.
+         * @param {string} data.MinTp.Day - The date (e.g., 'YYYY-MM-DD') when the minimum temperature occurred.
+         * @param {object} data.Max24Hr - Details for the maximum 24-hour precipitation.
+         * @param {number} data.Max24Hr.Max24Hr - The maximum 24-hour precipitation value.
+         * @param {string} data.Max24Hr.Day - The day (e.g., 'DD') when the maximum 24-hour precipitation occurred.
+         * @param {number} data.TotPcn - The total precipitation.
+         * @param {number} data.Snow - The maximum snowfall.
+         * @param {number} data["S Depth"] - The maximum snow depth.
+         * @param {number} data.HDD - Heating Degree Days.
+         * @param {number} data.CDD - Cooling Degree Days. (currently null/not calculated).
+         * @param {object} data["NOD Pcn"] - Number of Days with Precipitation exceeding certain thresholds.
+         * @param {number} data["NOD Pcn"].">.01" - Number of days with precipitation >= 0.01 units.
+         * @param {number} data["NOD Pcn"].">.10" - Number of days with precipitation >= 0.10 units.
+         * @param {number} data["NOD Pcn"].">1" - Number of days with precipitation >= 1.00 unit.
+         * @param {object} data["NOD Tmp"] - Number of Days with Temperature exceeding certain thresholds.
+         * @param {number} data["NOD Tmp"]."MxT>=90" - Number of days where maximum temperature was >= 90.
+         * @param {number} data["NOD Tmp"]."MxT<=32" - Number of days where maximum temperature was <= 32.
+         * @param {number} data["NOD Tmp"]."MnT<=0" - Number of days where minimum temperature was <= 0.
+         * @param {number} data["SF>1="] - Number of days with snowfall >= one inch (currently null/not calculated).
+         * @param {number} data["SD>="] - Number of days with snow depth >= one inch (currently null/not calculated).
+         */
         function showGHCNDCalculations(data) {
+
 
             // Temperature
             $(".ghcnd-calc-av-max").text(data["AvMax"] !== null ? data["AvMax"]  : "N/A");

@@ -5,6 +5,7 @@ from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, lowestRecordedTemp, getLowestTemperatureExtreme, getTemperatureTable, calculate_station_avg
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip
 
 from datetime import datetime
 import os
@@ -453,16 +454,13 @@ def  get_station_calc_for_GHCND():
     # correction_year = 2023
     # correction_month = 2
 
-
-    file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly" # I THINK THIS IS HARD CODED IN THE PARSER STILL
+    file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly"
     
     # print("ghcn_id:", ghcn_id)
-    print("file_path: ", file_path)
+    # print("file_path: ", file_path)
     # print("correction_year: ", correction_year)
     # print("correction_month: ", correction_month)
     # print("station_type: ", station_type)
-
-
 
     # # Run parser with form data
     filtered_data = parse_and_filter(
@@ -475,40 +473,9 @@ def  get_station_calc_for_GHCND():
     )
     
     
-    # Template for getting data.
-    # filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
-    # result = lowestRecordedTemp(filtered_df)
-    # print(f"lowest temp result {result}")
-    # print(f"lowest temp Extreme: {getLowestTemperatureExtreme(filtered_df)}")
-    
-
     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
-    # filtered_json = json.dumps(filtered_df.to_dicts(), indent=2)
     filtered_json = filtered_df.to_dicts()
 
-    # # Attempting to match the CDMonthlyPub Dataframe.
-    # from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
-
-    # # tobs_data = QuerySoM("tobs")
-    # # # Build TOBS metadata lookup by coop_id
-    # tobs_lookup = {}
-    # stations = [('0', '0', 'N/A', '0', ghcn_id, '0', '0')]
-    # combined_som_df = build_combined_df(stations, tobs_lookup, correction_month, correction_year)
-    # json_data = json.dumps(combined_som_df.to_dicts(), indent=2)
-    # print(f"json_data: \n{json_data}")
-
-
-    # print("filtered dataframe", filtered_df)
-    # print("combined dataframe", combined_som_df)
-    # # print("json", filtered_json)
-    
-    
-    from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip
-    # # print(getTemperatureTable(filtered_df))
-
-    # result = calculate_station_avg(combined_som_df)
-    
-    # print(f"{type(result)}\n{result}")
     station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
     max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
     min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
@@ -519,12 +486,9 @@ def  get_station_calc_for_GHCND():
     hdd = getMonthlyHDD(filtered_df)[ghcn_id]['total_HDD']
     total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
 
-    
     # print(filtered_json)
     # result = generateDailyPrecip(filtered_json, [str(ghcn_id)])
     # print(f"{type(result)}\n{result}")
-
-    # Max and Min Precipitation
 
 
     comp_calcs = { 
@@ -561,17 +525,12 @@ def  get_station_calc_for_GHCND():
         },
         "SF>1=" : None, # NOD Snowfall >= one inch
         "SD>=" : None, # NOD Snow Depth >= (one inch???)
-        
-
-
-
-
     }
 
 
-    for k, v in comp_calcs.items():
-        if v is not None:
-            print(f"{k}: {v}")
+    # for k, v in comp_calcs.items():
+    #     if v is not None:
+    #         print(f"{k}: {v}")
     return comp_calcs
     
 @ghcndata_bp.route('/test_monthlyPub')
