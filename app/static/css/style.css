@@ -1,3 +1,11 @@
+:root {
+    --border-color-01: #babcbf;
+}
+
+body {
+    background-color: rgb(255, 255, 255);
+    font-size: 100%;
+}
 
 
 /* Navigation Bar */
@@ -114,7 +122,7 @@ line-height: 4ex;
     border-radius: 5px;
     color: #292929;
 }
-/* ------------------------ Data Displayer Pages -----------------*/
+/* ------------------------ Correction Data Display Elements -----------------*/
 
 /* Monthly Correction Table */
 #monthly-form-table {
@@ -147,9 +155,44 @@ padding-top: 45px;
     /* max-width: 190px; */
 }
 
-body {
-    background-color: rgb(255, 255, 255);
-    font-size: 100%;
+/* Margin Top (Standard) */
+/* Standardized top margin for all pages. */
+.mt-std {
+    margin-top: 160px;
+
+}
+
+.text-bold-20 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.correction-link-card {
+    cursor: pointer; /* Indicates it's clickable */
+    /* display: none; */
+    border: thin solid var(--border-color-01);
+    border-bottom-width: 7px;
+    border-radius: 10px;
+    border-bottom-color: #01314A;
+
+
+}
+
+.std-rounded-box {
+    border: thin solid var(--border-color-01);
+    border-radius: 10px;
+}
+
+
+.text-semi-bold-20 {
+    font-size: 20px;
+    font-weight: 550; /* 550 is between medium and bold */
+    /* display: none; */
+}
+
+/* For the arrow icon's font size */
+.text-50 {
+    font-size: 50px;
 }
 
 

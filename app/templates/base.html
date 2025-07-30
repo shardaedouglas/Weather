@@ -214,6 +214,57 @@
                         });
                     }
             
+            /**
+             * Displays a confirmation page after corrections have been successfully submitted.
+             *
+             * This function presents a "Corrections have been submitted successfully" page to the user.
+             * It provides options for the user to submit another correction of the same type or to
+             * select a different type of correction.
+             *
+             * @param {string} type - The type of correction that was submitted (e.g., 'daily', 'monthly', 'ranged', 'hourly').
+             */
+            function showSubmissionConfirmation(type) {
+
+                $("#form-daily").hide(); 
+                $("#form-hourly").hide(); 
+                $("#form-monthly").hide(); 
+                $("#form-range").hide(); 
+                
+                $(".correction-type-text-target").text(type);
+                
+                var element_name = "submitted-" + type + "-link";
+                //Hide that element
+
+                var link = "";
+                if (type == "daily") {
+                    link = '{{ url_for('corrections.daily_corrections') }}';
+                    $("#submitted-daily-link").hide();
+                    
+                    
+                } else if (type == "monthly") {
+                    link = '{{ url_for('corrections.monthly_corrections') }}';
+                    $("#submitted-monthly-link").hide();
+                } else if (type == "ranged") {
+                    link = '{{ url_for('corrections.range_corrections') }}';
+                    $("#submitted-ranged-link").hide();
+                } else if (type == "hourly") {
+                    link = '{{ url_for('corrections.hourly_corrections') }}';
+                    $("#submitted-hourly-link").hide();
+                }
+
+                console.log(link);
+
+                $("#submit-another-correction").click(function() {
+                    window.location.href = link;
+                });
+
+
+
+                $("#submission-element").show(); 
+
+
+            }
+            
         </script>
     </body>
 </html>

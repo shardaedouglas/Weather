@@ -48,10 +48,18 @@
             
         </div>
     </div>
+    
+    <div id="submission-element" style="display: none;">
+        {% include "corrections/correction_submitted_element.html" %}
+    </div>
 
     <script>
         $(document).ready(function () {
             $("form").submit(function (event) {
+                /** This currently handles the "next" button of the first section. It should be transferred
+                 * to the submit button of the second section. 
+                 * Then it should handle processing the correction data.
+                */
                 event.preventDefault();
                 var formData = $(this).serialize();
                 // Code to Process the monthly data.
@@ -61,13 +69,19 @@
                 // })
                 showMonthTable();
 
-            })
+            });
+
+            
 
         });
 
         function showMonthTable() {
             document.getElementById('input-monthly-table').style.display = "block";
          }
+
+         $('#submit-monthly-corr-btn').click(function() {
+            showSubmissionConfirmation("monthly");
+        });
     </script>
 
     {% endblock content %}
