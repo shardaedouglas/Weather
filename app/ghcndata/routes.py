@@ -5,13 +5,14 @@ from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, lowestRecordedTemp, getLowestTemperatureExtreme, getTemperatureTable, calculate_station_avg
-from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip
+from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip, generateSDThreshold, generateSFThreshold 
 
 from datetime import datetime
 import os
 import re
 import json
 import polars as pl
+import traceback
 
 
 # Route to Render GHCN Station Page
@@ -476,15 +477,69 @@ def  get_station_calc_for_GHCND():
     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
     filtered_json = filtered_df.to_dicts()
 
-    station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
-    max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
-    min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
-    max_snow = getTotalSnowAndIcePellets(filtered_df)[ghcn_id]
-    max_snow_depth = getMaxDepthOnGround(filtered_df)[ghcn_id]
-    max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
-    nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
-    hdd = getMonthlyHDD(filtered_df)[ghcn_id]['total_HDD']
-    total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
+    try:
+        station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
+    except Exception as err:
+        print("error in calculate_station_avg():\n{}".format(traceback.format_exc()))
+        station_avgs = None
+    try:
+        max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
+    except Exception as err:
+        print("error in highestRecordedTemp():\n{}".format(traceback.format_exc()))
+        max_temp = None
+    try:
+        min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
+    except Exception as err:
+        print("error in lowestRecordedTemp():\n{}".format(traceback.format_exc()))
+        min_temp = None
+    try:
+        max_snow = getTotalSnowAndIcePellets(filtered_df)[ghcn_id]
+    except Exception as err:
+        print("error in lowestRecordedTemp():\n{}".format(traceback.format_exc()))
+        max_snow = None
+    try:
+        max_snow_depth = getMaxDepthOnGround(filtered_df)[ghcn_id]
+    except Exception as err:
+        print("error in getMaxDepthOnGround():\n{}".format(traceback.format_exc()))
+        max_snow_depth = [None]
+    try:
+        max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
+    except Exception as err:
+        print("error in getGreatest1DayPrecipitationExtreme(): \n{}".format(traceback.format_exc()))
+        max_24hr_prcp = None
+    try:
+        nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
+    except Exception as err:
+        print("error in getNumOfDays(): \n{}".format(traceback.format_exc()))
+        nod_prcp = None
+    try:
+        hdd = getMonthlyHDD(filtered_df)[ghcn_id]['total_HDD']
+    except Exception as err:
+        print("error in getMonthlyHDD(): \n{}".format(traceback.format_exc()))
+        hdd = None
+    try:
+        total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
+    except Exception as err:
+        print("error in generateDailyPrecip(): \n{}".format(traceback.format_exc()))
+        total_pcn = None
+    try:
+        sd_threshold = generateSDThreshold(filtered_json)[ghcn_id]['1.00 OR MORE']
+    except Exception as err:
+        print("error in generateSDThreshold(): \n{}".format(traceback.format_exc()))
+        sd_threshold = None
+    try:
+        sf_threshold = generateSFThreshold(filtered_json)[ghcn_id]['1.00 OR MORE']
+    except Exception as err:
+        print("error in generateSFThreshold(): \n{}".format(traceback.format_exc()))
+        sf_threshold = None
+    
+    
+    
+    # print(sd_threshold, sf_threshold)
+    
+    
+    
+    
 
     # print(filtered_json)
     # result = generateDailyPrecip(filtered_json, [str(ghcn_id)])
@@ -492,20 +547,20 @@ def  get_station_calc_for_GHCND():
 
 
     comp_calcs = { 
-        "AvMax" : station_avgs["Average Maximum"],
-        "AvMin" : station_avgs["Average Minimum"],
-        "AvTmp" : station_avgs["Average"],
+        "AvMax" : station_avgs.get("Average Maximum"),
+        "AvMin" : station_avgs.get("Average Minimum"),
+        "AvTmp" : station_avgs.get("Average"),
         "MaxTp" : {
-            "MaxTp": max_temp['value'],
-            "Day": max_temp['date']
+            "MaxTp": max_temp.get('value'),
+            "Day": max_temp.get('date')
         },
         "MinTp" : {
-            "MinTp": min_temp['value'],
-            "Day": min_temp['date']
+            "MinTp": min_temp.get('value'),
+            "Day": min_temp.get('date')
         },
         "Max24Hr" : {
-            "Max24Hr": max_24hr_prcp['value'],
-            "Day": max_24hr_prcp['day']
+            "Max24Hr": max_24hr_prcp.get('value'),
+            "Day": max_24hr_prcp.get('day')
         },
         "TotPcn" : total_pcn,
         "Snow" : max_snow,
@@ -513,18 +568,18 @@ def  get_station_calc_for_GHCND():
         "HDD" : hdd,
         "CDD " : None,
         "NOD Pcn": {
-            ">.01": nod_prcp['.01 OR MORE'],
-            ">.10": nod_prcp['.10 OR MORE'],
-            ">1": nod_prcp['1.00 OR MORE'],
+            ">.01": nod_prcp.get('.01 OR MORE'),
+            ">.10": nod_prcp.get('.10 OR MORE'),
+            ">1": nod_prcp.get('1.00 OR MORE'),
         },
         "NOD Tmp": {
-            "MxT>=90": station_avgs[">=90_MAX"],
-            "MxT<=32": station_avgs["<=32_MAX"],
-            # "MnT<=32": station_avgs["<=32_MIN"],
-            "MnT<=0": station_avgs["<=0_MIN"],
+            "MxT>=90": station_avgs.get(">=90_MAX"),
+            "MxT<=32": station_avgs.get("<=32_MAX"),
+            # "MnT<=32": station_avgs.get("<=32_MIN"),
+            "MnT<=0": station_avgs.get("<=0_MIN"),
         },
-        "SF>1=" : None, # NOD Snowfall >= one inch
-        "SD>=" : None, # NOD Snow Depth >= (one inch???)
+        "SF>=1" : sd_threshold, # NOD Snowfall >= one inch
+        "SD>=1" : sf_threshold, # NOD Snow Depth >= one inch
     }
 
 

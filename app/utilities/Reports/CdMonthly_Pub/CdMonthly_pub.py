@@ -1,5 +1,4 @@
-import os
-import traceback
+
 
 # def get_state_for_GHCN_table_df():
 #     try:
@@ -128,6 +127,9 @@ from datetime import datetime
 from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from typing import List, Dict, Any
+
+import os
+import traceback
 
 def makeGraph(df):
     """
@@ -2625,11 +2627,236 @@ def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: 
 
     return still_missing
 
+# def generateSFThresholdInput(ghcn_id, month, year):
+#     """generates json data for 1 station.
+#         actually wait couldn't this be for any type of calculation. 
+#         Would this function already exist? it should.
+
+#     Parameters
+#     ----------
+#     ghcn_id : _type_
+#         _description_
+#     month : _type_
+#         _description_
+#     year : _type_
+#         _description_
+
+#     Returns
+#     -------
+#     _type_
+#         _description_
+#     """
+
+
+#     file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly"
+#     if not os.path.exists(file_path):
+#         print(f"Missing file: {file_path}")
+
+#     filtered_data = parse_and_filter(
+#         station_code = ghcn_id,
+#         file_path=file_path,
+#         year=year,
+#         month=month,
+#         # observation_type = station_type,
+#         correction_type="table"
+#     )
+#     # print(filtered_data)
+
+#     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+#     # if filtered_df.is_empty():
+#     #     print(f"Skipping station {ghcn_id} due to no data.")
+#     #     noDataCount += 1
+
+#     # if all_filtered_dfs:
+#     #     existing_columns = all_filtered_dfs[0].columns
+#     #     current_columns = filtered_df.columns
+
+#     #     missing_columns = set(existing_columns) - set(current_columns)
+#     #     for col in missing_columns:
+#     #         filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+#     #     filtered_df = filtered_df.select(existing_columns)
+
+#     # all_filtered_dfs.append(filtered_df)
+#     # print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+
+#     json_data = filtered_df.to_dicts()
+
+    
+#     return json_data
+
+
+
+def generateSFThreshold(json_data):
+    """Snowfall Threshold. currently >=1 inch. others could be added.
+
+    Parameters
+    ----------
+    json_data : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    if (not json_data):
+        return {}
+    
+    # Determine the number of days in the month
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    snow_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # List Comprehesion
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+
+        if obs_type == "SNOW":
+            snow_data.setdefault(station_id, []).extend(daily_values)
+
+    # print(snow_data)
+    nod_results = {}
+    for station, data in snow_data.items():
+
+        nod_100 = 0     # Precip Number of Days >= 1.00 in
+                
+        for record in data:
+    #         print(record)
+            if record == -9999:
+                continue
+            # record*=0.1
+            # record= record * 0.1 * 0.03937
+            record = get_mm_to_in(record)
+            record = float(round_it(record, 1))
+            
+            if record >= 1.00:
+                nod_100+=1
+
+            # print(f"{record:<20} {str(float(record) >= .01):<8} {str(float(record) >= .10):<8} {str(float(record) >= 1.00):<8}")
+
+
+        nod_results[station] = {
+            "1.00 OR MORE": nod_100
+        }
+    # print(nod_results)
+    return nod_results
+
+
+def generateSDThreshold(json_data):
+        """Snowdepth Threshold. currently >=1 inch. others could be added.
+
+        Parameters
+        ----------
+        json_data : _type_
+            _description_
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        if (not json_data):
+            return {}
+        
+        # Determine the number of days in the month
+        year = json_data[0]["year"]
+        month = json_data[0]["month"]
+        num_days = monthrange(year, month)[1]
+        
+        snow_d_data = {}
+
+        # Collect Precip data
+        for row in json_data:
+            station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+            obs_type = row["observation_type"]
+
+            # List Comprehesion
+            daily_values = [
+                int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+                for i in range(1, num_days + 1)    
+            ]
+
+            if obs_type == "SNWD":
+                snow_d_data.setdefault(station_id, []).extend(daily_values)
+
+        # print(snow_d_data)
+        nod_results = {}
+        for station, data in snow_d_data.items():
+            # print(station)
+            # print(f"raw SNWD data: ", data)
+            nod_100 = 0     # Precip Number of Days >= 1.00 in
+                    
+            for record in data:
+                # print(record)
+                if record == -9999:
+                    continue
+                # record*=0.1
+                # record= record * 0.1 * 0.03937
+                record = get_mm_to_in(record)
+                # print(f"mm to inch() : {record}")
+                record = float(round_it(record, 1))
+                # print(f"rounded record : {record}")
+                
+                
+                if record >= 1.00:
+                    nod_100+=1
+
+                # print(f"{record:<20} {str(float(record) >= 1.00):<8}")
+
+
+            nod_results[station] = {
+                "1.00 OR MORE": nod_100
+            }
+        # print(nod_results)
+        return nod_results
 
 def generateMonthlyPub():
     month = 2
     year = 2023
     # target_ghcn_id = "USC00049026"
+
+
+
+
+
+
+
+    # # data = generateSFThresholdInput('USC00040820', 2, 2023)
+    # data = generateSFThresholdInput('USC00040931', 2, 2023)
+    # print(data)
+
+    # # # ########################################
+    # # #  Read the JSON file for Testing
+
+    # # json_data = None
+
+    # # with open("combined_data_2_2023.json") as f:
+    # #     json_data = json.load(f)
+    # #     # print(d)
+
+    # # # #########################################
+
+    # result = generateSFThreshold(data)
+    # print(result)
+    # sd_result = generateSDThreshold(data)
+    # print(sd_result)
+
+    
+    # # FOR TESTING
+    # return
 
     try:        
         stations = QuerySoM("som")
@@ -2779,7 +3006,7 @@ def generateMonthlyPub():
         with open("SnowAndSnwdTable.json", "w") as f:
             json.dump(SnowAndSnwdTable, f, indent=2)
 
-
+        
 #############################################
 ######## DAILY SOIL TEMPERATURES ############
 #############################################

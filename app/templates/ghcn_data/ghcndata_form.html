@@ -343,16 +343,17 @@
             $(".ghcnd-calc-pcn-gt10").text(data["NOD Pcn"] && data["NOD Pcn"][">.10"] !== null ? data["NOD Pcn"][">.10"] : "N/A");
             $(".ghcnd-calc-pcn-gt100").text(data["NOD Pcn"] && data["NOD Pcn"][">1"] !== null ? data["NOD Pcn"][">1"] : "N/A");
 
-            // Number of Days with Snowfall >= one inch
-            $(".ghcnd-calc-sf-gt100").text(data["SF>1="] !== null ? data["SF>1="] : "N/A");
+            
 
             // Number of Days Temperature Thresholds
             $(".ghcnd-calc-max-temp-gt90").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT>=90"] !== null ? data["NOD Tmp"]["MxT>=90"] : "N/A");
             $(".ghcnd-calc-max-temp-lt32").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT<=32"] !== null ? data["NOD Tmp"]["MxT<=32"] : "N/A");
             $(".ghcnd-calc-min-temp-lt0").text(data["NOD Tmp"] && data["NOD Tmp"]["MnT<=0"] !== null ? data["NOD Tmp"]["MnT<=0"] : "N/A");
-
-            // Number of Days with Snow Depth >= (one inch???) - based on your comment, assuming this maps to "SD>="
-            $(".ghcnd-calc-snow-depth-gt100").text(data["SD>="] !== null ? data["SD>="] : "N/A");
+            
+            // Number of Days with Snowfall >= one inch
+            $(".ghcnd-calc-sf-gt100").text(data["SF>=1"] !== null ? data["SF>=1"] : "N/A");
+            // Number of Days with Snow Depth >= one inch
+            $(".ghcnd-calc-snow-depth-gt100").text(data["SD>=1"] !== null ? data["SD>=1"] : "N/A");
 
         }
 
