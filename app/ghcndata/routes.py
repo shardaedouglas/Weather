@@ -552,11 +552,11 @@ def  get_station_calc_for_GHCND():
         "AvTmp" : station_avgs.get("Average"),
         "MaxTp" : {
             "MaxTp": max_temp.get('value'),
-            "Day": max_temp.get('date')
+            "Day": max_temp.get('date').split('-')[2]
         },
         "MinTp" : {
             "MinTp": min_temp.get('value'),
-            "Day": min_temp.get('date')
+            "Day": min_temp.get('date').split('-')[2]
         },
         "Max24Hr" : {
             "Max24Hr": max_24hr_prcp.get('value'),

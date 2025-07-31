@@ -114,7 +114,7 @@ line-height: 4ex;
     border-radius: 5px;
     color: #292929;
 }
-/* ------------------------ Data Displayer Pages -----------------*/
+/* ------------------------ Data Display Pages -----------------*/
 
 /* Monthly Correction Table */
 #monthly-form-table {
@@ -158,6 +158,14 @@ body {
 Gives a border between the columns of the table. */
 .ghcn-table-cell {
     border-right: solid 2px grey;
+}
+
+.ghcnd-calc-table .col {
+    font-weight: bold;
+}
+
+.ghcnd-calc-table .col span {
+    font-weight: normal;
 }
 
 
