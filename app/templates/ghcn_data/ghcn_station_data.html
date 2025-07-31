@@ -151,20 +151,22 @@
     <div class="row">
         <div class="col">
             Change Yr:
-            <select class="form-select" >
+            <select class="form-select" id="year-selector">
                 <option selected>--Select--</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
             </select>
         </div>
         <div class="col">
             Display: 
-            <select class="form-select">
-                <option selected>--Select--</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
+            <select class="form-select" id="display-selector">
+                <option selected value="1">--Select--</option>
+                <option value="1">Core Elements</option>
+                <option value="2">Temp Elements</option>
+                <option value="3">Precip Elements</option>
+                <option value="4">Evap/Pan Temp/Wind</option>
+                <option value="5">Sunshine</option>
+                <option value="6">Soils</option>
+                <option value="7">Multi Day</option>
+                <option value="8">ASOS Winds</option>
             </select>
         </div>
         
@@ -188,16 +190,16 @@
         </div>
         <div class="col">
             Units:
-            <select class="form-select">
-                <option selected>--Select--</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
+            <select class="form-select" id="unit-selector">
+                <option value="imperial" selected>--Select--</option>
+                <option value="imperial">U.S. (Imperial)</option>
+                <option value="metric">Metric</option>
+                <option value="raw">Raw</option>
             </select>
         </div>
         <div class="row justify-content-center" id="button-row">
             <div class="col-sm-3">
-                <button type="submit" class="btn btn-success">Save Data</button>
+                <button type="button" id="save-button" class="btn btn-success">Save Data</button>
             </div>
             <div class="col-sm-3">
                 <button type="submit" class="btn btn-primary">Show MS Data</button>

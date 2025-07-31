@@ -1883,7 +1883,6 @@ def build_combined_df(station_rows, tobs_lookup, month, year):
     combined_df = pl.concat(all_filtered_dfs, how="vertical")
     return combined_df
 
-
 def get_mm_to_in(mm: float) -> float:
     """Convert millimeters to inches."""
     return mm * 0.03937 # 1 inch = 25.4 mm
@@ -2828,37 +2827,8 @@ def generateMonthlyPub():
     year = 2023
     # target_ghcn_id = "USC00049026"
 
+    try:
 
-
-
-
-
-
-    # # data = generateSFThresholdInput('USC00040820', 2, 2023)
-    # data = generateSFThresholdInput('USC00040931', 2, 2023)
-    # print(data)
-
-    # # # ########################################
-    # # #  Read the JSON file for Testing
-
-    # # json_data = None
-
-    # # with open("combined_data_2_2023.json") as f:
-    # #     json_data = json.load(f)
-    # #     # print(d)
-
-    # # # #########################################
-
-    # result = generateSFThreshold(data)
-    # print(result)
-    # sd_result = generateSDThreshold(data)
-    # print(sd_result)
-
-    
-    # # FOR TESTING
-    # return
-
-    try:        
         stations = QuerySoM("som")
         print("Station list retrieved.", stations)
 

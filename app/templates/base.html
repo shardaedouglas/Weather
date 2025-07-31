@@ -36,7 +36,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
 
-
+        {% if show_navbar != false %}
         <nav class="navbar navbar-expand-lg my-5" id="nav-bar">
             <div class="container-fluid">
                 <img src="{{ url_for('static', filename='images/noaa_banner.png') }}" alt="NOAA Banner" width="20%" height="20%" onclick="window.location.href = '{{ url_for ("corrections.index")}}' ">  
@@ -97,6 +97,7 @@
               </div>
             </div>
           </nav>
+          {% endif %}
        {% block content %}{% endblock content %}
 
     
@@ -212,6 +213,57 @@
                             }
                         });
                     }
+            
+            /**
+             * Displays a confirmation page after corrections have been successfully submitted.
+             *
+             * This function presents a "Corrections have been submitted successfully" page to the user.
+             * It provides options for the user to submit another correction of the same type or to
+             * select a different type of correction.
+             *
+             * @param {string} type - The type of correction that was submitted (e.g., 'daily', 'monthly', 'ranged', 'hourly').
+             */
+            function showSubmissionConfirmation(type) {
+
+                $("#form-daily").hide(); 
+                $("#form-hourly").hide(); 
+                $("#form-monthly").hide(); 
+                $("#form-range").hide(); 
+                
+                $(".correction-type-text-target").text(type);
+                
+                var element_name = "submitted-" + type + "-link";
+                //Hide that element
+
+                var link = "";
+                if (type == "daily") {
+                    link = '{{ url_for('corrections.daily_corrections') }}';
+                    $("#submitted-daily-link").hide();
+                    
+                    
+                } else if (type == "monthly") {
+                    link = '{{ url_for('corrections.monthly_corrections') }}';
+                    $("#submitted-monthly-link").hide();
+                } else if (type == "ranged") {
+                    link = '{{ url_for('corrections.range_corrections') }}';
+                    $("#submitted-ranged-link").hide();
+                } else if (type == "hourly") {
+                    link = '{{ url_for('corrections.hourly_corrections') }}';
+                    $("#submitted-hourly-link").hide();
+                }
+
+                console.log(link);
+
+                $("#submit-another-correction").click(function() {
+                    window.location.href = link;
+                });
+
+
+
+                $("#submission-element").show(); 
+
+
+            }
             
         </script>
     </body>

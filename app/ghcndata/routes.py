@@ -1,11 +1,12 @@
 from app.ghcndata import ghcndata_bp
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, send_file
 from app.extensions import mail #Move to utilities
 from flask_mail import Message #Move to utilities
 from app.ghcndata.forms import GhcnDataForm, GhcnDataHourlyForm
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, lowestRecordedTemp, getLowestTemperatureExtreme, getTemperatureTable, calculate_station_avg
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip, generateSDThreshold, generateSFThreshold 
+from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
 
 from datetime import datetime
 import os
@@ -13,6 +14,7 @@ import re
 import json
 import polars as pl
 import traceback
+import csv
 
 
 # Route to Render GHCN Station Page
@@ -24,14 +26,32 @@ def view_ghcn_data():
     return render_template('/ghcn_data/ghcndata_form.html', ghcnForm=form)
 
 
-# Route to Render Station Metadata Page
+
+
+    # station_data = {
+    #     'WMO ID': DB - WMO-ID,
+    #     'State': DB - STATE_PROV,
+    #     'Country': DB - FIPS_COUNTRY_NAME,
+    #     # 'Longitude': File,
+    #     # 'Latitude': File,
+    #     # 'GSN Flag': File,
+    #     # 'HCN Flag': File,
+    #     'Station': DB - NAME_PRINCIPAL,
+    #     'WBAN ID': DB - WBAN_ID,
+    #     'FAA ID': DB - FAA ID,
+    #     'Division (Num-Name)': DB - NWS_CLIM_DIV + " " + NWS_CLIM_DIV_NAME,
+    #     'County': DB - COUNTY,
+    #     'NWS Region': DB - NWS_REGION,
+    #     'NWS WFO': DB - NWS_WFO,
+    #     'NWSLI ID': DB - NWSLI_ID,
+    #     'Platform': DB - PLATFORM,
+    #     # 'Elevation': File,
+    #     'Time Offset': DB - UTC_OFFSET,
+    #     #'Lat/Lon': File
+    # }
+
 @ghcndata_bp.route('/station_metadata')
 def view_ghcn_metadata():
-    
-    ghcn_id = request.args.get('ghcn_id')  # Retrieves 'ghcn_id' from the URL query params
-    
-    station_metadata_file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt' # I THINK THIS IS HARD CODED IN THE PARSER STILL
-    
     station_data = {
         'GHCN ID': None,
         'WMO ID': None,
@@ -40,48 +60,75 @@ def view_ghcn_metadata():
         'Longitude': None,
         'Latitude': None,
         'GSN Flag': None,
-        'HCN Flag': None
+        'HCN Flag': None,
+        'Station': None,
+        'WBAN ID': None,
+        'FAA ID': None,
+        'Division': None,
+        'County': None,
+        'NWS Region': None,
+        'NWS WFO': None,
+        'NWSLI ID': None,
+        'Platform': None,
+        'Elevation': None,
+        'Time Offset': None,
+        'Lat/Lon': None
     }
-    
- # Open the file and read lines
+
+    ghcn_id = request.args.get('ghcn_id')
+    print("GHCN ID:", ghcn_id)
+
+    metadataQuery = QuerySoM("meta")
+    print(metadataQuery)
+    for row in metadataQuery:
+        if row[0] == ghcn_id[-6:]:
+            print("MATCHED ROW:", row)
+            station_data.update({
+                'WMO ID': row[9],
+                'State': row[3],
+                'Country': row[6].title(),
+                'Station': row[1],
+                'WBAN ID': row[17],
+                'FAA ID': row[18],                 
+                'Division': row[4] + "-" + row[5],
+                'County': row[7],
+                'NWS Region': row[8],
+                'NWS WFO': row[15],
+                'NWSLI ID': row[19],
+                'Platform': row[16],
+                'Time Offset': row[14],
+            })
+            break
+
+
+
+    # Read from ghcnd-stations.txt
+    station_metadata_file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
     with open(station_metadata_file_path, 'r') as file:
         for line in file:
-            # Check if the line contains the target GHCN ID
             if ghcn_id in line:
-                # Split the line into components
+                print("line", line)
                 fields = line.split()
-                
-                # GHCN ID is the first part of the line
                 station_data['GHCN ID'] = fields[0]
-                
-                # Country is derived from the first two characters of GHCN ID
-                station_data['Country'] = station_data['GHCN ID'][:2]
-                
-                # Latitude and Longitude are the next two values
                 station_data['Latitude'] = float(fields[1])
                 station_data['Longitude'] = float(fields[2])
+                station_data['Elevation'] = round(float(fields[3]) * 3.28084)
                 
-                # State is present only for US/Canadian stations and is the fourth value for those stations
-                if len(fields) > 4 and len(fields[4]) == 2:  # Checks if state code is present
-                    station_data['State'] = fields[4]
-                
-                # WMO ID, GSN Flag, and HCN Flag can be found at the end of the line
-                if len(fields) > 5:
-                    # Check if there's a WMO ID (numeric and 5 digits)
-                    if len(fields[-1]) == 5 and fields[-1].isdigit():
-                        station_data['WMO ID'] = fields[-1]
-                        fields.pop()  # Remove the WMO ID from the list of fields
-                
-                # Look for the GSN and HCN flags in the remaining parts
+                if len(fields) > 4 and len(fields[4]) == 2:
+                    station_data['State'] = fields[4]    
                 if 'GSN' in fields:
                     station_data['GSN Flag'] = 'GSN'
                 if 'HCN' in fields or 'CRN' in fields:
                     station_data['HCN Flag'] = 'HCN' if 'HCN' in fields else 'CRN'
-                
-                return render_template('/ghcn_data/station_metadata.html', station_data=station_data)
+                break
 
-    print("GHCN ID not found.")    
-    return render_template('/ghcn_data/station_metadata.html', station_data=None)
+    if station_data['Latitude'] is not None and station_data['Longitude'] is not None:
+        station_data['Lat/Lon'] = f"{station_data['Latitude']:.4f}, {station_data['Longitude']:.4f}"
+
+    print(station_data)
+
+
+    return render_template('ghcn_data/station_metadata.html', station_data=station_data, show_navbar=False)
 
 
 
@@ -97,6 +144,11 @@ def send_email():
     return "Email sent!"    
 
 
+
+#########################################################################################
+################  UNIT CONVERSIONS   ####################################################  
+#########################################################################################
+
 def c_tenths_to_f(val: str) -> str:
     try:
         ivalue = int(val)
@@ -104,7 +156,7 @@ def c_tenths_to_f(val: str) -> str:
             return val
         celsius = ivalue / 10
         fahrenheit = (celsius * 9/5) + 32
-        return str(round(fahrenheit, 1))  # You can change to `0` if you want whole degrees
+        return str(round(fahrenheit))  # You can change to `0` if you want whole degrees
     except:
         return val
     
@@ -154,8 +206,94 @@ def km_to_miles(val: str) -> str:
     if val == "-9999":
         return val
     return f"{round(float(val) * 0.621371, 2):.2f}"
+
+# def raw_tenths_c_to_c(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # °C
+#     except:
+#         return val
+
+# def raw_tenths_mm_to_mm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # mm
+#     except:
+#         return val
+
+# def raw_mm_to_mm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # mm
+#     except:
+#         return val
+
+# def raw_wind_tenths_to_ms(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue / 10:.1f}"  # m/s
+#     except:
+#         return val
+
+# def raw_cm_to_cm(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # cm
+#     except:
+#         return val
+
+# def raw_km_to_km(val: str) -> str:
+#     try:
+#         ivalue = int(val)
+#         if ivalue == -9999:
+#             return val
+#         return f"{ivalue:.1f}"  # km
+#     except:
+#         return val
     
+def raw_to_metric_simple(val: str) -> str:
+    try:
+        ivalue = int(val)
+        if ivalue == -9999:
+            return val
+        return f"{ivalue / 10:.1f}"
+    except:
+        return val
+
+
+
+################################################################################################################    
+#################################################################################################################
+
+
+def extract_years_from_dly(file_path: str) -> list[int]:
+    """
+    Parses a .dly file and returns a sorted list of unique 4-digit years present in the file.
+    """
+    years = set()
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                if len(line) >= 17:
+                    year = line[11:15]
+                    if year.isdigit():
+                        years.add(int(year))
+    except Exception as e:
+        print(f"Error reading years from {file_path}: {e}")
     
+    return sorted(years, reverse=True)
+    
+ 
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
 def get_data_for_GHCN_table():
     try:
@@ -167,6 +305,8 @@ def get_data_for_GHCN_table():
         # state = request.form.get('state')
         station_type = request.form.get('station_type')
         correction_date = request.form.get('date')
+        unit_mode = request.form.get('unit_mode')
+        display_group = request.form.get('display_group')
         
         if correction_date:
             correction_year, correction_month, correction_day = correction_date.split('-')
@@ -204,6 +344,20 @@ def get_data_for_GHCN_table():
         
         data = JSONformattedData.get_json()  # this gives us the dict
 
+        all_keys = {
+            "TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD",
+            "WT01", "WT02", "WT03", "WT04", "WT05",
+            "SN01", "SN02", "SX01", "SX02",
+            "TAVG", "AVG", "DFN", "HDD", "CDD",
+            "MDPR", "DAPR", "MDSF", "DASF",
+            "AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF",
+            "TSUN", "PSUN",
+            "MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM",
+            "WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "AWND",
+            "PKWT", "PKSP", "PKSD", "MXGS", "MXSD", "MXSP", "MXSW"
+        }
+        
+        
         temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
         tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
         mm_keys = {"SNOW", "SNWD", "MDSF"}
@@ -211,31 +365,92 @@ def get_data_for_GHCN_table():
         cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
         km_keys = {"MDWM", "WDMV"}
         
-        for day in data:
-            for key in data[day]:
-                if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
-                    data[day][key] = c_tenths_to_f(data[day][key])
-                elif key in tenths_mm_keys:
-                    data[day][key] = tenths_mm_to_inches(data[day][key])
-                elif key in mm_keys:
-                    data[day][key] = mm_to_inches(data[day][key])
-                elif key in wind_keys:
-                    data[day][key] = wind_tenths_to_mph(data[day][key])
-                elif key in cm_keys:
-                    data[day][key] = cm_to_inches(data[day][key])
-                elif key in km_keys:
-                    data[day][key] = km_to_miles(data[day][key])
+        ELEMENT_GROUPS = {
+            "1": ["TMAX", "TMIN", "TOBS", "PRCP", "SNOW", "SNWD"],  # Core base keys, WTXX dynamically added below   
+            "2": ["TMAX", "TMIN", "TOBS", "AVG", "DFN", "HDD", "CDD", "TAVG"],  # Temp Elements
+            "3": ["PRCP", "MDPR", "DAPR", "SNOW", "MDSF", "DASF", "SNWD"],  # Precipitation Elements
+            "4": ["AVGTMX", "AVGTMN", "AVMXPN", "AVMNPN", "EVAP", "TWSF", "TOBS", "WDMV", "WESD"],  # Other: Avg Temps, Pan Temp, Evaporation, Wind /////  TWSF? TOBS WDMV WESD needed
+            "5": ["TSUN", "PSUN"], # Sunshine
+            "6": set(), # soils, dynamically added below
+            "7": ["MDTX", "DATX", "MDTN", "DATN", "MDEV", "DAEV", "MDWM", "DAWM"], # Multi Day
+            "8": ["AWND", "WSF5", "WSF1", "WSF2", "WSFG", "WSFM", "WDF2", "WDF1", "WDF5", "WDFM", "FMTM"] # ASOS Winds, WTXX dynamically added below //// Needs wdf2?  wd values?
+            
+
+
+
+        }
+        
+        wtxx_keys = sorted([e for e in all_keys if re.match(r"WT\d{2}", e)])
+        ELEMENT_GROUPS["1"] = ELEMENT_GROUPS["1"] + wtxx_keys
+        
+        ELEMENT_GROUPS["6"] = sorted([e for e in all_keys if re.match(r"S[NX]\d{2}", e) and e not in {"SNOW", "SNWD"}])
+
+        # Add WTXX to group 8:
+        ELEMENT_GROUPS["8"].extend(wtxx_keys)
+
+        
+        if unit_mode == "imperial":  # Convert to U.S. (Imperial)
+            for day in data:
+                for key in data[day]:
+                    if key in temp_keys or re.match(r"SN\d{2}|SX\d{2}", key):
+                        data[day][key] = c_tenths_to_f(data[day][key])
+                    elif key in tenths_mm_keys:
+                        data[day][key] = tenths_mm_to_inches(data[day][key])
+                    elif key in mm_keys:
+                        data[day][key] = mm_to_inches(data[day][key])
+                    elif key in wind_keys:
+                        data[day][key] = wind_tenths_to_mph(data[day][key])
+                    elif key in cm_keys:
+                        data[day][key] = cm_to_inches(data[day][key])
+                    elif key in km_keys:
+                        data[day][key] = km_to_miles(data[day][key])
+
+        elif unit_mode == "metric":  # Convert raw to Metric
+             for day in data:
+                for key in data[day]:
+                    data[day][key] = raw_to_metric_simple(data[day][key])
+        else: #Raw mode — no conversion
+            pass 
+
+        if display_group and display_group in ELEMENT_GROUPS:
+            allowed_keys = list(ELEMENT_GROUPS[display_group])  # convert to list for order
+            for day, day_data in data.items():
+                # keep keys in allowed_keys order if present, always keep 'Day'
+                ordered_day_data = {}
+                if "Day" in day_data:
+                    ordered_day_data["Day"] = day_data["Day"]
+                for key in allowed_keys:
+                    if key in day_data:
+                        ordered_day_data[key] = day_data[key]
+                data[day] = ordered_day_data
 
         # Replace the original Response with new one containing converted values
         JSONformattedData = jsonify(data)
+        
         print("New JSON in ghcndata routes", JSONformattedData.get_data(as_text=True))
 
-        # Return
-        return JSONformattedData
-        # return jsonify({
-        #     "message": f"Correction processed successfully for GHCN ID: {ghcn_id}!",
-        #     "filtered_data": filtered_df
-        # }), 201
+        years = extract_years_from_dly(file_path)
+        print("YEARS!!!!!!!!!!!!!: ", years)
+        
+        ordered_keys = []
+        if display_group and display_group in ELEMENT_GROUPS:
+            # Convert to list with order, filter to keys actually in the data
+            allowed_keys = list(ELEMENT_GROUPS[display_group])
+            # Optional: filter to keys that exist in data at all
+            data_keys = set()
+            for day_data in data.values():
+                data_keys.update(day_data.keys())
+            ordered_keys = [k for k in allowed_keys if k in data_keys or k == "Day"]
+            print("ordered_keys", ordered_keys)
+        response = {
+            "data": data,
+            "years": years,
+            "ordered_keys": ordered_keys,
+        }
+
+        return jsonify(response)
+            
+            
         
     except Exception as e:
         print(f"Error in get_data_for_GHCN_table: {e}")
@@ -601,7 +816,6 @@ def test_monthlyPub():
 
     
     
-    
 @ghcndata_bp.route('/ghcn_hourly')
 def view_ghcn_hourly_data(): 
     ghcn_id = request.args.get('ghcn_id', '')
@@ -662,5 +876,10 @@ def format_as_json(filtered_df, return_response=True):
         return jsonify(formatted_data)
     else:
         return formatted_data  # Return raw dictionary
+    
+
+    
+
+
 
 
