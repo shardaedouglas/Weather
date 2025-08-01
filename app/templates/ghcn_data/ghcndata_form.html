@@ -366,9 +366,10 @@
                 if (selectedYear && selectedYear !== "--Select--") {
                     const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
                     const stationType = new URLSearchParams(window.location.search).get("station_type");
+                    const month = new URLSearchParams(window.location.search).get("date").substring(5,7);
                     
                     // Fake a correction_date using just year + dummy month/day
-                    const correctionDate = `${selectedYear}-01-01`;
+                    const correctionDate = `${selectedYear}-${month}-01`; 
 
                     $.ajax({
                         url: '/get_data_for_GHCN_table',
