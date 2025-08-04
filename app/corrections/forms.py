@@ -4,15 +4,23 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 
 
 #Options for multiple choice fields
-ELEMENTS = (
-    ("TMAX", "Max Temp" ),
-    ("TMIN", "Min Temp"),
-    ("TOBS", "TOBS"),
-    ("PRCP", "Precipitation"),
-    ("SNOW", "Snow"),
-    ("SNWD", "SnowD"),
-    ("WT**", "WT##cd "),
-)
+# ELEMENTS = (
+#     ("TMAX", "Max Temp" ),
+#     ("TMIN", "Min Temp"),
+#     ("TOBS", "TOBS"),
+#     ("PRCP", "Precipitation"),
+#     ("SNOW", "Snow"),
+#     ("SNWD", "SnowD"),
+#     ("WT**", "WT##cd "),
+# )
+#Station States
+with open('app/ghcndata/ghcnd-weather-elements.txt', 'r') as f:
+        ELEMENTS = [line.strip() for line in f]
+# STATES = [letter[:3] for letter in STATES]
+        # ELEMENTS = [(line[:4], line[5:]) for line in ELEMENTS] # Short Description
+        ELEMENTS = [(line[:4], line[:4]) for line in ELEMENTS] # CODE only
+
+
 ACTIONS = (
     ("1", "1A" ),
     ("2", "2A"),
