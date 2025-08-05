@@ -37,6 +37,14 @@
                 <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
                 {{daily_form.element(class_='form-select element-select')}}
             </div>
+            <!-- Sub selection for Element -->
+            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
+                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+            </div>
             <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
                 {{daily_form.action(class_='form-select action-select')}}
@@ -93,9 +101,14 @@
 
                 const loadingWheel = document.querySelector('#spinner');
                 loadingWheel.style.display = 'block';
-
+                
+                //Replace  ELEMENT subselection if relevant.
+                
                 var formData = $(this).serialize();
                 // console.log("FORMDATA: ", formData);
+                
+                
+                
                 const params = new URLSearchParams(formData);
                 // console.log("Params: ", params);
 
@@ -170,6 +183,38 @@
             ghcnIdInput.addEventListener('input', checkFields);
             dateInput.addEventListener('input', checkFields);
             elementSelect.addEventListener('change', checkFields);
+        });
+
+        // Showing sub elements for element selection
+        $("#element").on("change", function() {
+            switch ($("#element").val().toString()) {
+                case "SN*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SN").parent().removeClass("d-none");
+                break;
+                case "SX*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SX").parent().removeClass("d-none");
+                break;
+                case "WT**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WT").parent().removeClass("d-none");
+                break;
+                case "WV**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WV").parent().removeClass("d-none");
+                break;
+                
+
+                default:
+                    // console.log("Selected " + $("#element").val().toString() );
+                    // sub-element-select
+                    $("#sub-element-select").addClass("d-none");
+            }
         });
 
 

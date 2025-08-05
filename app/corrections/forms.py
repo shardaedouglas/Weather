@@ -13,12 +13,18 @@ from wtforms import StringField, BooleanField, SubmitField, DateField, SelectFie
 #     ("SNWD", "SnowD"),
 #     ("WT**", "WT##cd "),
 # )
-#Station States
-with open('app/ghcndata/ghcnd-weather-elements.txt', 'r') as f:
+
+# ELEMENTS
+with open('app/corrections/corr-weather-elements.txt', 'r') as f:
         ELEMENTS = [line.strip() for line in f]
-# STATES = [letter[:3] for letter in STATES]
         # ELEMENTS = [(line[:4], line[5:]) for line in ELEMENTS] # Short Description
         ELEMENTS = [(line[:4], line[:4]) for line in ELEMENTS] # CODE only
+
+# SUB ELEMENTS
+with open('app/corrections/corr-sub-weather-elements.txt', 'r') as f:
+        SUB_ELEMENTS = [line.strip() for line in f]
+        # ELEMENTS = [(line[:4], line[5:]) for line in ELEMENTS] # Short Description
+        SUB_ELEMENTS = [(line[:4], line[:4]) for line in SUB_ELEMENTS] # CODE only
 
 
 ACTIONS = (
@@ -53,6 +59,11 @@ class DailyCorrections(FlaskForm):
     e_value = StringField('E-Value')
     datzilla_number = StringField('Datzilla #')
     submit = SubmitField('Submit')
+    
+    sub_element_SN = SelectField('SubElement', choices=SUB_ELEMENTS[:63])
+    sub_element_SX = SelectField('SubElement', choices=SUB_ELEMENTS[63:126])
+    sub_element_WT = SelectField('SubElement', choices=SUB_ELEMENTS[126:147])
+    sub_element_WV = SelectField('SubElement', choices=SUB_ELEMENTS[147:])
 
 class MonthlyCorrections(FlaskForm):
     form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])

@@ -1,44 +1,3 @@
-PRCP Precipitation
-SNOW Snowfall
-SNWD Snow depth
-TMAX Maximum temperature
-TMIN Minimum temperature
-ACMC Average cloudiness midnight to midnight from ceilometer data
-ACMH Average cloudiness midnight to midnight from manual observations
-ACSC Average cloudiness sunrise to sunset from ceilometer data
-ACSH Average cloudiness sunrise to sunset from manual observations
-ADPT Average Dew Point Temperature for the day
-ASLP Average Sea Level Pressure for the day
-ASTP Average Station Level Pressure for the day
-AWBT Average Wet Bulb Temperature for the day
-AWDR Average daily wind direction
-AWND Average daily wind speed
-DAEV Number of days in multiday evaporation total
-DAPR Number of days in multiday precipitation total
-DASF Number of days in multiday snowfall total
-DATN Number of days in multiday minimum temperature
-DATX Number of days in multiday maximum temperature
-DAWM Number of days in multiday wind movement
-DWPR Number of days with non-zero precipitation in multiday total
-EVAP Evaporation of water from evaporation pan
-FMTM Time of fastest mile or 1-minute wind
-FRGB Base of frozen ground layer
-FRGT Top of frozen ground layer
-FRTH Thickness of frozen ground layer
-GAHT Difference between river and gauge height
-MDEV Multiday evaporation total
-MDPR Multiday precipitation total
-MDSF Multiday snowfall total
-MDTN Multiday minimum temperature
-MDTX Multiday maximum temperature
-MDWM Multiday wind movement
-MNPN Daily minimum temperature of water in an evaporation pan
-MXPN Daily maximum temperature of water in an evaporation pan
-PGTM Peak gust time
-PSUN Daily percent of possible sunshine
-RHAV Average relative humidity for the day
-RHMN Minimum relative humidity for the day
-RHMX Maximum relative humidity for the day
 SN01 Min soil temp, unknown cover, 5 cm depth
 SN02 Min soil temp, unknown cover, 10 cm depth
 SN03 Min soil temp, unknown cover, 20 cm depth
@@ -165,26 +124,6 @@ SX84 Max soil temp, bare muck cover, 50 cm depth
 SX85 Max soil temp, bare muck cover, 100 cm depth
 SX86 Max soil temp, bare muck cover, 150 cm depth
 SX87 Max soil temp, bare muck cover, 180 cm depth
-TAXN Average daily temperature computed as (TMAX+TMIN)/2.0
-TAVG Average daily temperature
-THIC Thickness of ice on water
-TOBS Temperature at the time of observation
-TSUN Daily total sunshine
-WDF1 Direction of fastest 1-minute wind
-WDF2 Direction of fastest 2-minute wind
-WDF5 Direction of fastest 5-second wind
-WDFG Direction of peak wind gust
-WDFI Direction of highest instantaneous wind
-WDFM Fastest mile wind direction
-WDMV 24-hour wind movement
-WESD Water equivalent of snow on the ground
-WESF Water equivalent of snowfall
-WSF1 Fastest 1-minute wind speed
-WSF2 Fastest 2-minute wind speed
-WSF5 Fastest 5-second wind speed
-WSFG Peak gust wind speed
-WSFI Highest instantaneous wind speed
-WSFM Fastest mile wind speed
 WT01 Weather Type - Fog, ice fog, or freezing fog
 WT02 Weather Type - Heavy fog or heavy freezing fog
 WT03 Weather Type - Thunder

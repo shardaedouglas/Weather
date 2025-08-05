@@ -15,64 +15,65 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
 
 @correction_bp.route('/')
+@correction_bp.route('/corrections')
 # @login_required
 def index():
     return render_template("landing_page.html")
 
-@correction_bp.route('/corrections')
-def corrections():
-    # Extract query parameters for default values
-    selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
-    ghcn_id = request.args.get('ghcn_id', '')
-    correction_date = request.args.get('date', '')
-    datzilla_number = request.args.get('datzilla_number', '')
-    element = request.args.get('element', '')
-    action = request.args.get('action', '')
-    o_value = request.args.get('o_value', '')
-    e_value = request.args.get('e_value', '')
-    begin_date = request.args.get('begin_date', '')
-    end_date = request.args.get('end_date', '')
+# @correction_bp.route('/corrections')
+# def corrections():            
+#     # Extract query parameters for default values
+#     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
+#     ghcn_id = request.args.get('ghcn_id', '')
+#     correction_date = request.args.get('date', '')
+#     datzilla_number = request.args.get('datzilla_number', '')
+#     element = request.args.get('element', '')
+#     action = request.args.get('action', '')
+#     o_value = request.args.get('o_value', '')
+#     e_value = request.args.get('e_value', '')
+#     begin_date = request.args.get('begin_date', '')
+#     end_date = request.args.get('end_date', '')
 
-    # Convert dates
-    if correction_date:
-        correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
-    if begin_date:
-        begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
-    if end_date:
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+#     # Convert dates
+#     if correction_date:
+#         correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
+#     if begin_date:
+#         begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+#     if end_date:
+#         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         
-    # Initialize forms with default data
-    daily_form = DailyCorrections(
-        ghcn_id=ghcn_id,
-        date=correction_date,  
-        datzilla_number=datzilla_number,
-        element=element,
-        action=action,
-        o_value=o_value,
-        e_value=e_value
-    )
+#     # Initialize forms with default data
+#     daily_form = DailyCorrections(
+#         ghcn_id=ghcn_id,
+#         date=correction_date,  
+#         datzilla_number=datzilla_number,
+#         element=element,
+#         action=action,
+#         o_value=o_value,
+#         e_value=e_value
+#     )
     
-    monthly_form = MonthlyCorrections(
-        ghcn_id=ghcn_id,
-        date=correction_date,  
-    )
+#     monthly_form = MonthlyCorrections(
+#         ghcn_id=ghcn_id,
+#         date=correction_date,  
+#     )
     
-    range_form = RangeCorrections(
-        ghcn_id=ghcn_id,
-        begin_date=begin_date,
-        end_date=end_date,
-        datzilla_number=datzilla_number,
-        element=element,
-        action=action
-    )
+#     range_form = RangeCorrections(
+#         ghcn_id=ghcn_id,
+#         begin_date=begin_date,
+#         end_date=end_date,
+#         datzilla_number=datzilla_number,
+#         element=element,
+#         action=action
+#     )
 
-    return render_template(
-        '/corrections/correction_form.html',
-        selected_form=selected_form,
-        daily_form=daily_form,
-        monthly_form=monthly_form,
-        range_form=range_form
-    )
+#     return render_template(
+#         '/corrections/correction_form.html',
+#         selected_form=selected_form,
+#         daily_form=daily_form,
+#         monthly_form=monthly_form,
+#         range_form=range_form
+#     )
        
 
 @correction_bp.route('/corrections/daily')
