@@ -99,17 +99,51 @@
             $("form").submit(function (event) {
                 event.preventDefault();
 
+                // Loading Wheel
                 const loadingWheel = document.querySelector('#spinner');
                 loadingWheel.style.display = 'block';
-                
-                //Replace  ELEMENT subselection if relevant.
-                
-                var formData = $(this).serialize();
+
+
+                var formData = $(this).serialize().split("&");
                 // console.log("FORMDATA: ", formData);
                 
-                
-                
-                const params = new URLSearchParams(formData);
+                // Get a reference to the form element
+                const form = $(this).get(0);
+                sub_element_str = "element=";
+
+                // Replace ELEMENT subselection if relevant.
+                switch (form.elements.element.value.toString()) {
+                    case "SN*#": {
+                        // Get the value from the sub-element
+                        const newValue = form.elements.sub_element_SN.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[3] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "SX*#": {
+                        const newValue = form.elements.sub_element_SX.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[3] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "WT**": {
+                        const newValue = form.elements.sub_element_WT.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[3] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "WV**": {
+                        const newValue = form.elements.sub_element_WV.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[3] = sub_element_str + newValue;
+                        break;
+                    }
+                    default:  
+                }
+
+                // Remove Sub Elements from form parameters
+                formData.splice(4,4);
+                const params = new URLSearchParams(formData.join("&"));
                 // console.log("Params: ", params);
 
 
