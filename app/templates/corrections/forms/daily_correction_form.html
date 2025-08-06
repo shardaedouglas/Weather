@@ -121,7 +121,7 @@
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
 
-            var formData = $("form").serialize();
+            formData = formatWeatherDataQuery($(this));
             // console.log("SUBMIT FORMDATA: ", formData);
             const params = new URLSearchParams(formData);
             // console.log("SUBMIT Params: ", params);
@@ -139,18 +139,50 @@
             const elementSelect = document.querySelector('select[name="element"]');
             const oValueInput = document.querySelector('[name="o_value"]');  // Correctly target O-Value input field
 
+           
+
             // Function to check if all fields have values
             function checkFields() {
                 if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
                     //console.log('GHCN ID:', ghcnIdInput.value);
                     //console.log('Date:', dateInput.value);
                     //console.log('Element:', elementSelect.value);
+
+                    // sub_element_str = "element=";
+                    final_element = ""
+
+                    // Replace ELEMENT subselection if relevant.
+                    console.log(elementSelect.value.toString());
+                    switch (elementSelect.value.toString()) {
+                        case "SN*#": {
+                            final_element = $("#sub_element_SN").val().toString();
+                            break;
+                        }
+                        case "SX*#": {
+                            final_element = $("#sub_element_SX").val().toString();
+                            break;
+                        }
+                        case "WT**": {
+                            final_element = $("#sub_element_WT").val().toString();
+                            break;
+                        }
+                        case "WV**": {
+                            final_element = $("#sub_element_WV").val().toString();
+                            break;
+                        }
+                        default: {
+                            final_element = elementSelect.value;
+                        }
+
+                    }
                 // Prepare the request data
                 const requestData = {
                     ghcn_id: ghcnIdInput.value,
                     correction_date: dateInput.value,
-                    element: elementSelect.value
+                    element: final_element
                 };
+
+                // console.log(requestData)
 
                 // Send the data via AJAX to the /get_o_value route
                 $.ajax({
@@ -179,6 +211,7 @@
             ghcnIdInput.addEventListener('input', checkFields);
             dateInput.addEventListener('input', checkFields);
             elementSelect.addEventListener('change', checkFields);
+            $(".sub-element-option").on('change', checkFields);
         });
 
         // Showing sub elements for element selection
@@ -213,60 +246,7 @@
             }
         });
 
-    /**
-     * Formats form data with weather sub-elements into a URL query string.
-     *
-     * This function processes form data containing "WEATHER ELEMENT" and "WEATHER SUBELEMENT"
-     * fields. It replaces the main `element` value with the selected sub-element value
-     * (e.g., 'WT**' becomes 'WT01') and removes the extraneous sub-element fields
-     * from the data before serializing it.
-     *
-     * @param {jQuery} formData - A jQuery object representing the form element, typically obtained
-     * from a form submission event handler (e.g., `$(this)`).
-     * @returns {string} A string of URL-encoded parameters ready for submission,
-     * such as `ghcn_id=USW00093991&date=2025-08-06&element=WT01&action=1`.
-     */
-    function formatWeatherDataQuery(formData) {
-        const form = formData.get(0);
-        var formData = formData.serialize().split("&");
-        // console.log("FORMDATA: ", formData);
-        sub_element_str = "element=";
 
-        // Replace ELEMENT subselection if relevant.
-        switch (form.elements.element.value.toString()) {
-            case "SN*#": {
-                // Get the value from the sub-element
-                const newValue = form.elements.sub_element_SN.value.toString();
-                // console.log("new value:", newValue)
-                formData[3] = sub_element_str + newValue;
-                break;
-            }
-            case "SX*#": {
-                const newValue = form.elements.sub_element_SX.value.toString();
-                // console.log("new value:", newValue)
-                formData[3] = sub_element_str + newValue;
-                break;
-            }
-            case "WT**": {
-                const newValue = form.elements.sub_element_WT.value.toString();
-                // console.log("new value:", newValue)
-                formData[3] = sub_element_str + newValue;
-                break;
-            }
-            case "WV**": {
-                const newValue = form.elements.sub_element_WV.value.toString();
-                // console.log("new value:", newValue)
-                formData[3] = sub_element_str + newValue;
-                break;
-            }
-            default:  
-        }
-
-        // Remove Sub Elements from form parameters
-        formData.splice(4,4);
-        console.log(formData);
-        return formData.join("&")
-    }
 
      //DAILY Comparison table
      function showDailyComparisonTable(filteredData) {
