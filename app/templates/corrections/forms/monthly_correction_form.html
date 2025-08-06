@@ -48,7 +48,7 @@
             
         </div>
     </div>
-    
+
     <div id="submission-element" style="display: none;">
         {% include "corrections/correction_submitted_element.html" %}
     </div>
@@ -64,24 +64,24 @@
                 var formData = $(this).serialize();
                 // Code to Process the monthly data.
                 // console.log(formData);
+                // console.log($(this));
+                // console.log($(this).get(0).elements.date.value);
                 // correctionFormHandler(formData, function (output) {
                 //     showMonthTable();
                 // })
-                showMonthTable();
+                showMonthTable($(this));
 
-            });
-
-            
+            })
 
         });
 
-        function showMonthTable() {
-            document.getElementById('input-monthly-table').style.display = "block";
+        function showMonthTable(form_object) {
+            const inputMonthlyTable = document.getElementById('input-monthly-table');
+            document.getElementById('ghcn-id-span').textContent = form_object.get(0).elements.ghcn_id.value;
+            document.getElementById('month-ghcn-date-mirror').value = form_object.get(0).elements.date.value;
+
+           inputMonthlyTable.style.display = "block";
          }
-
-         $('#submit-monthly-corr-btn').click(function() {
-            showSubmissionConfirmation("monthly");
-        });
     </script>
 
     {% endblock content %}
