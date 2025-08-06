@@ -37,8 +37,8 @@ WITH main_query AS (
     FROM  CTXT_MSHR_GHCND_ARCHIVE A, ctxt_phr_ARCHIVE b 
     WHERE A.nws_st_code = '04'  
     AND b.ELEMENT IN ('PRECIP')   
-    AND (A.begin_date, A.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/01/2023','mm/dd/yyyy')))    
-    AND (b.begin_date, b.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/01/2023','mm/dd/yyyy')))    
+    AND (A.begin_date, A.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy')))    
+    AND (b.begin_date, b.end_date) OVERLAPS (TO_DATE('02/01/2023','mm/dd/yyyy'),LAST_DAY(TO_DATE('02/28/2023','mm/dd/yyyy')))    
     AND A.coop_id=b.coop_id    
     AND b.published_flag = 'CD'   
     AND A.report_month = (SELECT MAX(report_month) FROM ctxt_mshr_ghcnd_archive)    

@@ -39,100 +39,113 @@
     </div>
     
     <!-- Secondary Data table -->
-    <div class="row border">
-
-        <div class=" col-md-4">
-            <div class="row">
+    <div class="container text-center">
+        <div class="row border ghcnd-calc-table">
+            <!-- Temperature Row -->
+            <div class="row p-2">
                 <div class="col">
-                    AvMax: [#]
-                </div>
-                <div class="col">
-                    AvMin: [#]
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    AvTmp: [#]
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    MaxTp: [#]
+                    AvMax:<br><span class="ghcnd-calc-av-max"></span>
                 </div>
                 <div class="col">
-                    Day: [#]
-                </div>  
-            </div>
-            <div class="row">
-                <div class="col">
-                    MinTp: [#]
+                    AvMin:<br><span class="ghcnd-calc-av-min"></span>
                 </div>
                 <div class="col">
-                    Day: [#]
-                </div> 
+                    AvTmp:<br><span class="ghcnd-calc-av-temp"></span>
+                </div>
+                <div class="w-100 d-block d-md-none"></div>
+                <div class="col">
+                    MaxTp:<br><span class="ghcnd-calc-max-temp"></span>
+                </div>
+                <div class="col">
+                    Day:<br><span class="ghcnd-calc-max-temp-date"></span>
+                </div>
+                <div class="col">
+                    MinTp:<br><span class="ghcnd-calc-min-temp"></span>
+                </div>
+                <div class="col">
+                    Day:<br><span class="ghcnd-calc-min-temp-date"></span>
+                </div>
+                <div class="w-100 d-block d-md-none"></div>
+                <div class="col">
+                    HDD<br><span class="ghcnd-calc-hdd">[#]</span>
+                </div>
+                <div class="col">
+                    CDD<br><span class="ghcnd-calc-cdd">[#]</span>
+                </div>
+                <div class="w-100 d-block"></div>
+                <div class="col pt-2">
+                    Number of Days TMP:
+                    <br>MaxT>=90: <span class="ghcnd-calc-max-temp-gt90">[#]</span>
+                    <br>MaxT<=32: <span class="ghcnd-calc-max-temp-lt32">[#]</span>
+                    <br>MinT<=0: <span class="ghcnd-calc-min-temp-lt0">[#]</span>
+                </div>
+                <!-- <div class="col">
+                    MaxT>=90:<br><span class="ghcnd-calc-max-temp-gt90">[#]</span>
+                </div>
+                <div class="col">
+                    MaxT<=32:<br><span class="ghcnd-calc-max-temp-lt32">[#]</span>
+                </div>
+                <div class="col">
+                    MinT<=0:<br><span class="ghcnd-calc-min-temp-lt0">[#]</span>
+                </div> -->
+    
             </div>
-        </div>
-
-
-        <div class="col-md">
-            <div class="row">
-                <div class="col-6 col-md">
-                    TotPcn [#]
-                </div>
-                <div class="col-6 col-md">
-                    Snow [#]
-                </div>
-                <div class="col-sm col-md">
-                    S Depth [#]
-                </div>
-                <div class="col-sm col-md">
-                    HDD [#]
-                </div>
-                <div class="col-sm col-md">
-                    CDD [#]
-                </div>
+            <div class="container px-3">
+                <hr class="">
             </div>
-            <div class="row">
-                <div class="col-sm-3">
-                    Max24Hr: [#]
+            <!-- Precipitation Row -->
+            <div class="row p-1">
+                <div class="col">
+                    TotPcn<br><span class="ghcnd-calc-totpcn">[#]</span>
                 </div>
-                <div class="col-sm-3">
-                    Day: [#]
+                <div class="col">
+                    Max24Hr:<br><span class="ghcnd-calc-max-24hr">[#]</span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md">
-                    Number Days With:
+                <div class="col">
+                    Day:<br><span class="ghcnd-calc-max-24hr-date">[#]</span>
                 </div>
-                <div class="col-md">
-                    Pcn >.01: [#]
+                <div class="w-100 d-block d-md-none"></div>
+                <div class="col">
+                    Snow<br><span class="ghcnd-calc-snow">[#]</span>
                 </div>
-                <div class="col-md">
-                    >.10: [#]
+                <div class="col">
+                    S Depth<br><span class="ghcnd-calc-snow-depth">[#]</span>
                 </div>
-                <div class="col-md">
-                    >1: [#]
+                <div class="col">
+                    SF>=1:<br><span class="ghcnd-calc-sf-gt100">[#]</span>
                 </div>
-                <div class="col-md">
-                    SF>1=: [#]
+                <div class="col">
+                    SD>=1:<br><span class="ghcnd-calc-snow-depth-gt100">[#]</span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md">
-                    MxT>=90: [#]
+                <div class="w-100 d-block"></div>
+                <div class="col pt-2">
+                    Number Days With PCN:
+                    <br>>.01: <span class="ghcnd-calc-pcn-gt01">[#]</span>
+                    <br>>.10: <span class="ghcnd-calc-pcn-gt10">[#]</span>
+                    <br>>1: <span class="ghcnd-calc-pcn-gt100">[#]</span>
                 </div>
-                <div class="col-md">
-                    MxT<=32: [#]
+                <!-- <div class="col">
+                    >.01:<br><span class="ghcnd-calc-pcn-gt01">[#]</span>
                 </div>
-                <div class="col-md">
-                    MnT<=0: [#]
+                <div class="col">
+                    >.10:<br><span class="ghcnd-calc-pcn-gt10">[#]</span>
                 </div>
-                <div class="col-md">
-                    SD>=: [#]
-                </div>
+                <div class="col">
+                    >1:<br><span class="ghcnd-calc-pcn-gt100">[#]</span>
+                </div> -->
+    
             </div>
         </div>
     </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     <!-- User Selection Menu -->
     <div class="row">

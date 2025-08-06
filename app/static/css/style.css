@@ -203,6 +203,14 @@ Gives a border between the columns of the table. */
     border-right: solid 2px grey;
 }
 
+.ghcnd-calc-table .col {
+    font-weight: bold;
+}
+
+.ghcnd-calc-table .col span {
+    font-weight: normal;
+}
+
 
 
 
