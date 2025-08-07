@@ -315,9 +315,18 @@
                 }
 
                 // Remove Sub Elements from form parameters
-                formData.splice(4,4);
                 console.log(formData);
-                return formData.join("&")
+                let index = formData.findIndex((element => element.indexOf("sub_element_SN=") != -1));
+                console.log(index);
+
+                // let index = formData.indexOf("world");
+                if (index !== -1) {
+                    formData.splice(index,4);
+                    console.log(formData);
+                    return formData.join("&")
+                }
+                // formData.splice(4,4);
+                
             }
             
         </script>
