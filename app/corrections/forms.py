@@ -99,4 +99,5 @@ class HourlyCorrections(FlaskForm):
     form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
     date = DateField('Date', validators=[InputRequired()])
+    # Reference corrections.routes.hourly_corrections for hourly element list
     element = SelectMultipleField('Element')
