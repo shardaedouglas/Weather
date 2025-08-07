@@ -44,6 +44,14 @@
                     {{range_form.element(class_='form-select element-select')}}
                 </div>
             </div>
+            <!-- Sub selection for Element -->
+            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default">Sub-Element</span>
+                <div class="col sub-element-option">{{range_form.sub_element_SN(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{range_form.sub_element_SX(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{range_form.sub_element_WT(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
+            </div>
             <div class="row g-3">
                 <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
@@ -52,7 +60,7 @@
             </div>
             <div class="row justify-content-center g-3" id="button-row">
                 <div class="col-sm">
-                    <button type="submit" class="btn button-dull"
+                    <button type="reset" class="btn button-dull"
                         style="width:100%;display:block;font-weight: bold;">Clear</button>
                 </div>
                 <div class="col-sm">
@@ -82,8 +90,9 @@
             const loadingWheel = document.querySelector('#spinner');
             loadingWheel.style.display = 'block';
 
-            var formData = $(this).serialize();
-            //console.log("formData: ", formData);
+            formData = formatWeatherDataQuery($(this));
+            // var formData = $(this).serialize();
+            console.log("formData: ", formData);
             
             
 
@@ -170,6 +179,38 @@
         // Display the table by making the section visible
         document.getElementById('ranged-form-table').style.display = "flex";
     }
+
+    // Showing sub elements for element selection
+    $("#element").on("change", function() {
+        switch ($("#element").val().toString()) {
+            case "SN*#":
+            $("#sub-element-select").removeClass("d-none");
+            $(".sub-element-option").addClass("d-none");
+            $("#sub_element_SN").parent().removeClass("d-none");
+            break;
+            case "SX*#":
+            $("#sub-element-select").removeClass("d-none");
+            $(".sub-element-option").addClass("d-none");
+            $("#sub_element_SX").parent().removeClass("d-none");
+            break;
+            case "WT**":
+            $("#sub-element-select").removeClass("d-none");
+            $(".sub-element-option").addClass("d-none");
+            $("#sub_element_WT").parent().removeClass("d-none");
+            break;
+            case "WV**":
+            $("#sub-element-select").removeClass("d-none");
+            $(".sub-element-option").addClass("d-none");
+            $("#sub_element_WV").parent().removeClass("d-none");
+            break;
+            
+
+            default:
+                // console.log("Selected " + $("#element").val().toString() );
+                // sub-element-select
+                $("#sub-element-select").addClass("d-none");
+        }
+    });
 </script>
 
 {% endblock content %}

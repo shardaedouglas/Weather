@@ -37,6 +37,15 @@
                 <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
                 {{daily_form.element(class_='form-select element-select')}}
             </div>
+            <!-- Sub selection for Element -->
+            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
+                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+            </div>
+            <div class="w-100 d-none d-md-block"></div>
             <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
                 {{daily_form.action(class_='form-select action-select')}}
@@ -91,11 +100,12 @@
             $("form").submit(function (event) {
                 event.preventDefault();
 
+                // Loading Wheel
                 const loadingWheel = document.querySelector('#spinner');
                 loadingWheel.style.display = 'block';
 
-                var formData = $(this).serialize();
-                // console.log("FORMDATA: ", formData);
+                formData = formatWeatherDataQuery($(this));
+
                 const params = new URLSearchParams(formData);
                 // console.log("Params: ", params);
 
@@ -112,7 +122,7 @@
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
 
-            var formData = $("form").serialize();
+            formData = formatWeatherDataQuery($("form"));
             // console.log("SUBMIT FORMDATA: ", formData);
             const params = new URLSearchParams(formData);
             // console.log("SUBMIT Params: ", params);
@@ -130,18 +140,50 @@
             const elementSelect = document.querySelector('select[name="element"]');
             const oValueInput = document.querySelector('[name="o_value"]');  // Correctly target O-Value input field
 
+           
+
             // Function to check if all fields have values
             function checkFields() {
                 if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
                     //console.log('GHCN ID:', ghcnIdInput.value);
                     //console.log('Date:', dateInput.value);
                     //console.log('Element:', elementSelect.value);
+
+                    // sub_element_str = "element=";
+                    final_element = ""
+
+                    // Replace ELEMENT subselection if relevant.
+                    console.log(elementSelect.value.toString());
+                    switch (elementSelect.value.toString()) {
+                        case "SN*#": {
+                            final_element = $("#sub_element_SN").val().toString();
+                            break;
+                        }
+                        case "SX*#": {
+                            final_element = $("#sub_element_SX").val().toString();
+                            break;
+                        }
+                        case "WT**": {
+                            final_element = $("#sub_element_WT").val().toString();
+                            break;
+                        }
+                        case "WV**": {
+                            final_element = $("#sub_element_WV").val().toString();
+                            break;
+                        }
+                        default: {
+                            final_element = elementSelect.value;
+                        }
+
+                    }
                 // Prepare the request data
                 const requestData = {
                     ghcn_id: ghcnIdInput.value,
                     correction_date: dateInput.value,
-                    element: elementSelect.value
+                    element: final_element
                 };
+
+                // console.log(requestData)
 
                 // Send the data via AJAX to the /get_o_value route
                 $.ajax({
@@ -170,7 +212,41 @@
             ghcnIdInput.addEventListener('input', checkFields);
             dateInput.addEventListener('input', checkFields);
             elementSelect.addEventListener('change', checkFields);
+            $(".sub-element-option").on('change', checkFields);
         });
+
+        // Showing sub elements for element selection
+        $("#element").on("change", function() {
+            switch ($("#element").val().toString()) {
+                case "SN*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SN").parent().removeClass("d-none");
+                break;
+                case "SX*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SX").parent().removeClass("d-none");
+                break;
+                case "WT**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WT").parent().removeClass("d-none");
+                break;
+                case "WV**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WV").parent().removeClass("d-none");
+                break;
+                
+
+                default:
+                    // console.log("Selected " + $("#element").val().toString() );
+                    // sub-element-select
+                    $("#sub-element-select").addClass("d-none");
+            }
+        });
+
 
 
      //DAILY Comparison table
