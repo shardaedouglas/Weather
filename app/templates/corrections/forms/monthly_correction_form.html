@@ -56,12 +56,18 @@
     <script>
         $(document).ready(function () {
             $("form").submit(function (event) {
-                /** This currently handles the "next" button of the first section. It should be transferred
-                 * to the submit button of the second section. 
-                 * Then it should handle processing the correction data.
+                /** 
+                 * This logic handles the "next" button of the first window.
+                 * This logic should be linked to the "submit" button of the second window.
+                 * After that it can handle processing the correction data. 
                 */
                 event.preventDefault();
-                var formData = $(this).serialize();
+                console.log($(this));
+                
+                // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
+                // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
+                // var formData = formatWeatherDataQuery($(this));
+                
                 // Code to Process the monthly data.
                 // console.log(formData);
                 // correctionFormHandler(formData, function (output) {
@@ -69,6 +75,38 @@
                 // })
                 showMonthTable();
 
+            });
+
+             // Showing sub elements for element selection
+            $("#element").on("change", function() {
+                switch ($("#element").val().toString()) {
+                    case "SN*#":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_SN").parent().removeClass("d-none");
+                    break;
+                    case "SX*#":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_SX").parent().removeClass("d-none");
+                    break;
+                    case "WT**":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_WT").parent().removeClass("d-none");
+                    break;
+                    case "WV**":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_WV").parent().removeClass("d-none");
+                    break;
+                    
+
+                    default:
+                        // console.log("Selected " + $("#element").val().toString() );
+                        // sub-element-select
+                        $("#sub-element-select").addClass("d-none");
+                }
             });
 
             
@@ -80,6 +118,8 @@
          }
 
          $('#submit-monthly-corr-btn').click(function() {
+
+
             showSubmissionConfirmation("monthly");
         });
     </script>
