@@ -6,7 +6,7 @@
     
     <div class="row">
         <div class="row justify-content-center">
-            <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: ###### </h6>
+            <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: <span id="ghcn-id-span">######</span> </h6>
         </div>
         <div class="col">
             <div class="row" style="display:flex; flex-direction:column">
@@ -32,7 +32,7 @@
                 </div>
                 
                 <div class="col">
-                    Date:  {{monthly_form.date(class_='form-control date-picker')}}
+                    Date:  {{monthly_form.date(class_='form-control date-picker', id='month-ghcn-date-mirror')}}
                     <!--<div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="yyyymm">
                       </div>-->
@@ -101,7 +101,7 @@
                 </div>
                 <div class="row justify-content-center" id="button-row">
                     <div class="col-sm-3">
-                        <button type="submit" class="btn btn-success" id="submit-monthly-corr-btn">Submit</button>
+                        <button type="submit" class="btn btn-success">Submit</button>
                     </div>
                     <div class="col-sm-3">
                         <button type="button" class="btn btn-primary">Total</button>

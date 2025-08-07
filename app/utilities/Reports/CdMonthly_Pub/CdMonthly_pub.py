@@ -1,5 +1,4 @@
-import os
-import traceback
+
 
 # def get_state_for_GHCN_table_df():
 #     try:
@@ -129,6 +128,9 @@ from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrec
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from typing import List, Dict, Any
 
+import os
+import traceback
+
 def makeGraph(df):
     """
     Placeholder function to process the DataFrame for graphing.
@@ -175,6 +177,46 @@ def add_station_names(data_dict, station_file_path='/data/ops/ghcnd/data/ghcnd-s
 
 
 def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
+    """
+    Finds the highest temperature extreme recorded across all stations in a DataFrame.
+
+    Returns the station and the date associated with the absolute highest temperature
+    observed within the provided dataset. This identifies the single highest
+    temperature among all stations included in the parameter,
+    whether it's for one station or many.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        A Polars DataFrame containing temperature data. This DataFrame is
+        expected to include relevant columns for temperature values, dates,
+        and station identifiers.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+        - value : int
+            The highest temperature recorded.
+        - day : str
+            The date (as a string) when the highest temperature occurred.
+        - station : str
+            The GHCN_ID of the station where the highest temperature was recorded.
+
+    Notes
+    -----
+    This function specifically returns the single highest temperature extreme
+    found across the *entire* dataset provided, not the highest temperature
+    at individual stations.
+
+    Examples
+    --------
+
+    Example Output: 
+    
+    {'value': 70, 'day': '19', 'station': 'USC00040212'}
+
+    """
     # Filter only TMAX records (maximum temperature)
     tmax_df = df.filter(pl.col("observation_type") == "TMAX")
     if tmax_df.is_empty():
@@ -222,6 +264,45 @@ def getHighestTemperatureExtreme(df: pl.DataFrame) -> dict:
 
 
 def getLowestTemperatureExtreme(df: pl.DataFrame) -> dict:
+    """
+    Finds the lowest temperature extreme recorded across all stations in a DataFrame.
+
+    Returns the station and the date associated with the absolute lowest temperature
+    observed within the provided dataset. This identifies the single lowest
+    temperature among all stations included in the parameter,
+    whether it's for one station or many.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        A Polars DataFrame containing temperature data. This DataFrame is
+        expected to include relevant columns for temperature values, dates,
+        and station identifiers.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+        - value : int
+            The lowest temperature recorded.
+        - day : str
+            The date (as a string) when the lowest temperature occurred.
+        - station : str
+            The identifier of the station where the lowest temperature was recorded.
+
+    Notes
+    -----
+    This function specifically returns the single lowest temperature extreme
+    found across the *entire* dataset provided, not the lowest temperature
+    at individual stations.
+
+    Examples
+    --------
+
+    Example Output: 
+    
+    {'value': 70, 'day': '19', 'station': 'USC00040212'}
+    """
     # Filter only TMIN records (minimum temperature)
     tmin_df = df.filter(pl.col("observation_type") == "TMIN")
     if tmin_df.is_empty():
@@ -361,6 +442,19 @@ def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     
     
 def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        {'value': 0.98, 'day': '22', 'station': 'USC00040820'}
+    """
     # Filter for daily precipitation observations only
     prcp_df = df.filter(pl.col("observation_type") == "PRCP")
     if prcp_df.is_empty():
@@ -496,7 +590,29 @@ def dataframe_to_json(df: pl.DataFrame) -> str:
   
   
   
-def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
+# def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
+def calculate_station_avg(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+
+    Examples
+    --------
+
+    Example Output
+
+    {'USC00040212': {'Average Maximum': 53.2, 'Average Minimum': 36.1, '>=90_MAX': 0, '<=32_MAX': 0, '<=32_MIN': 8, '<=0_MIN': 0, 'Average': 44.7}}
+
+
+    """
     
     df = df.with_columns([
         (pl.col("country_code") + pl.col("network_code") + pl.col("station_code")).alias("station_code")
@@ -549,6 +665,8 @@ def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
     result = result.fill_null(0)
     result = result.with_columns(((pl.col("tmax_avg") + pl.col("tmin_avg")) / 2).alias("overall_avg"))
 
+    print(result)
+
     def label_avg(value, valid_days):
         missing = num_days - valid_days
         if missing >= 10:
@@ -582,6 +700,20 @@ def calculate_station_avg(df: pl.DataFrame) -> pl.DataFrame:
     
     
 def highestRecordedTemp(df: pl.DataFrame) -> dict:
+    """Returns highest recorded temperature for station(s).
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        { str(GHCN_ID): {'value': int, 'date': 'YYYY-MM-DD'}}
+    """
+
+
     # Filter only TMAX observation type
     # print(df.select("observation_type").unique())
     
@@ -636,6 +768,21 @@ def highestRecordedTemp(df: pl.DataFrame) -> dict:
 
 
 def lowestRecordedTemp(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+
+
+        {'USC00040212': {'value': 70, 'date': '2023-02-19'}}
+    """
     # Filter only TMIN observation type
     # print(df.select("observation_type").unique())
     
@@ -696,6 +843,18 @@ def lowestRecordedTemp(df: pl.DataFrame) -> dict:
     
 
 def getMonthlyHDD(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        {'USC00040820': {'total_HDD': 1212}}
+    """
     if df.is_empty():
         return {}
 
@@ -852,6 +1011,19 @@ def getMonthlyTemperatureThresholdCounts(df: pl.DataFrame) -> dict:
 
 
 def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        {'USC00040820': 'M 2.8'}
+    """
     if df.is_empty():
         return {}
 
@@ -921,6 +1093,20 @@ def getTotalSnowAndIcePellets(df: pl.DataFrame) -> dict:
 
 
 def getMaxDepthOnGround(df: pl.DataFrame) -> dict:
+    """_summary_
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+
+    Returns
+    -------
+    dict
+        _description_
+        key: (value, date)
+        {'USC00040820': (22, '02')}
+    """
     if df.is_empty():
         return {}
 
@@ -1702,30 +1888,42 @@ def get_mm_to_in(mm: float) -> float:
     return mm * 0.03937 # 1 inch = 25.4 mm
 
 
-def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
-    """ Generates Daily Precipitation and Total Precipitation for a state.
 
-    Parameters
-    ----------
-    month : int, optional
-        by default 9
-    year : int, optional
-        by default 2020
+def generate_daily_precip_input(month:int = 2, year:int = 2023) -> dict:
+    """_summary_
 
     Returns
-    ---------
-    daily_precip_table_rec : dict[dict]
-        Records with their GHCN-ID as the key. Contains total_pcn, daily_pcn
-
-    Notes
-    ---------
-
-    This should eventually be updated to recieve the month year (and possibly state) codes so they aren't hardcoded. 
-    Change to take json_data as input? 
-
+    -------
+    dict
+        A dictionary containing the parsed weather observation data and a list of stations.
+        The dictionary has the following keys:
+        - json_data : list of dict
+            A list where each dictionary represents a month's worth of daily
+            observational data for a specific station and observation type.
+            Each inner dictionary contains the following keys:
+            - country_code : str
+                The country code 
+            - network_code : str
+                The network code 
+            - station_code : str
+                The unique identifier for the weather station.
+            - year : int
+                The year of the observations.
+            - month : int
+                The month of the observations (1-12).
+            - observation_type : str
+                The type of observation 
+            - day_X : str
+                The observation value for day X (1-31) of the month. Values are strings;
+                '-9999' indicates missing data. 
+            - flag_X : str
+                The quality control flag associated with the observation for day X
+        - full_station_id_list : list of str
+            A list of all the station codes (e.g., 'USC00040212') returned from 
+            the DailyPrecipQuery. This list may include stations that are not 
+            present in json_data.
     """
 
-    
     # Get Station List for Precipitation Query
     db_stations = QueryDB(DailyPrecipQuery)
     # print(bool(db_stations))
@@ -1736,6 +1934,7 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
     noDataCount = 0
     full_station_id_list = []
 
+    # Limited list for TESTING
     for row in db_stations[:10]:
     # for row in db_stations:
         ghcn_id = row[4]
@@ -1782,36 +1981,77 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
     if not all_filtered_dfs:
         print("No valid station files found.")
         # return?
-    
-        
 
     combined_df = pl.concat(all_filtered_dfs, how="vertical")
 
-    json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    # json_data = json.dumps(combined_df.to_dicts(), indent=2)
+    json_data = combined_df.to_dicts()
 
     # Optional: write JSON string to file
     # output_file = f"combined_data_{month}_{year}_flask.json"
     # with open(output_file, "w") as f:
     #     f.write(json_data)
     
+    return {
+        "json_data": json_data, 
+        "full_station_id_list": full_station_id_list
+    }
+
+
+def generateDailyPrecip(json_data, full_station_id_list) -> dict:
+    """ Generates Daily Precipitation and Total Precipitation for a dataset.
+
     
-    
-    # print(f"Data saved to {output_file}")
-    # print(json_data)
+    Parameters
+    ----------
+    json_data : list of dict
+        A list where each dictionary represents a month's worth of daily
+        observational data for a specific station and observation type.
+        Each inner dictionary contains the following keys:
+        - country_code : str
+            The country code 
+        - network_code : str
+            The network code 
+        - station_code : str
+            The unique identifier for the weather station.
+        - year : int
+            The year of the observations.
+        - month : int
+            The month of the observations (1-12).
+        - observation_type : str
+            The type of observation 
+        - day_X : str
+            The observation value for day X (1-31) of the month. Values are strings;
+            '-9999' indicates missing data. 
+        - flag_X : str
+            The quality control flag associated with the observation for day X
+    full_station_id_list : list of str
+        A list of all the station codes (e.g., 'USC00040212') returned from 
+        the DailyPrecipQuery. This list may include stations that are not 
+        present in json_data.
+
+    Returns
+    -------
+    daily_precip_table_rec : dict
+        A dictionary where each key is a unique station code (e.g., 'USC00040212')
+        and its corresponding value is a dictionary containing precipitation data
+        for that station. Each station's dictionary includes:
+        - total_pcn : str
+            The total precipitation recorded for the period, represented as a string.
+            (e.g., '5.04').
+        - daily_pcn : dict
+            A dictionary mapping each day of the month (as a two-digit string from '01' to '31')
+            to its corresponding daily precipitation value. Precipitation
+            values are represented as strings (e.g., '0.45').
+        e.g.: {'USC00040212': {'total_pcn': '5.04', 'daily_pcn': {'01': '', '02': '', '03': '0.45', ... }, ...}
 
 
-    ########################################
-    #  Read the JSON file for Testing
+    Notes
+    ---------
+    This function can be passed one station's data or multiple stations' data.
 
-    # json_data = None
+    """
 
-    # with open(output_file) as f:
-    #     json_data = json.load(f)
-    #     # print(d)
-
-    #########################################
-    
-    json_data = json.loads(json_data)
     year = json_data[0]["year"]
     month = json_data[0]["month"]
     num_days = monthrange(year, month)[1]
@@ -1840,30 +2080,16 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
             mdpr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
         elif obs_type == "DAPR":
             dapr_data.setdefault(station_id, []).extend(list(zip(daily_values, daily_flags)))
-            
-
-    # for key, data in prcp_data.items():
-    #     print(f"{key}:\t{data}")
-    # print(f"-"*30)
-    # for key, data in mdpr_data.items():
-    #     print(f"{key}:\t{data}")
-    # print(f"-"*30)
-    # for key, data in dapr_data.items():
-    #     print(f"{key}:\t{data}")
 
 
     ############################################
 
 
     # Update the PRCP dictionary with stations that have no PRCP data (but have MDPR and DAPR)
-    
-
-
     for key in set(mdpr_data) | set(dapr_data) | set(full_station_id_list):  
         if key not in prcp_data:
             prcp_data[key] = None
-
-    
+ 
     # Sort the prcp data in the same order as the station list from the DB.
     prcp_data = {key: prcp_data[key] for key in full_station_id_list if key in prcp_data}
 
@@ -2234,9 +2460,6 @@ def generateDailyPrecip(month:int = 9, year:int = 2020) -> dict:
 
     return daily_precip_table_rec
 
-
-
-
 def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: int) -> bool:
     """ Checks the next month for accumulated precipitation.
 
@@ -2403,6 +2626,201 @@ def check_next_month_for_acc_pcn(station_id: str, month: int,year: int, ieommd: 
 
     return still_missing
 
+# def generateSFThresholdInput(ghcn_id, month, year):
+#     """generates json data for 1 station.
+#         actually wait couldn't this be for any type of calculation. 
+#         Would this function already exist? it should.
+
+#     Parameters
+#     ----------
+#     ghcn_id : _type_
+#         _description_
+#     month : _type_
+#         _description_
+#     year : _type_
+#         _description_
+
+#     Returns
+#     -------
+#     _type_
+#         _description_
+#     """
+
+
+#     file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly"
+#     if not os.path.exists(file_path):
+#         print(f"Missing file: {file_path}")
+
+#     filtered_data = parse_and_filter(
+#         station_code = ghcn_id,
+#         file_path=file_path,
+#         year=year,
+#         month=month,
+#         # observation_type = station_type,
+#         correction_type="table"
+#     )
+#     # print(filtered_data)
+
+#     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
+
+#     # if filtered_df.is_empty():
+#     #     print(f"Skipping station {ghcn_id} due to no data.")
+#     #     noDataCount += 1
+
+#     # if all_filtered_dfs:
+#     #     existing_columns = all_filtered_dfs[0].columns
+#     #     current_columns = filtered_df.columns
+
+#     #     missing_columns = set(existing_columns) - set(current_columns)
+#     #     for col in missing_columns:
+#     #         filtered_df = filtered_df.with_columns(pl.lit(None).alias(col))
+
+#     #     filtered_df = filtered_df.select(existing_columns)
+
+#     # all_filtered_dfs.append(filtered_df)
+#     # print(f"Parsed {len(filtered_df)} records from {ghcn_id}")
+
+#     json_data = filtered_df.to_dicts()
+
+    
+#     return json_data
+
+
+
+def generateSFThreshold(json_data):
+    """Snowfall Threshold. currently >=1 inch. others could be added.
+
+    Parameters
+    ----------
+    json_data : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    if (not json_data):
+        return {}
+    
+    # Determine the number of days in the month
+    year = json_data[0]["year"]
+    month = json_data[0]["month"]
+    num_days = monthrange(year, month)[1]
+    
+    snow_data = {}
+
+    # Collect Precip data
+    for row in json_data:
+        station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+        obs_type = row["observation_type"]
+
+        # List Comprehesion
+        daily_values = [
+            int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+            for i in range(1, num_days + 1)    
+        ]
+
+        if obs_type == "SNOW":
+            snow_data.setdefault(station_id, []).extend(daily_values)
+
+    # print(snow_data)
+    nod_results = {}
+    for station, data in snow_data.items():
+
+        nod_100 = 0     # Precip Number of Days >= 1.00 in
+                
+        for record in data:
+    #         print(record)
+            if record == -9999:
+                continue
+            # record*=0.1
+            # record= record * 0.1 * 0.03937
+            record = get_mm_to_in(record)
+            record = float(round_it(record, 1))
+            
+            if record >= 1.00:
+                nod_100+=1
+
+            # print(f"{record:<20} {str(float(record) >= .01):<8} {str(float(record) >= .10):<8} {str(float(record) >= 1.00):<8}")
+
+
+        nod_results[station] = {
+            "1.00 OR MORE": nod_100
+        }
+    # print(nod_results)
+    return nod_results
+
+
+def generateSDThreshold(json_data):
+        """Snowdepth Threshold. currently >=1 inch. others could be added.
+
+        Parameters
+        ----------
+        json_data : _type_
+            _description_
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        if (not json_data):
+            return {}
+        
+        # Determine the number of days in the month
+        year = json_data[0]["year"]
+        month = json_data[0]["month"]
+        num_days = monthrange(year, month)[1]
+        
+        snow_d_data = {}
+
+        # Collect Precip data
+        for row in json_data:
+            station_id = f"{row['country_code']}{row['network_code']}{row['station_code']}"
+            obs_type = row["observation_type"]
+
+            # List Comprehesion
+            daily_values = [
+                int(row[f"day_{i}"]) if row[f"day_{i}"] is not None else -9999
+                for i in range(1, num_days + 1)    
+            ]
+
+            if obs_type == "SNWD":
+                snow_d_data.setdefault(station_id, []).extend(daily_values)
+
+        # print(snow_d_data)
+        nod_results = {}
+        for station, data in snow_d_data.items():
+            # print(station)
+            # print(f"raw SNWD data: ", data)
+            nod_100 = 0     # Precip Number of Days >= 1.00 in
+                    
+            for record in data:
+                # print(record)
+                if record == -9999:
+                    continue
+                # record*=0.1
+                # record= record * 0.1 * 0.03937
+                record = get_mm_to_in(record)
+                # print(f"mm to inch() : {record}")
+                record = float(round_it(record, 1))
+                # print(f"rounded record : {record}")
+                
+                
+                if record >= 1.00:
+                    nod_100+=1
+
+                # print(f"{record:<20} {str(float(record) >= 1.00):<8}")
+
+
+            nod_results[station] = {
+                "1.00 OR MORE": nod_100
+            }
+        # print(nod_results)
+        return nod_results
 
 def generateMonthlyPub():
     month = 2
@@ -2413,6 +2831,8 @@ def generateMonthlyPub():
 
         stations = QuerySoM("som")
         print("Station list retrieved.", stations)
+
+        # return
 
         temperature_data = QuerySoM("temp")
         print("Temp data retrieved.", temperature_data)
@@ -2435,6 +2855,8 @@ def generateMonthlyPub():
         # print("Soil REF metadata retrieved.")
         # print("soils_REF_data", soils_ref_data)
 
+
+
         # # Build TOBS metadata lookup by coop_id
         tobs_lookup = {row[0]: row[1:] for row in tobs_data}
 
@@ -2453,6 +2875,10 @@ def generateMonthlyPub():
         # Build combined_df for general stations (som)
         combined_som_df = build_combined_df(stations, tobs_lookup, month, year)
         json_data = json.dumps(combined_som_df.to_dicts(), indent=2)
+
+        # Build json for daily precipitation + station list
+        precip_data = generate_daily_precip_input(month, year)
+
         
         # # Write JSON to file for testing/viewing
         # output_file = f"SoMDATA_dly.json"
@@ -2512,13 +2938,18 @@ def generateMonthlyPub():
 
         with open("SoMTable.json", "w") as f:
             json.dump(merged_SOM_data, f, indent=2)
+
             
 #############################################
 ############ DAILY PRECIPITATION ############
 #############################################
         
         
-        ##TBD##
+        PrecipitationTable = generateDailyPrecip(precip_data['json_data'], precip_data['full_station_id_list'])
+        print("Precipitation Table", PrecipitationTable)
+
+        with open("DailyPrecipitationTable.json", "w") as f:
+            json.dump(PrecipitationTable, f, indent=2)
         
         
 #############################################
@@ -2545,7 +2976,7 @@ def generateMonthlyPub():
         with open("SnowAndSnwdTable.json", "w") as f:
             json.dump(SnowAndSnwdTable, f, indent=2)
 
-
+        
 #############################################
 ######## DAILY SOIL TEMPERATURES ############
 #############################################
@@ -2590,6 +3021,7 @@ def generateMonthlyPub():
     except Exception as e:
         print(f"Error in generateMonthlyPub: {e}")
         pass
+
 
 
 

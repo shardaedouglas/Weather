@@ -49,7 +49,7 @@
         </div>
     </form>
     </div>
-    
+
     <div id="submission-element" style="display: none;">
         {% include "corrections/correction_submitted_element.html" %}
     </div>
@@ -63,7 +63,7 @@
                     // Error message: need both values.
                     alert("Both values need to be filled out.");
                 } else {
-                    showMonthTable();
+                    showMonthTable($("form"));
                 }
             });
 
@@ -76,6 +76,8 @@
                 // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
                 // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
                 var formData = formatWeatherDataQuery($(this));
+
+                console.log("this value: ", $(this).get(0).elements.date);
                 
                 // Code to Process the monthly data.
                 console.log(formData);
@@ -122,8 +124,14 @@
 
         });
 
-        function showMonthTable() {
-            document.getElementById('input-monthly-table').style.display = "block";
+        function showMonthTable(form_object) {
+            console.log(form_object.get(0).elements);
+            console.log(form_object.get(0).elements.date[0].value);
+            const inputMonthlyTable = document.getElementById('input-monthly-table');
+            document.getElementById('ghcn-id-span').textContent = form_object.get(0).elements.ghcn_id.value;
+            document.getElementById('month-ghcn-date-mirror').value = form_object.get(0).elements.date.value;
+
+           inputMonthlyTable.style.display = "block";
          }
 
     </script>

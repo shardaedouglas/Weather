@@ -366,9 +366,10 @@
                 if (selectedYear && selectedYear !== "--Select--") {
                     const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
                     const stationType = new URLSearchParams(window.location.search).get("station_type");
+                    const month = new URLSearchParams(window.location.search).get("date").substring(5,7);
                     
                     // Fake a correction_date using just year + dummy month/day
-                    const correctionDate = `${selectedYear}-01-01`;
+                    const correctionDate = `${selectedYear}-${month}-01`; 
 
                     $.ajax({
                         url: '/get_data_for_GHCN_table',
@@ -387,6 +388,26 @@
                             showComparisonTable(response.data, response.ordered_keys);
                             print(response.data)
                             fetchAndRenderStationMetadata(ghcnId);
+                            $.ajax({
+                                url: '/get_station_calc_for_GHCND',
+                                method: 'POST',
+                                data: $.param({
+                                        ghcn_id: ghcnId,
+                                        date: correctionDate,
+                                        station_type: stationType
+                                    }),
+                                success: function(response) {
+                                    console.log("Success:", response);
+                                    showGHCNDCalculations(response)
+                                    console.log("New station calculations");
+                                    // showComparisonTable(response);
+                                    // console.log(response);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error("Error:", error);
+                                    alert("There was an error processing your request.");
+                                }
+                            });
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
@@ -529,6 +550,8 @@
                     }
                 });
 
+
+        
             } else {
                 const ghcnId = urlParams.get('ghcn_id');
                 const unitMode = document.getElementById("unit-selector").value;
@@ -564,7 +587,101 @@
                         alert("There was an error processing your request.");
                     }
                 });
+
+                $.ajax({
+                    url: '/get_station_calc_for_GHCND',
+                    method: 'POST',
+                    data: $.param(requestData),
+                    success: function(response) {
+                        console.log("Success:", response);
+                        showGHCNDCalculations(response)
+                        // showComparisonTable(response);
+                        // console.log(response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("There was an error processing your request.");
+                    }
+                });
             }
+        }
+        
+        
+        /**
+         * Populates a data table with GHCND (Global Historical Climatology Network Daily) calculations.
+         *
+         * This function takes a structured data object containing various calculated
+         * meteorological statistics and uses it to populate an HTML element.
+         *
+         * @param {object} data - An object containing calculated GHCND statistics for display.
+         * @param {number} data.AvMax - The average maximum temperature.
+         * @param {number} data.AvMin - The average minimum temperature.
+         * @param {number} data.AvTmp - The overall average temperature.
+         * @param {object} data.MaxTp - Details for the highest temperature recorded.
+         * @param {number} data.MaxTp.MaxTp - The maximum temperature value.
+         * @param {string} data.MaxTp.Day - The date (e.g., 'YYYY-MM-DD') when the maximum temperature occurred.
+         * @param {object} data.MinTp - Details for the lowest temperature recorded.
+         * @param {number} data.MinTp.MinTp - The minimum temperature value.
+         * @param {string} data.MinTp.Day - The date (e.g., 'YYYY-MM-DD') when the minimum temperature occurred.
+         * @param {object} data.Max24Hr - Details for the maximum 24-hour precipitation.
+         * @param {number} data.Max24Hr.Max24Hr - The maximum 24-hour precipitation value.
+         * @param {string} data.Max24Hr.Day - The day (e.g., 'DD') when the maximum 24-hour precipitation occurred.
+         * @param {number} data.TotPcn - The total precipitation.
+         * @param {number} data.Snow - The maximum snowfall.
+         * @param {number} data["S Depth"] - The maximum snow depth.
+         * @param {number} data.HDD - Heating Degree Days.
+         * @param {number} data.CDD - Cooling Degree Days. (currently null/not calculated).
+         * @param {object} data["NOD Pcn"] - Number of Days with Precipitation exceeding certain thresholds.
+         * @param {number} data["NOD Pcn"].">.01" - Number of days with precipitation >= 0.01 units.
+         * @param {number} data["NOD Pcn"].">.10" - Number of days with precipitation >= 0.10 units.
+         * @param {number} data["NOD Pcn"].">1" - Number of days with precipitation >= 1.00 unit.
+         * @param {object} data["NOD Tmp"] - Number of Days with Temperature exceeding certain thresholds.
+         * @param {number} data["NOD Tmp"]."MxT>=90" - Number of days where maximum temperature was >= 90.
+         * @param {number} data["NOD Tmp"]."MxT<=32" - Number of days where maximum temperature was <= 32.
+         * @param {number} data["NOD Tmp"]."MnT<=0" - Number of days where minimum temperature was <= 0.
+         * @param {number} data["SF>=1"] - Number of days with snowfall >= one inch
+         * @param {number} data["SD>=1"] - Number of days with snow depth >= one inch 
+         */
+        function showGHCNDCalculations(data) {
+
+
+            // Temperature
+            $(".ghcnd-calc-av-max").text(data["AvMax"] !== null ? data["AvMax"]  : "N/A");
+            $(".ghcnd-calc-av-min").text(data["AvMin"] !== null ? data["AvMin"]  : "N/A");
+            $(".ghcnd-calc-av-temp").text(data["AvTmp"] !== null ? data["AvTmp"]  : "N/A");
+            $(".ghcnd-calc-max-temp").text(data.MaxTp["MaxTp"] !== null ? data.MaxTp["MaxTp"]  : "N/A");
+            $(".ghcnd-calc-max-temp-date").text(data.MaxTp["Day"] !== null ? data.MaxTp["Day"]  : "N/A");
+            $(".ghcnd-calc-min-temp").text(data.MinTp["MinTp"]  !== null ? data.MinTp["MinTp"]  : "N/A");
+            $(".ghcnd-calc-min-temp-date").text(data.MinTp["Day"] !== null ? data.MinTp["Day"] : "N/A" );
+
+            // Precipitation and Snowfall
+            $(".ghcnd-calc-totpcn").text(data["TotPcn"] !== null ? data["TotPcn"] : "N/A");
+            $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
+            $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
+            $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
+            $(".ghcnd-calc-cdd").text(data["CDD "] !== null ? data["CDD "] : "N/A"); // Note: "CDD " has a trailing space in your data object key
+
+            // Max 24-Hour Precipitation
+            $(".ghcnd-calc-max-24hr").text(data.Max24Hr && data.Max24Hr["Max24Hr"] !== null ? data.Max24Hr["Max24Hr"] : "N/A");
+            $(".ghcnd-calc-max-24hr-date").text(data.Max24Hr && data.Max24Hr["Day"] !== null ? data.Max24Hr["Day"] : "N/A");
+
+            // Number of Days  Precipitation Thresholds
+            $(".ghcnd-calc-pcn-gt01").text(data["NOD Pcn"] && data["NOD Pcn"][">.01"] !== null ? data["NOD Pcn"][">.01"] : "N/A");
+            $(".ghcnd-calc-pcn-gt10").text(data["NOD Pcn"] && data["NOD Pcn"][">.10"] !== null ? data["NOD Pcn"][">.10"] : "N/A");
+            $(".ghcnd-calc-pcn-gt100").text(data["NOD Pcn"] && data["NOD Pcn"][">1"] !== null ? data["NOD Pcn"][">1"] : "N/A");
+
+            
+
+            // Number of Days Temperature Thresholds
+            $(".ghcnd-calc-max-temp-gt90").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT>=90"] !== null ? data["NOD Tmp"]["MxT>=90"] : "N/A");
+            $(".ghcnd-calc-max-temp-lt32").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT<=32"] !== null ? data["NOD Tmp"]["MxT<=32"] : "N/A");
+            $(".ghcnd-calc-min-temp-lt0").text(data["NOD Tmp"] && data["NOD Tmp"]["MnT<=0"] !== null ? data["NOD Tmp"]["MnT<=0"] : "N/A");
+            
+            // Number of Days with Snowfall >= one inch
+            $(".ghcnd-calc-sf-gt100").text(data["SF>=1"] !== null ? data["SF>=1"] : "N/A");
+            // Number of Days with Snow Depth >= one inch
+            $(".ghcnd-calc-snow-depth-gt100").text(data["SD>=1"] !== null ? data["SD>=1"] : "N/A");
+
         }
 
 
