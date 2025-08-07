@@ -264,6 +264,72 @@
 
 
             }
+
+            /**
+             * Formats form data with weather sub-elements into a URL query string.
+             *
+             * This function processes form data containing "WEATHER ELEMENT" and "WEATHER SUBELEMENT"
+             * fields. It replaces the main `element` value with the selected sub-element value
+             * (e.g., 'WT**' becomes 'WT01') and removes the extraneous sub-element fields
+             * from the data before serializing it. Meant to be used on Corrections Pages.
+             *
+             * @param {jQuery} formData - A jQuery object representing the form element, typically obtained
+             * from a form submission event handler (e.g., `$(this)`).
+             * @returns {string} A string of URL-encoded parameters ready for submission,
+             * such as `ghcn_id=USW00093991&date=2025-08-06&element=WT01&action=1`.
+             */
+            function formatWeatherDataQuery(formData) {
+                const form = formData.get(0);
+                var formData = formData.serialize().split("&");
+                // console.log("FORMDATA: ", formData);
+                sub_element_str = "element=";
+                element_index = formData.findIndex((element => element.indexOf("element=") != -1));
+                if (element_index == -1) {
+                    console.log("Element was not found in form response.")
+                    // Throw an exception or an error.
+                }
+                // Replace ELEMENT subselection if relevant.
+                switch (form.elements.element.value.toString()) {
+                    case "SN*#": {
+                        // Get the value from the sub-element
+                        const newValue = form.elements.sub_element_SN.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[element_index] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "SX*#": {
+                        const newValue = form.elements.sub_element_SX.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[element_index] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "WT**": {
+                        const newValue = form.elements.sub_element_WT.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[element_index] = sub_element_str + newValue;
+                        break;
+                    }
+                    case "WV**": {
+                        const newValue = form.elements.sub_element_WV.value.toString();
+                        // console.log("new value:", newValue)
+                        formData[element_index] = sub_element_str + newValue;
+                        break;
+                    }
+                    default:  
+                }
+
+                // Remove Sub Elements from form parameters
+                let index = formData.findIndex((element => element.indexOf("sub_element_SN=") != -1));
+                if (index !== -1) {
+                    formData.splice(index,4);
+                    // console.log(formData);
+                    return formData.join("&")
+                } else {
+                    // For some reason there is not "sub_element_SN=" in the form object. 
+                    console.log("sub_element_SN= was not found.");
+                    return 
+                }
+            }
             
         </script>
     </body>

@@ -34,12 +34,12 @@
                     </div>
                     <div class="col-sm">
                         <!-- <button type="submit" class="btn btn-success" onclick="showMonthTable()" style="width:100%;display:block;font-weight: bold;">Next</button> -->
-                        <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+                        <button type="button" class="btn btn-success" id="monthly-next-btn" style="width:100%;display:block;font-weight: bold;">Next</button>
 
                     </div>
                     
                 </div>
-            </form>
+        
         </div>  
         
         <!--Monthly Table -->
@@ -47,6 +47,7 @@
             {% include "corrections/data_tables/input_monthly_form.html" %}
             
         </div>
+    </form>
     </div>
 
     <div id="submission-element" style="display: none;">
@@ -55,33 +56,99 @@
 
     <script>
         $(document).ready(function () {
+
+            // First Window Next Button
+            $("#monthly-next-btn").click(function() {
+                if (!$("#ghcn_id").val() || !$("#date").val()){
+                    // Error message: need both values.
+                    alert("Both values need to be filled out.");
+                } else {
+                    showMonthTable($("form"));
+                }
+            });
+
             $("form").submit(function (event) {
-                /** This currently handles the "next" button of the first section. It should be transferred
-                 * to the submit button of the second section. 
-                 * Then it should handle processing the correction data.
-                */
                 event.preventDefault();
-                var formData = $(this).serialize();
+                console.log($(this));
+                // console.log($(this).serialize());
+
+                
+                // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
+                // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
+                var formData = formatWeatherDataQuery($(this));
+                
+                // Remove one of the date fields from formData.
+                formData = formData.split("&");
+                element_index = formData.findIndex((element => element.indexOf("date=") != -1));
+                if (element_index == -1) {
+                    //For some reason there's not a date field. 
+                } else {
+                    formData.splice(element_index,1);
+                }
+                formData = formData.join("&");
+                
                 // Code to Process the monthly data.
-                // console.log(formData);
-                // console.log($(this));
-                // console.log($(this).get(0).elements.date.value);
+                console.log(formData);
                 // correctionFormHandler(formData, function (output) {
                 //     showMonthTable();
                 // })
-                showMonthTable($(this));
+                // Upon Success
+                showSubmissionConfirmation("monthly");
+            });
 
-            })
+             // Showing sub elements for element selection
+            $("#element").on("change", function() {
+                switch ($("#element").val().toString()) {
+                    case "SN*#":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_SN").parent().removeClass("d-none");
+                    break;
+                    case "SX*#":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_SX").parent().removeClass("d-none");
+                    break;
+                    case "WT**":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_WT").parent().removeClass("d-none");
+                    break;
+                    case "WV**":
+                    $("#sub-element-select").removeClass("d-none");
+                    $(".sub-element-option").addClass("d-none");
+                    $("#sub_element_WV").parent().removeClass("d-none");
+                    break;
+                    
+
+                    default:
+                        // console.log("Selected " + $("#element").val().toString() );
+                        // sub-element-select
+                        $("#sub-element-select").addClass("d-none");
+                }
+            });
+
+            
 
         });
 
         function showMonthTable(form_object) {
+            console.log(form_object.get(0).elements);
+            console.log(form_object.get(0).elements.date[0].value);
             const inputMonthlyTable = document.getElementById('input-monthly-table');
-            document.getElementById('ghcn-id-span').textContent = form_object.get(0).elements.ghcn_id.value;
-            document.getElementById('month-ghcn-date-mirror').value = form_object.get(0).elements.date.value;
+            $("#ghcn-id-span").text($("#ghcn_id").val());
+            $("#month-ghcn-date-mirror").val($("#date").val());
 
            inputMonthlyTable.style.display = "block";
          }
+         
+        //  Date fields mirror each other.
+         $("#month-ghcn-date-mirror").on("change", function() {
+            $("#date").val($("#month-ghcn-date-mirror").val());
+         });
+         $("#date").on("change", function() {
+            $("#month-ghcn-date-mirror").val($("#date").val());
+         });
     </script>
 
     {% endblock content %}

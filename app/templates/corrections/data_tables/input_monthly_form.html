@@ -22,6 +22,14 @@
                         <option value="3">Three</option>
                     </select>--> 
                 </div>
+                <!-- Sub selection for Element -->
+                <div class="col justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                    <span class="element-select" id="inputGroup-sizing-default">Sub-Element:</span>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_SN(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_SX(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_WT(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_WV(class_='form-select element-select')}}</div>
+                </div>
                 
                 <div class="col">
                     Date:  {{monthly_form.date(class_='form-control date-picker', id='month-ghcn-date-mirror')}}
@@ -38,6 +46,7 @@
                         <option value="3">Three</option>
                     </select>-->
                 </div>
+                
                 <div class="col">
                     <div class="range-input-box" style="margin-top:20px">
                         <textarea id="rangeTextInput" class="form-control" rows="31" placeholder="Paste range data here..."></textarea>
@@ -107,6 +116,7 @@
         
     </div>
     </div>
+
     
     <script>
         function processRangeInput() {
