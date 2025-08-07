@@ -34,12 +34,12 @@
                     </div>
                     <div class="col-sm">
                         <!-- <button type="submit" class="btn btn-success" onclick="showMonthTable()" style="width:100%;display:block;font-weight: bold;">Next</button> -->
-                        <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+                        <button type="button" class="btn btn-success" id="monthly-next-btn" style="width:100%;display:block;font-weight: bold;">Next</button>
 
                     </div>
                     
                 </div>
-            </form>
+        
         </div>  
         
         <!--Monthly Table -->
@@ -47,6 +47,7 @@
             {% include "corrections/data_tables/input_monthly_form.html" %}
             
         </div>
+    </form>
     </div>
     
     <div id="submission-element" style="display: none;">
@@ -55,26 +56,34 @@
 
     <script>
         $(document).ready(function () {
+
+            // First Window Next Button
+            $("#monthly-next-btn").click(function() {
+                if (!$("#ghcn_id").val() || !$("#date").val()){
+                    // Error message: need both values.
+                    alert("Both values need to be filled out.");
+                } else {
+                    showMonthTable();
+                }
+            });
+
             $("form").submit(function (event) {
-                /** 
-                 * This logic handles the "next" button of the first window.
-                 * This logic should be linked to the "submit" button of the second window.
-                 * After that it can handle processing the correction data. 
-                */
                 event.preventDefault();
                 console.log($(this));
+                // console.log($(this).serialize());
+
                 
                 // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
                 // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
-                // var formData = formatWeatherDataQuery($(this));
+                var formData = formatWeatherDataQuery($(this));
                 
                 // Code to Process the monthly data.
-                // console.log(formData);
+                console.log(formData);
                 // correctionFormHandler(formData, function (output) {
                 //     showMonthTable();
                 // })
-                showMonthTable();
-
+                // Upon Success
+                showSubmissionConfirmation("monthly");
             });
 
              // Showing sub elements for element selection
@@ -117,11 +126,6 @@
             document.getElementById('input-monthly-table').style.display = "block";
          }
 
-         $('#submit-monthly-corr-btn').click(function() {
-
-
-            showSubmissionConfirmation("monthly");
-        });
     </script>
 
     {% endblock content %}
