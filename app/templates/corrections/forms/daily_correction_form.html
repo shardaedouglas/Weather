@@ -95,9 +95,9 @@
                 loadingWheel.style.display = 'block';
 
                 var formData = $(this).serialize();
-                // console.log("FORMDATA: ", formData);
+                console.log("FORMDATA: ", formData);
                 const params = new URLSearchParams(formData);
-                // console.log("Params: ", params);
+                console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
@@ -108,15 +108,15 @@
         });
 
 
-        $(".btn-submit").click(function () {
+        $("#submit-daily-corr-btn").click(function () {
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
 
             var formData = $("form").serialize();
-            // console.log("SUBMIT FORMDATA: ", formData);
+            console.log("SUBMIT FORMDATA: ", formData);
             const params = new URLSearchParams(formData);
-            // console.log("SUBMIT Params: ", params);
-
+            console.log("SUBMIT Params: ", params);
+            console.log("Form data was gathered. Checked 1")
             submitCorrections(params); // Call the submit function separately
             // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
             
@@ -237,7 +237,7 @@
             correction_type: "compare"
         };
 
-        //console.log("!DATA: ", requestData);
+        console.log("!DATA: ", requestData);
 
         // Send the data via AJAX
         $.ajax({
@@ -297,7 +297,7 @@
 }
 
 
-    //DAILY TABLE
+    //DAILY Comparison TABLE
     function showComparisonTable(filteredData) {
         const tableBody = document.querySelector('#correction-comparison-table tbody');
         
@@ -340,7 +340,7 @@
     
         // Send the data via AJAX
         $.ajax({
-            url: '/submit_ranged_Corrections',
+            url: '/submit_daily_corrections',
             method: 'POST',
             contentType: 'application/json', // Set content type to JSON
             data: JSON.stringify(correctionData), // Convert array to JSON string
