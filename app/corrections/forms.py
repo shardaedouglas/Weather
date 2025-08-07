@@ -74,6 +74,11 @@ class MonthlyCorrections(FlaskForm):
     action = SelectField('Action', choices=ACTIONS)
     submit = SubmitField('Submit')
 
+    sub_element_SN = SelectField('SubElement', choices=SUB_ELEMENTS[:63])
+    sub_element_SX = SelectField('SubElement', choices=SUB_ELEMENTS[63:126])
+    sub_element_WT = SelectField('SubElement', choices=SUB_ELEMENTS[126:147])
+    sub_element_WV = SelectField('SubElement', choices=SUB_ELEMENTS[147:])
+
 class RangeCorrections(FlaskForm):
     form_type = ghcn_id = StringField('TYPE', validators=[InputRequired()])
     ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
