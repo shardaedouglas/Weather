@@ -76,8 +76,16 @@
                 // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
                 // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
                 var formData = formatWeatherDataQuery($(this));
-
-                console.log("this value: ", $(this).get(0).elements.date);
+                
+                // Remove one of the date fields from formData.
+                formData = formData.split("&");
+                element_index = formData.findIndex((element => element.indexOf("date=") != -1));
+                if (element_index == -1) {
+                    //For some reason there's not a date field. 
+                } else {
+                    formData.splice(element_index,1);
+                }
+                formData = formData.join("&");
                 
                 // Code to Process the monthly data.
                 console.log(formData);
@@ -128,12 +136,19 @@
             console.log(form_object.get(0).elements);
             console.log(form_object.get(0).elements.date[0].value);
             const inputMonthlyTable = document.getElementById('input-monthly-table');
-            document.getElementById('ghcn-id-span').textContent = form_object.get(0).elements.ghcn_id.value;
-            document.getElementById('month-ghcn-date-mirror').value = form_object.get(0).elements.date.value;
+            $("#ghcn-id-span").text($("#ghcn_id").val());
+            $("#month-ghcn-date-mirror").val($("#date").val());
 
            inputMonthlyTable.style.display = "block";
          }
-
+         
+        //  Date fields mirror each other.
+         $("#month-ghcn-date-mirror").on("change", function() {
+            $("#date").val($("#month-ghcn-date-mirror").val());
+         });
+         $("#date").on("change", function() {
+            $("#month-ghcn-date-mirror").val($("#date").val());
+         });
     </script>
 
     {% endblock content %}
