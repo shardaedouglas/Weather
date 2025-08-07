@@ -283,50 +283,52 @@
                 var formData = formData.serialize().split("&");
                 // console.log("FORMDATA: ", formData);
                 sub_element_str = "element=";
-
+                element_index = formData.findIndex((element => element.indexOf("element=") != -1));
+                if (element_index == -1) {
+                    console.log("Element was not found in form response.")
+                    // Throw an exception or an error.
+                }
                 // Replace ELEMENT subselection if relevant.
                 switch (form.elements.element.value.toString()) {
                     case "SN*#": {
                         // Get the value from the sub-element
                         const newValue = form.elements.sub_element_SN.value.toString();
                         // console.log("new value:", newValue)
-                        formData[3] = sub_element_str + newValue;
+                        formData[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "SX*#": {
                         const newValue = form.elements.sub_element_SX.value.toString();
                         // console.log("new value:", newValue)
-                        formData[3] = sub_element_str + newValue;
+                        formData[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "WT**": {
                         const newValue = form.elements.sub_element_WT.value.toString();
                         // console.log("new value:", newValue)
-                        formData[3] = sub_element_str + newValue;
+                        formData[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "WV**": {
                         const newValue = form.elements.sub_element_WV.value.toString();
                         // console.log("new value:", newValue)
-                        formData[3] = sub_element_str + newValue;
+                        formData[element_index] = sub_element_str + newValue;
                         break;
                     }
                     default:  
                 }
 
                 // Remove Sub Elements from form parameters
-                console.log(formData);
                 let index = formData.findIndex((element => element.indexOf("sub_element_SN=") != -1));
-                console.log(index);
-
-                // let index = formData.indexOf("world");
                 if (index !== -1) {
                     formData.splice(index,4);
-                    console.log(formData);
+                    // console.log(formData);
                     return formData.join("&")
+                } else {
+                    // For some reason there is not "sub_element_SN=" in the form object. 
+                    console.log("sub_element_SN= was not found.");
+                    return 
                 }
-                // formData.splice(4,4);
-                
             }
             
         </script>
