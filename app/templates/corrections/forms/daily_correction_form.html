@@ -122,7 +122,7 @@
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
 
-            formData = formatWeatherDataQuery($(this));
+            formData = formatWeatherDataQuery($("form"));
             // console.log("SUBMIT FORMDATA: ", formData);
             const params = new URLSearchParams(formData);
             // console.log("SUBMIT Params: ", params);
