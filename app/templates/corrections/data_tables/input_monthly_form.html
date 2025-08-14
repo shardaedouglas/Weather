@@ -71,17 +71,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                
                             {% for p in range(31) %}
                                 <tr>
                                     <td>{{loop.index}}</td>
                                     <td>
                                         <div class="input-group mb-3">
-                                            <input type="text" class="form-control" placeholder="">
+                                            <input type="text" class="form-control day-entry" placeholder="">
                                           </div>
                                     </td>
                                 </tr>
                             {% endfor %}
+
     
                             <!-- Datzilla Number Input -->
                             <!-- Should this be outside of the table as its own element? 
@@ -100,14 +100,25 @@
                     </table>
                 </div>
                 <div class="row justify-content-center" id="button-row">
-                    <div class="col-sm-3">
-                        <button type="submit" class="btn btn-success">Submit</button>
+                
+                
+                    <div class="col-4 me-2 col-lg me-lg-0">
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" id="monthly-total-btn">Total</button>
+                            <!-- <span class="border">Total </span> -->
+                        </div>
                     </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-primary">Total</button>
+                    <div class="col-5 col-lg border pt-1 " id="total-display">
+                        Text
                     </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-dark">Close</button>
+                
+                    <div class="w-100 d-block d-lg-none"></div>
+                
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="reset" class="btn btn-dark">Clear</button></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="submit" class="btn btn-success">Submit</button></div>
                     </div>
                 </div>
             </div>
@@ -133,6 +144,22 @@
                 inputs[i].value = values[i] || ""; // Set value or empty if less than 31
             }
         }
+
+        $("#monthly-total-btn").click( function() {
+            let total = 0;
+            // console.log("Button pressed.");
+            // console.log( $(".day-entry"));
+            $(".day-entry").each(function() {
+                value = parseInt($(this).eq(0).val());
+                if (value) {
+                    total += parseInt($(this).eq(0).val(), 10);
+                }
+                
+            });
+            console.log(total);
+            $("#total-display").text(total);
+
+        });
     </script>
 
 
