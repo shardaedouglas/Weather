@@ -30,14 +30,11 @@
                 </div>
                 <div class="row justify-content-center g-3" id="button-row">
                     <div class="col-sm">
-                        <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold;">Clear</button>
+                        <button type="reset" class="btn button-dull w-100 d-block fw-bold" id="monthly-form-clear-1">Clear</button>
                     </div>
                     <div class="col-sm">
-                        <!-- <button type="submit" class="btn btn-success" onclick="showMonthTable()" style="width:100%;display:block;font-weight: bold;">Next</button> -->
-                        <button type="button" class="btn btn-success" id="monthly-next-btn" style="width:100%;display:block;font-weight: bold;">Next</button>
-
+                        <button type="button" class="btn btn-success w-100 d-block fw-bold" id="monthly-next-btn">Next</button>
                     </div>
-                    
                 </div>
         
         </div>  
@@ -148,6 +145,11 @@
          });
          $("#date").on("change", function() {
             $("#month-ghcn-date-mirror").val($("#date").val());
+         });
+
+        //  First Section's Clear button
+         $("#monthly-form-clear-1").on("click", function() {
+            $("#monthly-form-table").hide();
          });
     </script>
 

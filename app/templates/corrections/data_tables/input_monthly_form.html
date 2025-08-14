@@ -50,7 +50,7 @@
                 <div class="col">
                     <div class="range-input-box" style="margin-top:20px">
                         <textarea id="rangeTextInput" class="form-control" rows="31" placeholder="Paste range data here..."></textarea>
-                        <button type="button" class="btn btn-primary mt-2" onclick="processRangeInput()">Submit</button>
+                        <button type="button" class="btn btn-primary mt-2" onclick="processRangeInput()"> >> </button>
                     </div>
                 </div>
             </div>
@@ -145,6 +145,7 @@
             }
         }
 
+        // Calculate Monthly Total
         $("#monthly-total-btn").click( function() {
             let total = 0;
             // console.log("Button pressed.");
