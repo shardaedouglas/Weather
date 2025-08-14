@@ -211,6 +211,10 @@
                 $("#sub-element-select").addClass("d-none");
         }
     });
+
+    $("button[type='reset']").on("click", function() {
+        $("#ranged-form-table").hide();
+    });
 </script>
 
 {% endblock content %}
