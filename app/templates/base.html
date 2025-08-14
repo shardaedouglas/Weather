@@ -46,8 +46,22 @@
               <!--<div class="collapse navbar-collapse position-absolute top-50 start-50 translate-middle" id="navbarTogglerDemo02" > -->
                 <div class="collapse navbar-collapse" id="navbarTogglerDemo02" >
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
+                    <!-- <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="/">Corrections </a>
+                    </li> -->
+                    <li class="nav-item dropdown">
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Corrections
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{{ url_for('corrections.daily_corrections') }}">Daily Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.monthly_corrections') }}">Monthly Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.range_corrections') }}">Ranged Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.hourly_corrections') }}">Hourly Correction</a>
+                      
+                            </div>
+                        </div>
                     </li>
                     <!-- <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="{{ url_for('ghcndata.view_ghcn_data') }}">View Data </a>
