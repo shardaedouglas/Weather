@@ -132,34 +132,33 @@
 
     function showRangeTable(response) {
         const data = response; // Assuming this is the data object received from the server
-        let tableBody = $('#rangeTable tbody'); // Target the table body
+        //let tableBody = $('#rangeTable tbody'); // Target the table body
     
         // Clear existing rows
-        tableBody.empty();
+        //tableBody.empty();
         // Extract station data
-        let stationID = data.stationData.stationID;
-        let element = data.stationData.element;
-        let action = data.stationData.action;
-        let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
-        let datzillaNumber = data.stationData.datzilla_number
-
+        //let stationID = data.stationData.stationID;
+        ////let element = data.stationData.element;
+        //let action = data.stationData.action;
+        //let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
+        //let datzillaNumber = data.stationData.datzilla_number
         let tableData = [];
 
         // Loop through days_data and populate the table
         data.days_data.forEach(record => {
-            let row = `<tr>
-                <td>${stationID}</td>
-                <td>${record.date}</td>
-                <td>${element}</td>
-                <td>${action}</td>
-                <td>${record.value}</td>
-                <td>-9999</td>
-                <td>${todayDate}</td>
-                <td>${datzillaNumber}</td>
+            // let row = `<tr>
+            //     <td>${stationID}</td>
+            //     <td>${record.date}</td>
+            //     <td>${element}</td>
+            //     <td>${action}</td>
+            //     <td>${record.value}</td>
+            //     <td>-9999</td>
+            //     <td>${todayDate}</td>
+            //     <td>${datzillaNumber}</td>
 
-            </tr>`;
+            // </tr>`;
     
-            tableBody.append(row);
+            // tableBody.append(row);
 
             // Store each record for later submission
             tableData.push({
@@ -175,10 +174,76 @@
         });
 
         $('#correctionData').val(JSON.stringify(tableData));
+        $('#rangeTable').dataTable({
+            data: tableData,
+            columns: [
+                {data: 'stationID'},
+                {data: 'date'},
+                {data: 'element'},
+                {data: 'action'},
+                {data: 'value'},
+                {data: 'newValue'},
+                {data: 'todayDate'},
+                {data: 'datzillaNumber'},
+            ],
+            pageLength: 25,
+        });
+        
     
         // Display the table by making the section visible
         document.getElementById('ranged-form-table').style.display = "flex";
     }
+
+    // OG function.
+    // function showRangeTable(response) {
+    //     const data = response; // Assuming this is the data object received from the server
+    //     let tableBody = $('#rangeTable tbody'); // Target the table body
+    
+    //     // Clear existing rows
+    //     tableBody.empty();
+    //     // Extract station data
+    //     let stationID = data.stationData.stationID;
+    //     let element = data.stationData.element;
+    //     let action = data.stationData.action;
+    //     let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
+    //     let datzillaNumber = data.stationData.datzilla_number
+
+    //     let tableData = [];
+
+    //     // Loop through days_data and populate the table
+    //     data.days_data.forEach(record => {
+    //         let row = `<tr>
+    //             <td>${stationID}</td>
+    //             <td>${record.date}</td>
+    //             <td>${element}</td>
+    //             <td>${action}</td>
+    //             <td>${record.value}</td>
+    //             <td>-9999</td>
+    //             <td>${todayDate}</td>
+    //             <td>${datzillaNumber}</td>
+
+    //         </tr>`;
+    
+    //         tableBody.append(row);
+
+    //         // Store each record for later submission
+    //         tableData.push({
+    //             stationID,
+    //             date: record.date,
+    //             element,
+    //             action,
+    //             value: record.value,
+    //             newValue: -9999,  // Assuming you handle the new value
+    //             todayDate,
+    //             datzillaNumber
+    //         });
+    //     });
+
+    //     $('#correctionData').val(JSON.stringify(tableData));
+    
+    //     // Display the table by making the section visible
+    //     document.getElementById('ranged-form-table').style.display = "flex";
+    // }
 
     // Showing sub elements for element selection
     $("#element").on("change", function() {
