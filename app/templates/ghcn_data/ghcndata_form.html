@@ -280,6 +280,18 @@
         tbody.innerHTML = ""; // clear old rows
         thead.innerHTML = ""; // clear old headers
         lastFetchedData = data;
+        console.log("data", data);
+        console.log("orderedKeys", orderedKeys);
+        
+        // Add leading 0 to days < 10
+        const paddedData = {};
+        for (const key in data) {
+        const dayNumber = key.replace('Day ', '');
+        const paddedNumber = dayNumber.padStart(2, '0');
+        const newKey = `Day ${paddedNumber}`;
+        paddedData[newKey] = data[key];
+        }
+        data = paddedData;
 
         // Sort days numerically
         const sortedDays = Object.keys(data).sort(
@@ -304,6 +316,7 @@
         });
         headerRow += `</tr>`;
         thead.insertAdjacentHTML('beforeend', headerRow);
+        console.log("allkeys", allKeys);
 
         // Build table rows dynamically
         sortedDays.forEach(dayKey => {
@@ -317,6 +330,7 @@
             row += `</tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
+        console.log("sortedDays", sortedDays);
 
         table.style.display = "block";
 
@@ -334,7 +348,75 @@
                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
             });
         }
+
+
+        $('#GHCND_Table').dataTable({
+            pageLength: 50,
+        });
     }
+    //  OG function
+    // function showComparisonTable(data, orderedKeys) {
+    //     const table = document.getElementById("station-data-view");
+    //     const thead = table.querySelector("thead");
+    //     const tbody = table.querySelector("tbody");
+    //     tbody.innerHTML = ""; // clear old rows
+    //     thead.innerHTML = ""; // clear old headers
+    //     lastFetchedData = data;
+
+    //     // Sort days numerically
+    //     const sortedDays = Object.keys(data).sort(
+    //         (a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', ''))
+    //     );
+
+    //     // Use orderedKeys from backend or fallback to keys from data
+    //     const allKeys = orderedKeys && orderedKeys.length > 0
+    //         ? orderedKeys
+    //         : (() => {
+    //             const keysSet = new Set();
+    //             sortedDays.forEach(dayKey => {
+    //                 Object.keys(data[dayKey]).forEach(k => keysSet.add(k));
+    //             });
+    //             return Array.from(keysSet).sort();
+    //         })();
+
+    //     // Build table header row dynamically
+    //     let headerRow = `<tr><th>Day</th>`;
+    //     allKeys.forEach(key => {
+    //         if (key !== "Day") headerRow += `<th>${key}</th>`;
+    //     });
+    //     headerRow += `</tr>`;
+    //     thead.insertAdjacentHTML('beforeend', headerRow);
+
+    //     // Build table rows dynamically
+    //     sortedDays.forEach(dayKey => {
+    //         const dayData = data[dayKey];
+    //         let row = `<tr><td>${dayKey}</td>`;
+    //         allKeys.forEach(key => {
+    //             if (key !== "Day") {
+    //                 row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
+    //             }
+    //         });
+    //         row += `</tr>`;
+    //         tbody.insertAdjacentHTML('beforeend', row);
+    //     });
+
+    //     table.style.display = "block";
+
+    //     // Attach save button event handler fresh to avoid duplicates
+    //     const saveBtn = document.getElementById("save-button");
+    //     if (saveBtn) {
+    //         const newSaveBtn = saveBtn.cloneNode(true);
+    //         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+
+    //         newSaveBtn.addEventListener("click", function () {
+    //             if (!lastFetchedData || Object.keys(lastFetchedData).length === 0) {
+    //                 alert("No data available to save.");
+    //                 return;
+    //             }
+    //             downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
+    //         });
+    //     }
+    // }
 
 
         function populateYearDropdown(response) {
