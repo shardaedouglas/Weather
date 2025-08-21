@@ -121,8 +121,11 @@
                     
                 },
                 error: function (xhr, status, error) {
-                    console.error("Error:", error);
-                    alert("There was an error processing your request.");
+                    // console.error("Error:", error);
+                    console.error("Error:", error, xhr, xhr.responseText);
+                    // alert("There was an error processing your request.");
+                    alert("There was an error processing your request:\n" + xhr.responseJSON.error);
+                    loadingWheel.style.display = 'none';
                 }
             });
 
@@ -137,11 +140,11 @@
         // Clear existing rows
         //tableBody.empty();
         // Extract station data
-        //let stationID = data.stationData.stationID;
-        ////let element = data.stationData.element;
-        //let action = data.stationData.action;
-        //let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
-        //let datzillaNumber = data.stationData.datzilla_number
+        let stationID = data.stationData.stationID;
+        let element = data.stationData.element;
+        let action = data.stationData.action;
+        let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
+        let datzillaNumber = data.stationData.datzilla_number
         let tableData = [];
 
         // Loop through days_data and populate the table
@@ -187,6 +190,7 @@
                 {data: 'datzillaNumber'},
             ],
             pageLength: 25,
+            destroy: true
         });
         
     
