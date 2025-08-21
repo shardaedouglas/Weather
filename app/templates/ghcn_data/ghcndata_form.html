@@ -43,10 +43,11 @@
 
         <div class="row justify-content-center" id="button-row">
             <div class="col-md">
-                <button type="reset" class="btn button-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
+                <!-- <button type="reset" class="btn button-dull w-100 d-block fw-bold" onclick="hideGHCNViewTable()">Clear</button> -->
+                <button type="reset" class="btn button-dull w-100 d-block fw-bold">Clear</button>
             </div>
             <div class="col-md">
-                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
+                <button type="submit" class="btn btn-success w-100 d-block fw-bold">Submit</button>
             </div>
             
         </div>
@@ -89,9 +90,14 @@
         }        
     });
     
-    function hideGHCNViewTable() {
-       document.getElementById('station-data-view').style.display = "none";
-    }
+    // function hideGHCNViewTable() {
+    //    document.getElementById('station-data-view').style.display = "none";
+    // }
+
+    $("button[type='reset']").on("click", function() {
+        $("#station-data-view").hide();
+        $("#station-metadata-view").hide();
+    });
 
     $(document).ready(function() {
 
