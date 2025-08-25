@@ -3,8 +3,8 @@
 
 <!-- Nested Grid using Flex-dirction:column -->
 <div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
-    
-    <div class="row">
+    <form id="input-monthly-form">
+        <div class="row">
         <div class="row justify-content-center">
             <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: <span id="ghcn-id-span">######</span> </h6>
         </div>
@@ -58,68 +58,71 @@
         <!-- 31 Inputs for Entry  -->
 
         <div class="col">
-        <div class="row" style="display:flex; flex-direction:column">
-            <!-- Month Input Table -->
-            <div class="col">
-                <div class="table-responsive-sm" style="text-align: center">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th scope="col">Day</th>
-                                <th scope="col">Value</th>
-    
-                            </tr>
-                        </thead>
-                        <tbody>
-                
-                            {% for p in range(31) %}
-                                <tr>
-                                    <td>{{loop.index}}</td>
-                                    <td>
-                                        <div class="input-group mb-3">
-                                            <input type="text" class="form-control" placeholder="">
-                                          </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-    
-                            <!-- Datzilla Number Input -->
-                            <!-- Should this be outside of the table as its own element? 
-                             <tr>
-                                <td>
-                                    <b>Datzilla #:</b>
-                                </td>
-                                <td>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" placeholder="">
-                                      </div>
-                                </td>
-                            </tr>-->
-                            
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row justify-content-center" id="button-row">
-                    <div class="col-sm-3">
-                        <button type="submit" class="btn btn-success">Submit</button>
-                    </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-primary">Total</button>
-                    </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-dark">Close</button>
+            <div class="row" style="display:flex; flex-direction:column">
+                    <!-- Month Input Table -->
+                    <div class="col">
+                        <div class="table-responsive-sm" style="text-align: center">
+                            <table class="table table-sm" id="data-month-input">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Day</th>
+                                        <th scope="col">Value</th>
+            
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        
+                                    {% for p in range(31) %}
+                                        <tr>
+                                            <td>{{loop.index}}</td>
+                                            <td>
+                                                <div class="input-group mb-3">
+                                                    <input type="text" class="form-control day-entry" id="day-input" class="form-control" placeholder="">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                                
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row justify-content-center" id="button-row">
+                            <div class="col-sm-3">
+                                <button type="submit" class="btn btn-success" id="submit-monthly-correction">Submit</button>
+                            </div>
+                            <div class="col-sm-3">
+                                <button type="button" class="btn btn-primary">Total</button>
+                            </div>
+                            <div class="col-sm-3">
+                                <button type="button" class="btn btn-dark">Close</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
         </div>
-    </div>
-        
-    </div>
-    </div>
+    </form>
+</div>
 
+<script>
+    $(document).ready(function(){            
+        $("#monthly-total-btn").click( function() {
+            let total = 0;
+            // console.log("Button pressed.");
+            // console.log( $(".day-entry"));
+            $(".day-entry").each(function() {
+                value = parseInt($(this).eq(0).val());
+                if (value) {
+                    total += parseInt($(this).eq(0).val(), 10);
+                }
+                
+            });
+            console.log(total);
+            $("#total-display").text(total);
+
+        });
+    });
     
-    <script>
-        function processRangeInput() {
+     function processRangeInput() {
             let inputText = document.getElementById("rangeTextInput").value.trim();
             
             // Split input by common delimiters (comma, newline, space, tab)
@@ -132,7 +135,8 @@
             for (let i = 0; i < inputs.length; i++) {
                 inputs[i].value = values[i] || ""; // Set value or empty if less than 31
             }
-        }
-    </script>
+        }       
+
+</script>
 
 
