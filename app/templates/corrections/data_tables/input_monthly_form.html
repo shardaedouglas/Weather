@@ -58,53 +58,93 @@
         <!-- 31 Inputs for Entry  -->
 
         <div class="col">
-            <div class="row" style="display:flex; flex-direction:column">
-                    <!-- Month Input Table -->
-                    <div class="col">
-                        <div class="table-responsive-sm" style="text-align: center">
-                            <table class="table table-sm" id="data-month-input">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Day</th>
-                                        <th scope="col">Value</th>
-            
-                                    </tr>
-                                </thead>
-                                <tbody>
-                        
-                                    {% for p in range(31) %}
-                                        <tr>
-                                            <td>{{loop.index}}</td>
-                                            <td>
-                                                <div class="input-group mb-3">
-                                                    <input type="text" class="form-control day-entry" id="day-input" class="form-control" placeholder="">
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                                
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="row justify-content-center" id="button-row">
-                            <div class="col-sm-3">
-                                <button type="submit" class="btn btn-success" id="submit-monthly-correction">Submit</button>
-                            </div>
-                            <div class="col-sm-3">
-                                <button type="button" class="btn btn-primary">Total</button>
-                            </div>
-                            <div class="col-sm-3">
-                                <button type="button" class="btn btn-dark">Close</button>
-                            </div>
+        <div class="row" style="display:flex; flex-direction:column">
+            <!-- Month Input Table -->
+            <div class="col">
+                <div class="table-responsive-sm" style="text-align: center">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Day</th>
+                                <th scope="col">Value</th>
+    
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in range(31) %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
+                                    <td>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control day-entry" placeholder="">
+                                          </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+    
+                            <!-- Datzilla Number Input -->
+                            <!-- Should this be outside of the table as its own element? 
+                             <tr>
+                                <td>
+                                    <b>Datzilla #:</b>
+                                </td>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="">
+                                      </div>
+                                </td>
+                            </tr>-->
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-center" id="button-row">
+                
+                
+                    <div class="col-4 me-2 col-lg me-lg-0">
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" id="monthly-total-btn">Total</button>
+                            <!-- <span class="border">Total </span> -->
                         </div>
                     </div>
+                    <div class="col-5 col-lg border pt-1 " id="total-display">
+                        Text
+                    </div>
+                
+                    <div class="w-100 d-block d-lg-none"></div>
+                
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="reset" class="btn btn-dark">Clear</button></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="submit" class="btn btn-success">Submit</button></div>
+                    </div>
                 </div>
+            </div>
         </div>
-    </form>
-</div>
+    </div>
+        
+    </div>
+    </div>
 
-<script>
-    $(document).ready(function(){            
+    
+    <script>
+        function processRangeInput() {
+            let inputText = document.getElementById("rangeTextInput").value.trim();
+            
+            // Split input by common delimiters (comma, newline, space, tab)
+            let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
+    
+            console.log("Parsed Values:", values);
+    
+            // Fill table with parsed values (up to 31)
+            let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = values[i] || ""; // Set value or empty if less than 31
+            }
+        }
+
         $("#monthly-total-btn").click( function() {
             let total = 0;
             // console.log("Button pressed.");
@@ -120,23 +160,6 @@
             $("#total-display").text(total);
 
         });
-    });
-    
-     function processRangeInput() {
-            let inputText = document.getElementById("rangeTextInput").value.trim();
-            
-            // Split input by common delimiters (comma, newline, space, tab)
-            let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
-    
-            console.log("Parsed Values:", values);
-    
-            // Fill table with parsed values (up to 31)
-            let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
-            for (let i = 0; i < inputs.length; i++) {
-                inputs[i].value = values[i] || ""; // Set value or empty if less than 31
-            }
-        }       
-
-</script>
+    </script>
 
 
