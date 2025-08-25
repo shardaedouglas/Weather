@@ -171,3 +171,5 @@ program_output.txt
 tprcp_output.txt
 venv2/
 temp/
+.vscode/launch.json
+daily_corrections.txt

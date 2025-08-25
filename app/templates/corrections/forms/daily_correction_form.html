@@ -107,7 +107,7 @@
                 formData = formatWeatherDataQuery($(this));
 
                 const params = new URLSearchParams(formData);
-                // console.log("Params: ", params);
+                console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
@@ -123,11 +123,14 @@
             //loadingWheel.style.display = 'block';
 
             formData = formatWeatherDataQuery($("form"));
-            // console.log("SUBMIT FORMDATA: ", formData);
             const params = new URLSearchParams(formData);
-            // console.log("SUBMIT Params: ", params);
-
-            submitCorrections(params); // Call the submit function separately
+            console.log("SUBMIT Params: ", params);
+            console.log("Form data was gathered. Checked 1")
+            //const formData = $('form').serialize(); // Returns a URL-encoded string
+            //const params = new URLSearchParams(formData);
+            
+            //const correctionData = JSON.parse($('form').val());
+            submitCorrections(formData); // Call the submit function separately
             // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
             
         });
@@ -145,11 +148,6 @@
             // Function to check if all fields have values
             function checkFields() {
                 if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
-                    //console.log('GHCN ID:', ghcnIdInput.value);
-                    //console.log('Date:', dateInput.value);
-                    //console.log('Element:', elementSelect.value);
-
-                    // sub_element_str = "element=";
                     final_element = ""
 
                     // Replace ELEMENT subselection if relevant.
@@ -183,7 +181,6 @@
                     element: final_element
                 };
 
-                // console.log(requestData)
 
                 // Send the data via AJAX to the /get_o_value route
                 $.ajax({
@@ -249,7 +246,10 @@
 
 
 
-     //DAILY Comparison table
+     /** 
+      * DAILY Comparison table Logic:
+      * The logic below handles showing the GHCN data for neighboring weather station 
+      * **/
      function showDailyComparisonTable(filteredData) {
         
         const tableBody = document.querySelector('#correction-comparison-table tbody');
@@ -277,7 +277,7 @@
                 });
             }
 
-    // Show the table
+    // Show the Neighboring Station Comaprison table
     document.getElementById('correction-comparison-table').style.display = "block";
 }
 
@@ -293,15 +293,6 @@
         const eValue = urlParams.get('e_value');
         const date = urlParams.get('date');
 
-        // console.log("GHCN ID:", ghcnId);
-        // console.log("Datzilla Number:", datzillaNumber);
-        // console.log("Element:", element);
-        // console.log("Action:", action);
-        // console.log("O-Value:", oValue);
-        // console.log("E-Value:", eValue);
-        // console.log("Date:", date);
-
-        //set up requestData for /get_data_for_daily_corrections route.
         var requestData = {
             ghcn_id: ghcnId,
             datzilla_number: datzillaNumber,
@@ -313,7 +304,7 @@
             correction_type: "compare"
         };
 
-        //console.log("!DATA: ", requestData);
+        console.log("!DATA: ", requestData);
 
         // Send the data via AJAX
         $.ajax({
@@ -373,7 +364,7 @@
 }
 
 
-    //DAILY TABLE
+    //DAILY Comparison TABLE
     function showComparisonTable(filteredData) {
         const tableBody = document.querySelector('#correction-comparison-table tbody');
         
@@ -416,10 +407,10 @@
     
         // Send the data via AJAX
         $.ajax({
-            url: '/submit_ranged_Corrections',
+            url: '/submit_daily_corrections',
             method: 'POST',
             contentType: 'application/json', // Set content type to JSON
-            data: JSON.stringify(correctionData), // Convert array to JSON string
+            data: JSON.stringify({ correction_data: correctionData }), // Convert array to JSON string
             success: function(response) {
                 // Handle processing
                 alert("Corrections Submitted Successfully");
@@ -438,46 +429,6 @@
 
 
     }
-    
-    // function showSubmissionConfirmation(type) {
-    //     $("#form-daily").hide(); 
-        
-    //     $(".correction-type-text-target").text(type);
-        
-    //     var element_name = "submitted-" + type + "-link";
-    //     //Hide that element
-
-    //     var link = "";
-    //     if (type == "daily") {
-    //         link = '{{ url_for('corrections.daily_corrections') }}';
-    //         $("#submitted-daily-link").hide();
-            
-            
-    //     } else if (type == "monthly") {
-    //         link = '{{ url_for('corrections.monthly_corrections') }}';
-    //         $("#submitted-monthly-link").hide();
-    //     } else if (type == "ranged") {
-    //         link = '{{ url_for('corrections.range_corrections') }}';
-    //         $("#submitted-ranged-link").hide();
-    //     } else if (type == "hourly") {
-    //         link = '{{ url_for('corrections.hourly_corrections') }}';
-    //         $("#submitted-hourly-link").hide();
-    //     }
-
-    //     console.log(link);
-
-    //     $("#submit-another-correction").click(function() {
-    //         window.location.href = link;
-    //     });
-
-
-
-    //     $("#submission-element").show(); 
-
-
-    // }
-
-
 </script>
 
 {% endblock content %}

@@ -72,7 +72,19 @@
                 console.log($(this));
                 // console.log($(this).serialize());
 
-                
+                //Monthly_Input holds the data inputted for the 31 days
+                let monthly_input = [];
+
+                // Loops through all 31 input fields within the table with the ID 'data-month-input'
+                $("[id='data-month-input']").each(function() {
+                    // Get the value of the current input field
+                    const inputValue = $(this).val();
+                    
+                    // Push the value into the array
+                    monthly_input.push(inputValue);
+                    
+                });
+                console.log(monthly_input);
                 // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
                 // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
                 var formData = formatWeatherDataQuery($(this));
@@ -89,11 +101,14 @@
                 
                 // Code to Process the monthly data.
                 console.log(formData);
+
+                // Submit Correction Data
+                submitCorrections(formData, monthly_input)
                 // correctionFormHandler(formData, function (output) {
                 //     showMonthTable();
                 // })
                 // Upon Success
-                showSubmissionConfirmation("monthly");
+                
             });
 
              // Showing sub elements for element selection
@@ -140,7 +155,7 @@
             $("#month-ghcn-date-mirror").val($("#date").val());
 
            inputMonthlyTable.style.display = "block";
-         }
+        }
          
         //  Date fields mirror each other.
          $("#month-ghcn-date-mirror").on("change", function() {
@@ -149,6 +164,26 @@
          $("#date").on("change", function() {
             $("#month-ghcn-date-mirror").val($("#date").val());
          });
+
+        function submitCorrections(formData, monthlyInputData) {
+            // Send the correctionData directly in the request
+            $.ajax({
+                url: '/submit_monthly_corrections',
+                method: 'POST',
+                contentType: 'application/json',  // Ensure the server handles the data as JSON
+                data: JSON.stringify({ form_input: formData, monthly_input: monthlyInputData }),  // Send data as JSON
+                success: function(response) {
+                    // Handle processing
+                    alert("Monthly Correction Submitted Successfully");
+                    showSubmissionConfirmation("monthly");
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                    showSubmissionConfirmation("monthly"); //Should be changed to allow the user to retry their correction
+                }
+            });
+        }
     </script>
 
     {% endblock content %}
