@@ -67,6 +67,13 @@
     <!-- {% endif %} -->
 </div>
 
+<div id="station-inventory-view" style="display: none;">
+
+        {% include "ghcn_data/station_inventory_view.html" %}
+
+</div>
+
+
 </div>  
 
 <script>
@@ -361,69 +368,7 @@
             destroy: true
         });
     }
-    //  OG function
-    // function showComparisonTable(data, orderedKeys) {
-    //     const table = document.getElementById("station-data-view");
-    //     const thead = table.querySelector("thead");
-    //     const tbody = table.querySelector("tbody");
-    //     tbody.innerHTML = ""; // clear old rows
-    //     thead.innerHTML = ""; // clear old headers
-    //     lastFetchedData = data;
-
-    //     // Sort days numerically
-    //     const sortedDays = Object.keys(data).sort(
-    //         (a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', ''))
-    //     );
-
-    //     // Use orderedKeys from backend or fallback to keys from data
-    //     const allKeys = orderedKeys && orderedKeys.length > 0
-    //         ? orderedKeys
-    //         : (() => {
-    //             const keysSet = new Set();
-    //             sortedDays.forEach(dayKey => {
-    //                 Object.keys(data[dayKey]).forEach(k => keysSet.add(k));
-    //             });
-    //             return Array.from(keysSet).sort();
-    //         })();
-
-    //     // Build table header row dynamically
-    //     let headerRow = `<tr><th>Day</th>`;
-    //     allKeys.forEach(key => {
-    //         if (key !== "Day") headerRow += `<th>${key}</th>`;
-    //     });
-    //     headerRow += `</tr>`;
-    //     thead.insertAdjacentHTML('beforeend', headerRow);
-
-    //     // Build table rows dynamically
-    //     sortedDays.forEach(dayKey => {
-    //         const dayData = data[dayKey];
-    //         let row = `<tr><td>${dayKey}</td>`;
-    //         allKeys.forEach(key => {
-    //             if (key !== "Day") {
-    //                 row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-    //             }
-    //         });
-    //         row += `</tr>`;
-    //         tbody.insertAdjacentHTML('beforeend', row);
-    //     });
-
-    //     table.style.display = "block";
-
-    //     // Attach save button event handler fresh to avoid duplicates
-    //     const saveBtn = document.getElementById("save-button");
-    //     if (saveBtn) {
-    //         const newSaveBtn = saveBtn.cloneNode(true);
-    //         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-
-    //         newSaveBtn.addEventListener("click", function () {
-    //             if (!lastFetchedData || Object.keys(lastFetchedData).length === 0) {
-    //                 alert("No data available to save.");
-    //                 return;
-    //             }
-    //             downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
-    //         });
-    //     }
-    // }
+    
 
 
         function populateYearDropdown(response) {
@@ -791,12 +736,64 @@
                     container.style.display = "block";
                     // If you use tooltips, initialize here, otherwise omit:
                     // $('[data-toggle="tooltip"]').tooltip();
+
+                    $("#ghcnd-inventory-btn").on("click", function() {
+                        getGhcnIdInventory(ghcnId);
+                    });
                 })
                 .catch(err => {
                     console.error("Failed to load station metadata:", err);
                 });
         }
 
+
+
+        $(function() {
+            // Handler for .ready() called.
+            // alert("From the jquery again.");
+            $('#GHCND-Inventory-Table').DataTable({
+                columns: [
+                    {title: 'GHCNID', name: 'GHCNID'},
+                    {title: 'Latitude', name: 'Latitude'},
+                    {title: 'Longitude', name: 'Longitude'},
+                    {title: 'Element', name: 'Element'},
+                    {title: 'First Year', name: 'First Year'},
+                    {title: 'Last Year', name: 'Last Year'}
+
+                ],
+                columnDefs: [{ className: 'text-center', targets: '_all' }],
+
+            });
+        });
+
+
+        function getGhcnIdInventory(ghcnId) {
+
+            const requestData = {
+                    ghcn_id: ghcnId
+                };
+            console.log(ghcnId);
+            $.ajax({
+                    url: '/ghcn_inventory',
+                    method: 'POST',
+                    data: $.param(requestData),
+                    success: function(response) {
+                        console.log("Success:", response);
+                        // console.log(response);
+
+                        invTable = $('#GHCND-Inventory-Table').DataTable();
+                        invTable.clear().rows.add(response).draw();
+                        $("#station-inventory-view").show();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error, xkr, status);
+                        alert("There was an error processing your request.");
+                    }
+                });
+
+            
+
+        }
 
 
     </script>
