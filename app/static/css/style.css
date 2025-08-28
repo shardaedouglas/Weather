@@ -220,6 +220,11 @@ Gives a border between the columns of the table. */
     color: #fff;
   }
 
+.dark-mode body {
+    background-color: #212529;
+    color: #fff;
+  }
+
 .dark-mode .form-control {
     background-color: #212529;
     color: #fff;
