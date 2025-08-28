@@ -224,11 +224,13 @@ def get_o_value():
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
             return jsonify({
                 "o_value": "No Value",
+                "o_flag_value": "   "
             })
             
         # Return a simple response with the data
         return jsonify({
-            "o_value": filtered_json,
+            "o_value": filtered_json[0],
+            "o_flag_value": filtered_json[1]
         })
     except Exception as e:
         print(f"Error in get_o_value: {e}")
