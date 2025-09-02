@@ -3,8 +3,8 @@
 
 <!-- Nested Grid using Flex-dirction:column -->
 <div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
-    
-    <div class="row">
+    <form id="input-monthly-form">
+        <div class="row">
         <div class="row justify-content-center">
             <h6 style="text-align: center; margin-bottom: 50px"> GHCN ID: <span id="ghcn-id-span">######</span> </h6>
         </div>
@@ -22,6 +22,14 @@
                         <option value="3">Three</option>
                     </select>--> 
                 </div>
+                <!-- Sub selection for Element -->
+                <div class="col justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                    <span class="element-select" id="inputGroup-sizing-default">Sub-Element:</span>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_SN(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_SX(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_WT(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{monthly_form.sub_element_WV(class_='form-select element-select')}}</div>
+                </div>
                 
                 <div class="col">
                     Date:  {{monthly_form.date(class_='form-control date-picker', id='month-ghcn-date-mirror')}}
@@ -38,6 +46,7 @@
                         <option value="3">Three</option>
                     </select>-->
                 </div>
+                
                 <div class="col">
                     <div class="range-input-box" style="margin-top:20px">
                         <textarea id="rangeTextInput" class="form-control" rows="31" placeholder="Paste range data here..."></textarea>
@@ -62,17 +71,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                
                             {% for p in range(31) %}
                                 <tr>
                                     <td>{{loop.index}}</td>
                                     <td>
                                         <div class="input-group mb-3">
-                                            <input type="text" class="form-control" placeholder="">
+                                            <input type="text" class="form-control day-entry" id="data-month-input" placeholder="">
                                           </div>
                                     </td>
                                 </tr>
                             {% endfor %}
+
     
                             <!-- Datzilla Number Input -->
                             <!-- Should this be outside of the table as its own element? 
@@ -91,14 +100,25 @@
                     </table>
                 </div>
                 <div class="row justify-content-center" id="button-row">
-                    <div class="col-sm-3">
-                        <button type="submit" class="btn btn-success">Submit</button>
+                
+                
+                    <div class="col-4 me-2 col-lg me-lg-0">
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" id="monthly-total-btn">Total</button>
+                            <!-- <span class="border">Total </span> -->
+                        </div>
                     </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-primary">Total</button>
+                    <div class="col-5 col-lg border pt-1 " id="total-display">
+                        Text
                     </div>
-                    <div class="col-sm-3">
-                        <button type="button" class="btn btn-dark">Close</button>
+                
+                    <div class="w-100 d-block d-lg-none"></div>
+                
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="reset" class="btn btn-dark" >Clear</button></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="d-grid"><button type="submit" class="btn btn-success" id="submit-monthly-correction">Submit</button></div>
                     </div>
                 </div>
             </div>
@@ -107,6 +127,7 @@
         
     </div>
     </div>
+
     
     <script>
         function processRangeInput() {
@@ -123,6 +144,22 @@
                 inputs[i].value = values[i] || ""; // Set value or empty if less than 31
             }
         }
+
+        $("#monthly-total-btn").click( function() {
+            let total = 0;
+            // console.log("Button pressed.");
+            // console.log( $(".day-entry"));
+            $(".day-entry").each(function() {
+                value = parseInt($(this).eq(0).val());
+                if (value) {
+                    total += parseInt($(this).eq(0).val(), 10);
+                }
+                
+            });
+            console.log(total);
+            $("#total-display").text(total);
+
+        });
     </script>
 
 

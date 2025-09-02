@@ -37,6 +37,15 @@
                 <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
                 {{daily_form.element(class_='form-select element-select')}}
             </div>
+            <!-- Sub selection for Element -->
+            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
+                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+            </div>
+            <div class="w-100 d-none d-md-block"></div>
             <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
                 {{daily_form.action(class_='form-select action-select')}}
@@ -91,13 +100,14 @@
             $("form").submit(function (event) {
                 event.preventDefault();
 
+                // Loading Wheel
                 const loadingWheel = document.querySelector('#spinner');
                 loadingWheel.style.display = 'block';
 
-                var formData = $(this).serialize();
-                // console.log("FORMDATA: ", formData);
+                formData = formatWeatherDataQuery($(this));
+
                 const params = new URLSearchParams(formData);
-                // console.log("Params: ", params);
+                console.log("Params: ", params);
 
 
                 getDataforStationsAndShowTable(params);
@@ -112,12 +122,15 @@
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
 
-            var formData = $("form").serialize();
-            // console.log("SUBMIT FORMDATA: ", formData);
+            formData = formatWeatherDataQuery($("form"));
             const params = new URLSearchParams(formData);
-            // console.log("SUBMIT Params: ", params);
-
-            submitCorrections(params); // Call the submit function separately
+            console.log("SUBMIT Params: ", params);
+            console.log("Form data was gathered. Checked 1")
+            //const formData = $('form').serialize(); // Returns a URL-encoded string
+            //const params = new URLSearchParams(formData);
+            
+            //const correctionData = JSON.parse($('form').val());
+            submitCorrections(formData); // Call the submit function separately
             // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
             
         });
@@ -130,18 +143,44 @@
             const elementSelect = document.querySelector('select[name="element"]');
             const oValueInput = document.querySelector('[name="o_value"]');  // Correctly target O-Value input field
 
+           
+
             // Function to check if all fields have values
             function checkFields() {
                 if (ghcnIdInput.value && dateInput.value && elementSelect.value) {
-                    //console.log('GHCN ID:', ghcnIdInput.value);
-                    //console.log('Date:', dateInput.value);
-                    //console.log('Element:', elementSelect.value);
+                    final_element = ""
+
+                    // Replace ELEMENT subselection if relevant.
+                    console.log(elementSelect.value.toString());
+                    switch (elementSelect.value.toString()) {
+                        case "SN*#": {
+                            final_element = $("#sub_element_SN").val().toString();
+                            break;
+                        }
+                        case "SX*#": {
+                            final_element = $("#sub_element_SX").val().toString();
+                            break;
+                        }
+                        case "WT**": {
+                            final_element = $("#sub_element_WT").val().toString();
+                            break;
+                        }
+                        case "WV**": {
+                            final_element = $("#sub_element_WV").val().toString();
+                            break;
+                        }
+                        default: {
+                            final_element = elementSelect.value;
+                        }
+
+                    }
                 // Prepare the request data
                 const requestData = {
                     ghcn_id: ghcnIdInput.value,
                     correction_date: dateInput.value,
-                    element: elementSelect.value
+                    element: final_element
                 };
+
 
                 // Send the data via AJAX to the /get_o_value route
                 $.ajax({
@@ -170,10 +209,47 @@
             ghcnIdInput.addEventListener('input', checkFields);
             dateInput.addEventListener('input', checkFields);
             elementSelect.addEventListener('change', checkFields);
+            $(".sub-element-option").on('change', checkFields);
+        });
+
+        // Showing sub elements for element selection
+        $("#element").on("change", function() {
+            switch ($("#element").val().toString()) {
+                case "SN*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SN").parent().removeClass("d-none");
+                break;
+                case "SX*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SX").parent().removeClass("d-none");
+                break;
+                case "WT**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WT").parent().removeClass("d-none");
+                break;
+                case "WV**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WV").parent().removeClass("d-none");
+                break;
+                
+
+                default:
+                    // console.log("Selected " + $("#element").val().toString() );
+                    // sub-element-select
+                    $("#sub-element-select").addClass("d-none");
+            }
         });
 
 
-     //DAILY Comparison table
+
+     /** 
+      * DAILY Comparison table Logic:
+      * The logic below handles showing the GHCN data for neighboring weather station 
+      * **/
      function showDailyComparisonTable(filteredData) {
         
         const tableBody = document.querySelector('#correction-comparison-table tbody');
@@ -201,7 +277,7 @@
                 });
             }
 
-    // Show the table
+    // Show the Neighboring Station Comaprison table
     document.getElementById('correction-comparison-table').style.display = "block";
 }
 
@@ -217,15 +293,6 @@
         const eValue = urlParams.get('e_value');
         const date = urlParams.get('date');
 
-        // console.log("GHCN ID:", ghcnId);
-        // console.log("Datzilla Number:", datzillaNumber);
-        // console.log("Element:", element);
-        // console.log("Action:", action);
-        // console.log("O-Value:", oValue);
-        // console.log("E-Value:", eValue);
-        // console.log("Date:", date);
-
-        //set up requestData for /get_data_for_daily_corrections route.
         var requestData = {
             ghcn_id: ghcnId,
             datzilla_number: datzillaNumber,
@@ -237,7 +304,7 @@
             correction_type: "compare"
         };
 
-        //console.log("!DATA: ", requestData);
+        console.log("!DATA: ", requestData);
 
         // Send the data via AJAX
         $.ajax({
@@ -297,7 +364,7 @@
 }
 
 
-    //DAILY TABLE
+    //DAILY Comparison TABLE
     function showComparisonTable(filteredData) {
         const tableBody = document.querySelector('#correction-comparison-table tbody');
         
@@ -340,10 +407,10 @@
     
         // Send the data via AJAX
         $.ajax({
-            url: '/submit_ranged_Corrections',
+            url: '/submit_daily_corrections',
             method: 'POST',
             contentType: 'application/json', // Set content type to JSON
-            data: JSON.stringify(correctionData), // Convert array to JSON string
+            data: JSON.stringify({ correction_data: correctionData }), // Convert array to JSON string
             success: function(response) {
                 // Handle processing
                 alert("Corrections Submitted Successfully");
@@ -362,46 +429,6 @@
 
 
     }
-    
-    // function showSubmissionConfirmation(type) {
-    //     $("#form-daily").hide(); 
-        
-    //     $(".correction-type-text-target").text(type);
-        
-    //     var element_name = "submitted-" + type + "-link";
-    //     //Hide that element
-
-    //     var link = "";
-    //     if (type == "daily") {
-    //         link = '{{ url_for('corrections.daily_corrections') }}';
-    //         $("#submitted-daily-link").hide();
-            
-            
-    //     } else if (type == "monthly") {
-    //         link = '{{ url_for('corrections.monthly_corrections') }}';
-    //         $("#submitted-monthly-link").hide();
-    //     } else if (type == "ranged") {
-    //         link = '{{ url_for('corrections.range_corrections') }}';
-    //         $("#submitted-ranged-link").hide();
-    //     } else if (type == "hourly") {
-    //         link = '{{ url_for('corrections.hourly_corrections') }}';
-    //         $("#submitted-hourly-link").hide();
-    //     }
-
-    //     console.log(link);
-
-    //     $("#submit-another-correction").click(function() {
-    //         window.location.href = link;
-    //     });
-
-
-
-    //     $("#submission-element").show(); 
-
-
-    // }
-
-
 </script>
 
 {% endblock content %}
