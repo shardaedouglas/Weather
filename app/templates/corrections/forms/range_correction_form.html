@@ -198,57 +198,6 @@
         document.getElementById('ranged-form-table').style.display = "flex";
     }
 
-    // OG function.
-    // function showRangeTable(response) {
-    //     const data = response; // Assuming this is the data object received from the server
-    //     let tableBody = $('#rangeTable tbody'); // Target the table body
-    
-    //     // Clear existing rows
-    //     tableBody.empty();
-    //     // Extract station data
-    //     let stationID = data.stationData.stationID;
-    //     let element = data.stationData.element;
-    //     let action = data.stationData.action;
-    //     let todayDate = new Date().toISOString().split('T')[0]; // Get today's date
-    //     let datzillaNumber = data.stationData.datzilla_number
-
-    //     let tableData = [];
-
-    //     // Loop through days_data and populate the table
-    //     data.days_data.forEach(record => {
-    //         let row = `<tr>
-    //             <td>${stationID}</td>
-    //             <td>${record.date}</td>
-    //             <td>${element}</td>
-    //             <td>${action}</td>
-    //             <td>${record.value}</td>
-    //             <td>-9999</td>
-    //             <td>${todayDate}</td>
-    //             <td>${datzillaNumber}</td>
-
-    //         </tr>`;
-    
-    //         tableBody.append(row);
-
-    //         // Store each record for later submission
-    //         tableData.push({
-    //             stationID,
-    //             date: record.date,
-    //             element,
-    //             action,
-    //             value: record.value,
-    //             newValue: -9999,  // Assuming you handle the new value
-    //             todayDate,
-    //             datzillaNumber
-    //         });
-    //     });
-
-    //     $('#correctionData').val(JSON.stringify(tableData));
-    
-    //     // Display the table by making the section visible
-    //     document.getElementById('ranged-form-table').style.display = "flex";
-    // }
-
     // Showing sub elements for element selection
     $("#element").on("change", function() {
         switch ($("#element").val().toString()) {
