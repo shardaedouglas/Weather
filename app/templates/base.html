@@ -24,6 +24,55 @@
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+        <script>
+            // Set the dark theme
+            if (readCookie("theme") == "dark") {
+                // window.alert(s);
+                $("html").addClass("dark-mode");
+                // $("table").addClass("table-dark");
+                // $(".container").toggleClass("dark-mode");
+            }
+
+            //Set Font Size
+            $("html").css("font-size", 100 + parseInt(readCookie("font-resize")) + "%");
+
+            // Create/Read/Erase Cookies
+            function createCookie(name, value, days) {
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    var expires = "; expires=" + date.toGMTString();
+                }
+                else var expires = "";
+                document.cookie = name + "=" + value + expires + "; path=/";
+            }
+
+            function readCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            function eraseCookie(name) {
+                createCookie(name, "", -1);
+            }
+
+            function enableTooltips(bool) {
+                if (bool) {
+                    $(".tt").tooltip('enable');
+
+                } else {
+                    $(".tt").tooltip('disable');
+                }
+                
+            }
+        </script>
+
     </head>        
     <body>
         <!--
@@ -46,8 +95,22 @@
               <!--<div class="collapse navbar-collapse position-absolute top-50 start-50 translate-middle" id="navbarTogglerDemo02" > -->
                 <div class="collapse navbar-collapse" id="navbarTogglerDemo02" >
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
+                    <!-- <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="/">Corrections </a>
+                    </li> -->
+                    <li class="nav-item dropdown">
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Corrections
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{{ url_for('corrections.daily_corrections') }}">Daily Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.monthly_corrections') }}">Monthly Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.range_corrections') }}">Ranged Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.hourly_corrections') }}">Hourly Correction</a>
+                      
+                            </div>
+                        </div>
                     </li>
                     <!-- <li class="nav-item active">
                         <a class="nav-link" id="nav-items" href="{{ url_for('ghcndata.view_ghcn_data') }}">View Data </a>
@@ -103,23 +166,8 @@
     
         <script>
             window.onload = function() {
-                // Set CSS according to cookies. 
-                
-                // Set the dark theme
-                if (readCookie("theme") == "dark") {
-                //window.alert(s);
-                    $("body").addClass("dark-mode");
-                    $("table").addClass("table-dark");
-                    //$(".container").toggleClass("dark-mode");
-                } 
-
-                //Set Font Size
-                
-                $("html").css("font-size", 100 + parseInt(readCookie("font-resize")) + "%");
                     
                 // Tooltip Cookie Check
-                // if (readCookie("tooltips") != null) {
-                //     enableTooltips(Boolean(readCookie("tooltips")));
                 if (readCookie("tooltips") == "true") {
                     enableTooltips(true);
                 }
@@ -138,42 +186,7 @@
             })
             
             
-            function enableTooltips(bool) {
-                if (bool) {
-                    $(".tt").tooltip('enable');
-
-                } else {
-                    $(".tt").tooltip('disable');
-                }
-                
-            }
-
-
-            // Create/Read/Erase Cookies
-            function createCookie(name,value,days) {
-                if (days) {
-                    var date = new Date();
-                    date.setTime(date.getTime()+(days*24*60*60*1000));
-                    var expires = "; expires="+date.toGMTString();
-                }
-                else var expires = "";
-                document.cookie = name+"="+value+expires+"; path=/";
-            }
             
-            function readCookie(name) {
-                var nameEQ = name + "=";
-                var ca = document.cookie.split(';');
-                for(var i=0;i < ca.length;i++) {
-                    var c = ca[i];
-                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-                }
-                return null;
-            }
-            
-            function eraseCookie(name) {
-                createCookie(name,"",-1);
-            }
 
 
                 function correctionFormHandler(formData, handleData) {

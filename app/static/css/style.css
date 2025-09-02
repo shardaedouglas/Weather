@@ -20,7 +20,6 @@ body {
 }
 #dropdownMenuButton{
     position: relative;
-    top: 22px;
     color: #003087;
     font-weight: bold;
     text-decoration: underline 1px #003087
@@ -217,6 +216,11 @@ Gives a border between the columns of the table. */
 /* Dark Mode CSS*/
 /* To add more dark mode selectors, use ".dark-mode [tag or id or class etc.]*/
 .dark-mode {
+    background-color: #212529;
+    color: #fff;
+  }
+
+.dark-mode body {
     background-color: #212529;
     color: #fff;
   }

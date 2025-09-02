@@ -97,7 +97,7 @@
             resize = 0;
         }
 
-        resize;
+        // resize;
         $("#increase-font").click(function () {
             resize += 10;
 
@@ -119,18 +119,20 @@
 
         // Reset Font Size
         $("#reset-font").click(function () {
-
+            resize = 0;
             $("html").css("font-size", function (index, value) {
 
                 return 100 + "%";
             });
-            eraseCookie("font-resize");
+            // eraseCookie("font-resize");
+            createCookie("font-resize", resize, "");
         });
 
         //Toggle Dark/Light Mode
         $("#theme-toggle").click(function () {
-            $("body").toggleClass("dark-mode");
-            $("table").toggleClass("table-dark");
+            // $("body").toggleClass("dark-mode");
+            // $("table").toggleClass("table-dark");
+            $("html").toggleClass("dark-mode");
             if (readCookie("theme") == "dark") {
                 createCookie("theme", "", "");
             } else {

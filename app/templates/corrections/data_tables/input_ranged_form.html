@@ -6,7 +6,7 @@
 
             <div class="row " style="text-align: center">
                 <div class="col">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive-lg">
                         <table class="table table-sm table-striped table-borderless border" id="rangeTable">
                             <thead>
                                 <tr>
@@ -27,18 +27,18 @@
         </div>
     </div>
     <div class="row justify-content-center" id="button-row">
-        <div class="col-sm">
-            <button type="submit" class="btn btn-success btn-submit" >Save</button>
+        <div class="col-sm-3">
+            <button type="submit" class="btn btn-success btn-submit w-100 d-block" >Save</button>
         </div>
-        <div class="col-sm">
+        <!-- <div class="col-sm">
             <button type="button" class="btn btn-dark ">Cancel</button>
-        </div>
+        </div> -->
     </div>
 </div>
 
 <script>
     $(document).ready(function(){
-        $('#rangeTable').dataTable();
+        // $('#rangeTable').dataTable();
     });
 
     $(".btn-submit").click(function () {
