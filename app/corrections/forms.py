@@ -86,7 +86,7 @@ class RangeCorrections(FlaskForm):
     begin_date = DateField(validators=[InputRequired()])
     end_date = DateField(validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS)
-    action = SelectField('Action', choices=ACTIONS)
+    action = SelectField('Action', choices=(("1", "1A" ),("3", "3A")))
     defaults = BooleanField(default="checked")
     datzilla_number = StringField('Datzilla #')
     submit = SubmitField('Submit')
