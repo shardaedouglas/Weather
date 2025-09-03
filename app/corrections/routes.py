@@ -10,6 +10,7 @@ import calendar
 import os
 from flask_login import login_required
 from wtforms import SelectMultipleField
+import traceback
 
 
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
@@ -223,11 +224,13 @@ def get_o_value():
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
             return jsonify({
                 "o_value": "No Value",
+                "o_flag_value": "   "
             })
             
         # Return a simple response with the data
         return jsonify({
-            "o_value": filtered_json,
+            "o_value": filtered_json[0],
+            "o_flag_value": filtered_json[1]
         })
     except Exception as e:
         print(f"Error in get_o_value: {e}")
@@ -468,9 +471,14 @@ def get_ranged_values():
         }
 
         days_data = []
-
+        # print("filtered json:" , filtered_json)
+        has_value_key = any('Value' in d for d in filtered_json)
+        # print("has_value_key: " , has_value_key)
+        if not has_value_key:
+            error_str = f"Error in get_ranged_values: No data for Element {element}"
+            return jsonify({"error": f"Internal server error {error_str}"}), 500
         for entry in filtered_json:
-            
+            # print("Entry: ", entry)
             # Extract year, month, and day from the 'Date' field
             full_date = datetime.strptime(entry['Date'], '%Y-%m-%d').date()
             year, month, day = full_date.year, full_date.month, full_date.day
@@ -480,7 +488,7 @@ def get_ranged_values():
             if begin_date <= full_date <= end_date:
                 days_data.append({
                     'date': full_date.strftime('%Y-%m-%d'),
-                    'value': entry['Value']
+                    'value': entry.get('Value', "N/A")
                 })
                         
         response_data = {
@@ -492,8 +500,8 @@ def get_ranged_values():
         return response_data
     
     except Exception as e:
-        print(f"Error in get_ranged_values: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        print(f"Error in get_ranged_values: {e} {traceback.format_exc()}")
+        return jsonify({"error": f"Internal server error {traceback.format_exc()}"}), 500
     
 
 @correction_bp.route('/submit_ranged_corrections', methods=['POST'])

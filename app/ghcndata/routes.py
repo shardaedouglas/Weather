@@ -798,8 +798,31 @@ def format_as_json(filtered_df, return_response=True):
         return formatted_data  # Return raw dictionary
     
 
+@ghcndata_bp.route('/ghcn_inventory', methods=['POST'])
+def get_ghcn_inventory():
+    ghcn_id = request.form.get('ghcn_id') 
+    # ghcn_id = 'USW0009443991'
+    file_path = '/data/ops/ghcnd/data/ghcnd-inventory.txt'
     
+    try:
+        data = []
+        # [GHCN_ID, Latitude, Longitude, Element, 1st Year, Last Year]
+        with open(file_path, "r") as file:
+            for line in file: 
+                if ghcn_id in line:
+                    data.append(line.split())
 
+        if not data:
+            return "NONE"
+        else:
+            return data
+
+    except Exception as err:
+        print("error: {}".format(traceback.format_exc()))
+        return err, traceback.format_exc()
+
+    print(data)
+    return data
 
 
 

@@ -156,9 +156,12 @@ def parse_and_filter(
     elif correction_type == "o_value":
         # Filter the data for the specific day
         o_value = filtered_df['day_' + str(day)][0] # Pull the value for the day column
+        o_flag_value = filtered_df['flag_' + str(day)][0] 
+        # print(filtered_df.write_json())
         print("O-Value for day:", o_value)
+        # print(o_flag_value)
 
-        return o_value
+        return o_value, o_flag_value
     
     elif correction_type == "table":
         
