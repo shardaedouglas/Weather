@@ -688,119 +688,200 @@ def  get_station_calc_for_GHCND():
         correction_type="table"
     )
     
-    
+
     filtered_df = pl.DataFrame(filtered_data) if isinstance(filtered_data, dict) else filtered_data
     filtered_json = filtered_df.to_dicts()
+    print(filtered_df)
+    print(filtered_json)
+    comp_calcs = {}
 
     try:
         station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
+        comp_calcs.update({
+            "AvMax" : station_avgs.get("Average Maximum"),
+            "AvMin" : station_avgs.get("Average Minimum"),
+            "AvTmp" : station_avgs.get("Average"),
+            "NOD Tmp": {
+                "MxT>=90": station_avgs.get(">=90_MAX"),
+                "MxT<=32": station_avgs.get("<=32_MAX"),
+                # "MnT<=32": station_avgs.get("<=32_MIN"),
+                "MnT<=0": station_avgs.get("<=0_MIN"),
+            }
+
+        })
     except Exception as err:
         print("error in calculate_station_avg():\n{}".format(traceback.format_exc()))
-        station_avgs = None
+        station_avgs = {}
+        comp_calcs.update({
+            "AvMax" : None,
+            "AvMin" : None,
+            "AvTmp" : None,
+            "NOD Tmp": {
+                "MxT>=90": None,
+                "MxT<=32": None,
+                "MnT<=0": None,
+            },
+        })
     try:
         max_temp = highestRecordedTemp(filtered_df)[ghcn_id]
+        comp_calcs.update({
+            "MaxTp" : {
+                "MaxTp": max_temp.get('value'),
+                "Day": max_temp.get('date').split('-')[2] if max_temp.get('date') is not None else None
+            },
+        })
     except Exception as err:
         print("error in highestRecordedTemp():\n{}".format(traceback.format_exc()))
-        max_temp = None
+        max_temp = {}
+        comp_calcs.update({
+            "MaxTp" : {
+                "MaxTp": None,
+                "Day": None
+            },
+        })
     try:
         min_temp = lowestRecordedTemp(filtered_df)[ghcn_id]
+        comp_calcs.update({
+            "MinTp" : {
+                "MinTp": min_temp.get('value'),
+                "Day": min_temp.get('date').split('-')[2] if min_temp.get('date') is not None else None
+            },
+        })
     except Exception as err:
         print("error in lowestRecordedTemp():\n{}".format(traceback.format_exc()))
-        min_temp = None
+        min_temp = {}
+        comp_calcs.update({
+            "MinTp" : {
+                "MinTp": None,
+                "Day": None
+            },
+        })
     try:
         max_snow = getTotalSnowAndIcePellets(filtered_df)[ghcn_id]
+        comp_calcs.update({
+            "Snow" : max_snow,
+        })
     except Exception as err:
-        print("error in lowestRecordedTemp():\n{}".format(traceback.format_exc()))
+        print("error in getTotalSnowAndIcePellets():\n{}".format(traceback.format_exc()))
         max_snow = None
+        comp_calcs.update({
+            "Snow" : None,
+        })
     try:
         max_snow_depth = getMaxDepthOnGround(filtered_df)[ghcn_id]
+        comp_calcs.update({
+            "S Depth" : max_snow_depth[0],
+        })
     except Exception as err:
         print("error in getMaxDepthOnGround():\n{}".format(traceback.format_exc()))
-        max_snow_depth = [None]
+        max_snow_depth = None
+        comp_calcs.update({
+            "S Depth" : None,
+        })
     try:
         max_24hr_prcp = getGreatest1DayPrecipitationExtreme(filtered_df)
+        comp_calcs.update({
+            "Max24Hr" : {
+                "Max24Hr": max_24hr_prcp.get('value'),
+                "Day": max_24hr_prcp.get('day')
+            },
+        })
     except Exception as err:
         print("error in getGreatest1DayPrecipitationExtreme(): \n{}".format(traceback.format_exc()))
-        max_24hr_prcp = None
+        max_24hr_prcp = {}
+        comp_calcs.update({
+            "Max24Hr" : {
+                "Max24Hr": None,
+                "Day": None
+            },
+        })
     try:
         nod_prcp = getNumOfDays(filtered_json)[ghcn_id]
+        comp_calcs.update({
+            "NOD Pcn": {
+                ">.01": nod_prcp.get('.01 OR MORE'),
+                ">.10": nod_prcp.get('.10 OR MORE'),
+                ">1": nod_prcp.get('1.00 OR MORE'),
+            },
+        })
     except Exception as err:
         print("error in getNumOfDays(): \n{}".format(traceback.format_exc()))
-        nod_prcp = None
+        nod_prcp = {}
+        comp_calcs.update({
+            "NOD Pcn": {
+                ">.01": None,
+                ">.10": None,
+                ">1": None,
+            },
+        })
     try:
         hdd = getMonthlyHDD(filtered_df)[ghcn_id]['total_HDD']
+        comp_calcs.update({
+            "HDD" : hdd,
+        })
     except Exception as err:
         print("error in getMonthlyHDD(): \n{}".format(traceback.format_exc()))
         hdd = None
+        comp_calcs.update({
+            "HDD" : None,
+        })
+    try:
+        raise Exception("CDD Function not available")
+        cdd = None
+        comp_calcs.update({
+            "CDD" : cdd,
+        })
+    except Exception as err:
+        print("error in CDD calculation \n{}".format(traceback.format_exc()))
+        cdd = None
+        comp_calcs.update({
+            "CDD" : None,
+        })
     try:
         total_pcn = generateDailyPrecip(filtered_json, [str(ghcn_id)])[ghcn_id]['total_pcn']
+        comp_calcs.update({
+            "TotPcn" : total_pcn,
+        })
     except Exception as err:
         print("error in generateDailyPrecip(): \n{}".format(traceback.format_exc()))
         total_pcn = None
+        comp_calcs.update({
+            "TotPcn" : None,
+        })
     try:
         sd_threshold = generateSDThreshold(filtered_json)[ghcn_id]['1.00 OR MORE']
+        comp_calcs.update({
+            "SF>=1" : sd_threshold, # NOD Snowfall >= one inch
+        })
     except Exception as err:
         print("error in generateSDThreshold(): \n{}".format(traceback.format_exc()))
         sd_threshold = None
+        comp_calcs.update({
+            "SF>=1" : None, # NOD Snowfall >= one inch
+        })
     try:
         sf_threshold = generateSFThreshold(filtered_json)[ghcn_id]['1.00 OR MORE']
+        comp_calcs.update({
+            "SD>=1" : sf_threshold, # NOD Snow Depth >= one inch
+        })
     except Exception as err:
         print("error in generateSFThreshold(): \n{}".format(traceback.format_exc()))
         sf_threshold = None
+        comp_calcs.update({
+            "SD>=1" : None, # NOD Snow Depth >= one inch
+        })
     
     
     
     # print(sd_threshold, sf_threshold)
-    
-    
-    
-    
-
-    # print(filtered_json)
-    # result = generateDailyPrecip(filtered_json, [str(ghcn_id)])
-    # print(f"{type(result)}\n{result}")
 
 
-    comp_calcs = { 
-        "AvMax" : station_avgs.get("Average Maximum"),
-        "AvMin" : station_avgs.get("Average Minimum"),
-        "AvTmp" : station_avgs.get("Average"),
-        "MaxTp" : {
-            "MaxTp": max_temp.get('value'),
-            "Day": max_temp.get('date').split('-')[2]
-        },
-        "MinTp" : {
-            "MinTp": min_temp.get('value'),
-            "Day": min_temp.get('date').split('-')[2]
-        },
-        "Max24Hr" : {
-            "Max24Hr": max_24hr_prcp.get('value'),
-            "Day": max_24hr_prcp.get('day')
-        },
-        "TotPcn" : total_pcn,
-        "Snow" : max_snow,
-        "S Depth" : max_snow_depth[0],
-        "HDD" : hdd,
-        "CDD " : None,
-        "NOD Pcn": {
-            ">.01": nod_prcp.get('.01 OR MORE'),
-            ">.10": nod_prcp.get('.10 OR MORE'),
-            ">1": nod_prcp.get('1.00 OR MORE'),
-        },
-        "NOD Tmp": {
-            "MxT>=90": station_avgs.get(">=90_MAX"),
-            "MxT<=32": station_avgs.get("<=32_MAX"),
-            # "MnT<=32": station_avgs.get("<=32_MIN"),
-            "MnT<=0": station_avgs.get("<=0_MIN"),
-        },
-        "SF>=1" : sd_threshold, # NOD Snowfall >= one inch
-        "SD>=1" : sf_threshold, # NOD Snow Depth >= one inch
-    }
-
-
-    # for k, v in comp_calcs.items():
-    #     if v is not None:
-    #         print(f"{k}: {v}")
+    for k, v in comp_calcs.items():
+        if v is not None:
+            print(f"{k}: {v}")
+        else:
+            print(f"{k}: None")
+            
     return comp_calcs
     
 @ghcndata_bp.route('/test_monthlyPub')

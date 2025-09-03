@@ -693,7 +693,7 @@
             $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
             $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
             $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
-            $(".ghcnd-calc-cdd").text(data["CDD "] !== null ? data["CDD "] : "N/A"); // Note: "CDD " has a trailing space in your data object key
+            $(".ghcnd-calc-cdd").text(data["CDD"] !== null ? data["CDD"] : "N/A"); 
 
             // Max 24-Hour Precipitation
             $(".ghcnd-calc-max-24hr").text(data.Max24Hr && data.Max24Hr["Max24Hr"] !== null ? data.Max24Hr["Max24Hr"] : "N/A");
