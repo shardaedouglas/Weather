@@ -26,30 +26,6 @@ def view_ghcn_data():
     return render_template('/ghcn_data/ghcndata_form.html', ghcnForm=form)
 
 
-
-
-    # station_data = {
-    #     'WMO ID': DB - WMO-ID,
-    #     'State': DB - STATE_PROV,
-    #     'Country': DB - FIPS_COUNTRY_NAME,
-    #     # 'Longitude': File,
-    #     # 'Latitude': File,
-    #     # 'GSN Flag': File,
-    #     # 'HCN Flag': File,
-    #     'Station': DB - NAME_PRINCIPAL,
-    #     'WBAN ID': DB - WBAN_ID,
-    #     'FAA ID': DB - FAA ID,
-    #     'Division (Num-Name)': DB - NWS_CLIM_DIV + " " + NWS_CLIM_DIV_NAME,
-    #     'County': DB - COUNTY,
-    #     'NWS Region': DB - NWS_REGION,
-    #     'NWS WFO': DB - NWS_WFO,
-    #     'NWSLI ID': DB - NWSLI_ID,
-    #     'Platform': DB - PLATFORM,
-    #     # 'Elevation': File,
-    #     'Time Offset': DB - UTC_OFFSET,
-    #     #'Lat/Lon': File
-    # }
-
 @ghcndata_bp.route('/station_metadata')
 def view_ghcn_metadata():
     station_data = {
@@ -145,9 +121,9 @@ def send_email():
 
 
 
-#########################################################################################
-################  UNIT CONVERSIONS   ####################################################  
-#########################################################################################
+#########################################################
+################  UNIT CONVERSIONS   ####################
+#########################################################
 
 def c_tenths_to_f(val: str) -> str:
     try:
@@ -206,60 +182,6 @@ def km_to_miles(val: str) -> str:
     if val == "-9999":
         return val
     return f"{round(float(val) * 0.621371, 2):.2f}"
-
-# def raw_tenths_c_to_c(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue / 10:.1f}"  # °C
-#     except:
-#         return val
-
-# def raw_tenths_mm_to_mm(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue / 10:.1f}"  # mm
-#     except:
-#         return val
-
-# def raw_mm_to_mm(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue:.1f}"  # mm
-#     except:
-#         return val
-
-# def raw_wind_tenths_to_ms(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue / 10:.1f}"  # m/s
-#     except:
-#         return val
-
-# def raw_cm_to_cm(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue:.1f}"  # cm
-#     except:
-#         return val
-
-# def raw_km_to_km(val: str) -> str:
-#     try:
-#         ivalue = int(val)
-#         if ivalue == -9999:
-#             return val
-#         return f"{ivalue:.1f}"  # km
-#     except:
-#         return val
     
 def raw_to_metric_simple(val: str) -> str:
     try:
@@ -272,10 +194,7 @@ def raw_to_metric_simple(val: str) -> str:
 
 
 
-################################################################################################################    
-#################################################################################################################
-
-
+########### Get All years within the Station's History ############
 def extract_years_from_dly(file_path: str) -> list[int]:
     """
     Parses a .dly file and returns a sorted list of unique 4-digit years present in the file.
@@ -293,7 +212,7 @@ def extract_years_from_dly(file_path: str) -> list[int]:
     
     return sorted(years, reverse=True)
     
- 
+ ########### Endpoint for fetching and proccessing GHCN data ############
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
 def get_data_for_GHCN_table():
     try:
@@ -457,7 +376,7 @@ def get_data_for_GHCN_table():
         return jsonify({"error": "Internal server error"}), 500
     
     
-
+###########  ############
 @ghcndata_bp.route('/get_state_for_GHCN_table', methods=['POST'])
 def get_state_for_GHCN_table():
     try:
@@ -547,7 +466,7 @@ def get_state_for_GHCN_table():
         return jsonify({"error": "Internal server error"}), 500
 
 
-    
+###########  ############    
 @ghcndata_bp.route('/get_state_for_GHCN_table_df', methods=['POST'])
 def get_state_for_GHCN_table_df():
     try:
@@ -647,6 +566,7 @@ def get_state_for_GHCN_table_df():
         print(f"Error in get_state_for_GHCN_table_df: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+########### Run Summary of the Month Calculations for the Target Station   ############
 @ghcndata_bp.route('/get_station_calc_for_GHCND', methods=['POST'])
 def  get_station_calc_for_GHCND():
 

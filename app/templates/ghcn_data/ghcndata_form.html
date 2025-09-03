@@ -5,7 +5,7 @@
 <div class="container-md">
     <div class="row g-3">
         <div class="col g-3">
-            <p style="font-size: 260%; font-weight: bold;">View Daily Data</p>
+            <p style="font-size: 260%; font-weight: bold;">View GHCN Data</p>
             <p>This is a brief description.</p>
         </div>
     </div>
@@ -69,10 +69,12 @@
 </div>  
 
 <script>
-
+    // Provides context to allow the save button to capture the current state of the table
     let lastFetchedData = null;
+    // Variable holding the table's current display option. 
+    let selectedDisplayGroup = 1;
 
-    
+    // Spinner Buffering Animation Control
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         console.log("urlParams", urlParams);
@@ -89,10 +91,12 @@
         }        
     });
     
+    // Hide GHCN Data Table until initial Form is complete
     function hideGHCNViewTable() {
        document.getElementById('station-data-view').style.display = "none";
     }
-
+    
+    // The Station Identifier Logic
     $(document).ready(function() {
 
         // Disables other radio options when one is selected.
@@ -128,150 +132,103 @@
         });
     })
 
-    function downloadCSVFromJSON(jsonData, filename) {
-        if (!jsonData || Object.keys(jsonData).length === 0) {
-            alert("No data to export.");
-            return;
-        }
-
-        // Extract all unique keys for CSV columns
-        const allKeysSet = new Set();
-        Object.values(jsonData).forEach(dayData => {
-            Object.keys(dayData).forEach(key => allKeysSet.add(key));
-        });
-        const allKeys = Array.from(allKeysSet).sort();
-
-        // Build CSV header
-        let csv = "Day," + allKeys.join(",") + "\n";
-
-        // Build CSV rows
-            Object.keys(jsonData)
-                .sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')))
-                .forEach(dayKey => {
-                    const dayNumber = String(parseInt(dayKey.replace('Day ', ''))).padStart(2, '0');
-                    const dayData = jsonData[dayKey];
-                    let row = [dayNumber];
-                    allKeys.forEach(key => {
-                        let val = dayData[key] !== undefined ? dayData[key] : "";
-                        if (typeof val === "string" && (val.includes(",") || val.includes('"'))) {
-                            val = `"${val.replace(/"/g, '""')}"`;
-                        }
-                        row.push(val);
-                    });
-                    csv += row.join(",") + "\n";
-                });
-
-            // Trigger file download
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-    //Form Submission and Show data table
-    // $(document).ready(function () {
-    //     $("form").submit(function (event) {
-    //         event.preventDefault(); // Prevent the default form submission
-    //         var formData = $(this).serialize(); //Retrieve the form data
-    //         // Send the request to handle the form data. async?
-    //         // Once data is returned, show the populated data table.
-    //         showGHCNViewTable();
-    //     })
-
-    // });
-
-    // function showComparisonTable(data) {
-    //     const tableBody = document.querySelector("#station-data-view tbody");
-    //     tableBody.innerHTML = ""; // Clear existing rows
-    
-    //     // Sort the days numerically
-    //     const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
-
-    //     sortedDays.forEach(dayKey => {
-    //         const dayData = data[dayKey];
-    //         const row = `
-    //             <tr>
-    //                 <td>${dayKey}</td>
-    //                 <td>${dayData.TMAX || ""}</td>
-    //                 <td>${dayData.TMIN || ""}</td>
-    //                 <td>${dayData.TOBS || ""}</td>
-    //                 <td>${dayData.PRCP || ""}</td>
-    //                 <td>${dayData.SNOW || ""}</td>
-    //                 <td>${dayData.SNWD || ""}</td>
-    //                 <td>${dayData.WTXX || ""}</td>
-    //             </tr>
-    //         `;
-    //         tableBody.insertAdjacentHTML('beforeend', row);
-    //     });
-
-    //     document.getElementById("station-data-view").style.display = "block";
-    // }
     
 
+    
 
-//     function showComparisonTable(data) {
-//         const table = document.getElementById("station-data-view");
-//         const thead = table.querySelector("thead");
-//         const tbody = table.querySelector("tbody");
-//         tbody.innerHTML = ""; // clear old rows
-//         thead.innerHTML = ""; // clear old headers
-//         lastFetchedData = data;
-//         selectedDisplayGroup = 1;
-//         // Sort days numerically
-//         const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
+    // Gets the data from the intial form to begin populating the tables and dropdowns with data
+    function getDataFromURL(urlParams) {
+        const idOption = urlParams.get('id-option');
 
-//         // Collect all unique keys from data (except day label)
-//         const allKeysSet = new Set();
-//         sortedDays.forEach(dayKey => {
-//             Object.keys(data[dayKey]).forEach(k => allKeysSet.add(k));
-//         });
+        const stationType = urlParams.get('station_type');
+        const date = urlParams.get('date');
 
-//         // Convert to array and sort keys alphabetically or keep custom order
-//         const allKeys = Array.from(allKeysSet).sort();
+        if (idOption === 'State') {
+            const state = urlParams.get('state');
 
-//         // Build table header row dynamically
-//         let headerRow = `<tr><th>Day</th>`;
-//         allKeys.forEach(key => {
-//             headerRow += `<th>${key}</th>`;
-//         });
-//         headerRow += `</tr>`;
-//         thead.insertAdjacentHTML('beforeend', headerRow);
+            const requestData = {
+                state: state,
+                date: date,
+                station_type: stationType,
+            };
 
-//         // Build table rows dynamically
-//         sortedDays.forEach(dayKey => {
-//             const dayData = data[dayKey];
-//             let row = `<tr><td>${dayKey}</td>`;
-//             allKeys.forEach(key => {
-//                 row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-//             });
-//             row += `</tr>`;
-//             tbody.insertAdjacentHTML('beforeend', row);
-//         });
+            $.ajax({
+                url: '/get_state_for_GHCN_table_df',
+                method: 'POST',
+                data: $.param(requestData),
+                success: function(response) {
+                    console.log("RESPONSE.DATA = ", response.data)
+                    lastFetchedData = response.data;
+                    // ghcnID = "USC00049026"
+                    console.log("lastFetchedData = ", lastFetchedData)
+                    console.log("response keys 4:", Object.keys(response));
+                    console.log("orderedKeys 4:", response.orderedKeys);
+                    showComparisonTable(response, response.ordered_keys);
+                    populateYearDropdown(response);
+                    fetchAndRenderStationMetadata(ghcnId);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                }
+            });
 
-//         table.style.display = "block";
 
-//          // Attach save button event handler fresh to avoid duplicates
-//         const saveBtn = document.getElementById("save-button");
-//         if (saveBtn) {
-//             // Remove previous listeners by cloning the node and replacing it
-//             const newSaveBtn = saveBtn.cloneNode(true);
-//             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    
+        } else {
+            const ghcnId = urlParams.get('ghcn_id');
+            const unitMode = document.getElementById("unit-selector").value;
 
-//             newSaveBtn.addEventListener("click", function () {
-//                 if (!lastFetchedData || lastFetchedData.length === 0) {
-//                     alert("No data available to save.");
-//                     return;
-//                 }
-//                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
-//             });
-//         }
+            const requestData = {
+                ghcn_id: ghcnId,
+                date: date,
+                station_type: stationType,
+                unit_mode: unitMode,
+                display_group: selectedDisplayGroup || 1
 
-// }
-    let selectedDisplayGroup = 1;
+            };
 
+            $.ajax({
+                url: '/get_data_for_GHCN_table',
+                method: 'POST',
+                data: $.param(requestData),
+                success: function(response) {
+
+                    console.log("RESPONSE.DATA = ", response.data)                       
+                    lastFetchedData = response.data;
+                    // ghcnID = "USC00049026"
+                    console.log("lastFetchedData = ", lastFetchedData)    
+                    console.log("response keys 5:", Object.keys(response));
+                    console.log("orderedKeys 5:", response.orderedKeys);                   
+                    showComparisonTable(response.data, response.ordered_keys);
+                    populateYearDropdown(response);
+                    fetchAndRenderStationMetadata(ghcnId);
+
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                }
+            });
+
+            $.ajax({
+                url: '/get_station_calc_for_GHCND',
+                method: 'POST',
+                data: $.param(requestData),
+                success: function(response) {
+                    console.log("Success:", response);
+                    showGHCNDCalculations(response)
+                    // showComparisonTable(response);
+                    // console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your request.");
+                }
+            });
+        }
+    }
+        
 
     function showComparisonTable(data, orderedKeys) {
         const table = document.getElementById("station-data-view");
@@ -336,377 +293,357 @@
         }
     }
 
+    // **** Change Year Logic **** \\
+    // Get the years associated with the target station
+    function populateYearDropdown(response) {
+        const yearDropdown = document.getElementById("year-selector");
+        yearDropdown.innerHTML = '<option selected>--Select--</option>';
 
-        function populateYearDropdown(response) {
-            const yearDropdown = document.getElementById("year-selector");
-            yearDropdown.innerHTML = '<option selected>--Select--</option>';
-
-            if (response.years && Array.isArray(response.years)) {
-                response.years.forEach(yr => {
-                    const opt = document.createElement("option");
-                    opt.value = yr;
-                    opt.textContent = yr;
-                    yearDropdown.appendChild(opt);
-                });
-            } else {
-                const placeholderYears = [2021, 2022, 2023];
-                placeholderYears.forEach(yr => {
-                    const opt = document.createElement("option");
-                    opt.value = yr;
-                    opt.textContent = yr;
-                    yearDropdown.appendChild(opt);
-                });
-            }
+        if (response.years && Array.isArray(response.years)) {
+            response.years.forEach(yr => {
+                const opt = document.createElement("option");
+                opt.value = yr;
+                opt.textContent = yr;
+                yearDropdown.appendChild(opt);
+            });
+        } else {
+            const placeholderYears = [2021, 2022, 2023];
+            placeholderYears.forEach(yr => {
+                const opt = document.createElement("option");
+                opt.value = yr;
+                opt.textContent = yr;
+                yearDropdown.appendChild(opt);
+            });
         }
-        
-
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("year-selector").addEventListener("change", function () {
-                const selectedYear = this.value;
-                if (selectedYear && selectedYear !== "--Select--") {
-                    const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
-                    const stationType = new URLSearchParams(window.location.search).get("station_type");
-                    const month = new URLSearchParams(window.location.search).get("date").substring(5,7);
-                    
-                    // Fake a correction_date using just year + dummy month/day
-                    const correctionDate = `${selectedYear}-${month}-01`; 
-
-                    $.ajax({
-                        url: '/get_data_for_GHCN_table',
-                        method: 'POST',
-                        data: $.param({
-                            ghcn_id: ghcnId,
-                            date: correctionDate,
-                            station_type: stationType
-                        }),
-                        success: function (response) {
-                            console.log("RESPONSE.DATA = ", response.data)
-                            lastFetchedData = response.data;
-                            console.log("lastFetchedData = ", lastFetchedData)
-                            console.log("response keys 1:", Object.keys(response));
-                            console.log("orderedKeys 1:", response.orderedKeys);
-                            showComparisonTable(response.data, response.ordered_keys);
-                            print(response.data)
-                            fetchAndRenderStationMetadata(ghcnId);
-                            $.ajax({
-                                url: '/get_station_calc_for_GHCND',
-                                method: 'POST',
-                                data: $.param({
-                                        ghcn_id: ghcnId,
-                                        date: correctionDate,
-                                        station_type: stationType
-                                    }),
-                                success: function(response) {
-                                    console.log("Success:", response);
-                                    showGHCNDCalculations(response)
-                                    console.log("New station calculations");
-                                    // showComparisonTable(response);
-                                    // console.log(response);
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Error:", error);
-                                    alert("There was an error processing your request.");
-                                }
-                            });
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Error reloading year:", error);
-                            alert("Could not load data for selected year.");
-                        }
-                    });
-                }
-            });
-            
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const unitSelector = document.getElementById("unit-selector");
-            
-            unitSelector.addEventListener("change", function () {
-                const unitMode = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                const ghcnId = urlParams.get("ghcn_id");
-                const stationType = urlParams.get("station_type");
-                const date = urlParams.get("date");
-
-                console.log("unitMode:", unitMode);
-                console.log("ghcn_id from URL:", ghcnId);
-                console.log("station_type from URL:", stationType);
-                console.log("date from URL:", date);
-
-
-                if (ghcnId && stationType && date && unitMode) {
-                    $.ajax({
-                        url: '/get_data_for_GHCN_table',
-                        method: 'POST',
-                        data: $.param({
-                            ghcn_id: ghcnId,
-                            date: date,
-                            station_type: stationType,
-                            unit_mode: unitMode,
-                            display_group: selectedDisplayGroup
-                        }),
-                        success: function (response) {
-                            console.log("RESPONSE.DATA = ", response.data)
-
-                            lastFetchedData = response.data;
-                            // ghcnID = "USC00049026"
-                            console.log("lastFetchedData = ", lastFetchedData)
-                            console.log("response keys 2:", Object.keys(response));
-                            console.log("orderedKeys 2:", response.orderedKeys);
-                            showComparisonTable(response.data, response.ordered_keys);
-                            fetchAndRenderStationMetadata(ghcnId);
-
-
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Unit change error:", error);
-                            alert("Failed to reload data with selected units.");
-                        }
-                    });
-                }
-            });
-        });
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const displaySelector = document.getElementById("display-selector");
-
-            displaySelector.addEventListener("change", function () {
-                selectedDisplayGroup = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                const ghcnId = urlParams.get("ghcn_id");
-                const stationType = urlParams.get("station_type");
-                const date = urlParams.get("date");
-                const unitMode = document.getElementById("unit-selector").value;
-                console.log("selectedDisplayGroup:", selectedDisplayGroup);
-
+    }
+    
+    // Update data table when the year is changed
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("year-selector").addEventListener("change", function () {
+            const selectedYear = this.value;
+            // Check if year has changed then grab the data for the new year selected
+            if (selectedYear && selectedYear !== "--Select--") {
+                const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
+                const stationType = new URLSearchParams(window.location.search).get("station_type");
+                const month = new URLSearchParams(window.location.search).get("date").substring(5,7);
                 
-                if (ghcnId && stationType && date && selectedDisplayGroup) {
-                    $.ajax({
-                        url: '/get_data_for_GHCN_table',
-                        method: 'POST',
-                        data: $.param({
-                            ghcn_id: ghcnId,
-                            date: date,
-                            station_type: stationType,
-                            unit_mode: unitMode,
-                            display_group: selectedDisplayGroup
-                        }),
-                        success: function (response) {
-                            console.log("RESPONSE.DATA = ", response.data)
-                            lastFetchedData = response.data;
-                            // ghcnID = "USC00049026"
-                            console.log("lastFetchedData = ", lastFetchedData)
-                            console.log("response keys 3 :", Object.keys(response));
-                            console.log("orderedKeys 3:", response.orderedKeys);
-                            showComparisonTable(response.data, response.ordered_keys);
-                            fetchAndRenderStationMetadata(ghcnId);
-
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Display group change error:", error);
-                            alert("Failed to reload data with selected display group.");
-                        }
-                    });
-                }
-            });
-        });
-
-
-        function getDataFromURL(urlParams) {
-            const idOption = urlParams.get('id-option');
-
-            const stationType = urlParams.get('station_type');
-            const date = urlParams.get('date');
-
-            if (idOption === 'State') {
-                const state = urlParams.get('state');
-
-                const requestData = {
-                    state: state,
-                    date: date,
-                    station_type: stationType,
-                };
-
-                $.ajax({
-                    url: '/get_state_for_GHCN_table_df',
-                    method: 'POST',
-                    data: $.param(requestData),
-                    success: function(response) {
-                        console.log("RESPONSE.DATA = ", response.data)
-                        lastFetchedData = response.data;
-                        // ghcnID = "USC00049026"
-                        console.log("lastFetchedData = ", lastFetchedData)
-                        console.log("response keys 4:", Object.keys(response));
-                        console.log("orderedKeys 4:", response.orderedKeys);
-                        showComparisonTable(response, response.ordered_keys);
-                        populateYearDropdown(response);
-                        fetchAndRenderStationMetadata(ghcnId);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("There was an error processing your request.");
-                    }
-                });
-
-
-        
-            } else {
-                const ghcnId = urlParams.get('ghcn_id');
-                const unitMode = document.getElementById("unit-selector").value;
-
-                const requestData = {
-                    ghcn_id: ghcnId,
-                    date: date,
-                    station_type: stationType,
-                    unit_mode: unitMode,
-                    display_group: selectedDisplayGroup || 1
-
-                };
+                // Fake a correction_date using just year + dummy month/day
+                const correctionDate = `${selectedYear}-${month}-01`; 
 
                 $.ajax({
                     url: '/get_data_for_GHCN_table',
                     method: 'POST',
-                    data: $.param(requestData),
-                    success: function(response) {
-
-                        console.log("RESPONSE.DATA = ", response.data)                       
+                    data: $.param({
+                        ghcn_id: ghcnId,
+                        date: correctionDate,
+                        station_type: stationType
+                    }),
+                    success: function (response) {
+                        console.log("RESPONSE.DATA = ", response.data)
                         lastFetchedData = response.data;
-                        // ghcnID = "USC00049026"
-                        console.log("lastFetchedData = ", lastFetchedData)    
-                        console.log("response keys 5:", Object.keys(response));
-                        console.log("orderedKeys 5:", response.orderedKeys);                   
+                        console.log("lastFetchedData = ", lastFetchedData)
+                        console.log("response keys 1:", Object.keys(response));
+                        console.log("orderedKeys 1:", response.orderedKeys);
                         showComparisonTable(response.data, response.ordered_keys);
-                        populateYearDropdown(response);
+                        print(response.data)
                         fetchAndRenderStationMetadata(ghcnId);
-
+                        $.ajax({
+                            url: '/get_station_calc_for_GHCND',
+                            method: 'POST',
+                            data: $.param({
+                                    ghcn_id: ghcnId,
+                                    date: correctionDate,
+                                    station_type: stationType
+                                }),
+                            success: function(response) {
+                                console.log("Success:", response);
+                                showGHCNDCalculations(response)
+                                console.log("New station calculations");
+                                // showComparisonTable(response);
+                                // console.log(response);
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Error:", error);
+                                alert("There was an error processing your request.");
+                            }
+                        });
                     },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("There was an error processing your request.");
-                    }
-                });
-
-                $.ajax({
-                    url: '/get_station_calc_for_GHCND',
-                    method: 'POST',
-                    data: $.param(requestData),
-                    success: function(response) {
-                        console.log("Success:", response);
-                        showGHCNDCalculations(response)
-                        // showComparisonTable(response);
-                        // console.log(response);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("There was an error processing your request.");
+                    error: function (xhr, status, error) {
+                        console.error("Error reloading year:", error);
+                        alert("Could not load data for selected year.");
                     }
                 });
             }
-        }
+        });
         
+    });
+
+    
+    // **** Split Month functionality **** \\
+    $(document).ready(function(){
+        $('#flexCheckDefault').click(function(){
+            if($(this).prop("checked") == true){
+                console.log("Initiate Split Month")
+                const urlParams = new URLSearchParams(window.location.search);
+                const ghcnId = urlParams.get("ghcn_id");
+                const stationType = urlParams.get("station_type");
+                const date = urlParams.get("date");
+                
+                // Get the first 14 days of the previous month
+
+            }
+            else if($(this).prop("checked") == false){
+                console.log("Disable Split Month")
+                // Reset to the original table data
+            }
+        })
+    })
+
+
+
+    // **** Unit Conversion Logic **** \\
+    document.addEventListener("DOMContentLoaded", function () {
+        const unitSelector = document.getElementById("unit-selector");
         
-        /**
-         * Populates a data table with GHCND (Global Historical Climatology Network Daily) calculations.
-         *
-         * This function takes a structured data object containing various calculated
-         * meteorological statistics and uses it to populate an HTML element.
-         *
-         * @param {object} data - An object containing calculated GHCND statistics for display.
-         * @param {number} data.AvMax - The average maximum temperature.
-         * @param {number} data.AvMin - The average minimum temperature.
-         * @param {number} data.AvTmp - The overall average temperature.
-         * @param {object} data.MaxTp - Details for the highest temperature recorded.
-         * @param {number} data.MaxTp.MaxTp - The maximum temperature value.
-         * @param {string} data.MaxTp.Day - The date (e.g., 'YYYY-MM-DD') when the maximum temperature occurred.
-         * @param {object} data.MinTp - Details for the lowest temperature recorded.
-         * @param {number} data.MinTp.MinTp - The minimum temperature value.
-         * @param {string} data.MinTp.Day - The date (e.g., 'YYYY-MM-DD') when the minimum temperature occurred.
-         * @param {object} data.Max24Hr - Details for the maximum 24-hour precipitation.
-         * @param {number} data.Max24Hr.Max24Hr - The maximum 24-hour precipitation value.
-         * @param {string} data.Max24Hr.Day - The day (e.g., 'DD') when the maximum 24-hour precipitation occurred.
-         * @param {number} data.TotPcn - The total precipitation.
-         * @param {number} data.Snow - The maximum snowfall.
-         * @param {number} data["S Depth"] - The maximum snow depth.
-         * @param {number} data.HDD - Heating Degree Days.
-         * @param {number} data.CDD - Cooling Degree Days. (currently null/not calculated).
-         * @param {object} data["NOD Pcn"] - Number of Days with Precipitation exceeding certain thresholds.
-         * @param {number} data["NOD Pcn"].">.01" - Number of days with precipitation >= 0.01 units.
-         * @param {number} data["NOD Pcn"].">.10" - Number of days with precipitation >= 0.10 units.
-         * @param {number} data["NOD Pcn"].">1" - Number of days with precipitation >= 1.00 unit.
-         * @param {object} data["NOD Tmp"] - Number of Days with Temperature exceeding certain thresholds.
-         * @param {number} data["NOD Tmp"]."MxT>=90" - Number of days where maximum temperature was >= 90.
-         * @param {number} data["NOD Tmp"]."MxT<=32" - Number of days where maximum temperature was <= 32.
-         * @param {number} data["NOD Tmp"]."MnT<=0" - Number of days where minimum temperature was <= 0.
-         * @param {number} data["SF>=1"] - Number of days with snowfall >= one inch
-         * @param {number} data["SD>=1"] - Number of days with snow depth >= one inch 
-         */
-        function showGHCNDCalculations(data) {
+        unitSelector.addEventListener("change", function () {
+            const unitMode = this.value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const ghcnId = urlParams.get("ghcn_id");
+            const stationType = urlParams.get("station_type");
+            const date = urlParams.get("date");
+
+            console.log("unitMode:", unitMode);
+            console.log("ghcn_id from URL:", ghcnId);
+            console.log("station_type from URL:", stationType);
+            console.log("date from URL:", date);
 
 
-            // Temperature
-            $(".ghcnd-calc-av-max").text(data["AvMax"] !== null ? data["AvMax"]  : "N/A");
-            $(".ghcnd-calc-av-min").text(data["AvMin"] !== null ? data["AvMin"]  : "N/A");
-            $(".ghcnd-calc-av-temp").text(data["AvTmp"] !== null ? data["AvTmp"]  : "N/A");
-            $(".ghcnd-calc-max-temp").text(data.MaxTp["MaxTp"] !== null ? data.MaxTp["MaxTp"]  : "N/A");
-            $(".ghcnd-calc-max-temp-date").text(data.MaxTp["Day"] !== null ? data.MaxTp["Day"]  : "N/A");
-            $(".ghcnd-calc-min-temp").text(data.MinTp["MinTp"]  !== null ? data.MinTp["MinTp"]  : "N/A");
-            $(".ghcnd-calc-min-temp-date").text(data.MinTp["Day"] !== null ? data.MinTp["Day"] : "N/A" );
+            if (ghcnId && stationType && date && unitMode) {
+                $.ajax({
+                    url: '/get_data_for_GHCN_table',
+                    method: 'POST',
+                    data: $.param({
+                        ghcn_id: ghcnId,
+                        date: date,
+                        station_type: stationType,
+                        unit_mode: unitMode,
+                        display_group: selectedDisplayGroup
+                    }),
+                    success: function (response) {
+                        console.log("RESPONSE.DATA = ", response.data)
 
-            // Precipitation and Snowfall
-            $(".ghcnd-calc-totpcn").text(data["TotPcn"] !== null ? data["TotPcn"] : "N/A");
-            $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
-            $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
-            $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
-            $(".ghcnd-calc-cdd").text(data["CDD "] !== null ? data["CDD "] : "N/A"); // Note: "CDD " has a trailing space in your data object key
-
-            // Max 24-Hour Precipitation
-            $(".ghcnd-calc-max-24hr").text(data.Max24Hr && data.Max24Hr["Max24Hr"] !== null ? data.Max24Hr["Max24Hr"] : "N/A");
-            $(".ghcnd-calc-max-24hr-date").text(data.Max24Hr && data.Max24Hr["Day"] !== null ? data.Max24Hr["Day"] : "N/A");
-
-            // Number of Days  Precipitation Thresholds
-            $(".ghcnd-calc-pcn-gt01").text(data["NOD Pcn"] && data["NOD Pcn"][">.01"] !== null ? data["NOD Pcn"][">.01"] : "N/A");
-            $(".ghcnd-calc-pcn-gt10").text(data["NOD Pcn"] && data["NOD Pcn"][">.10"] !== null ? data["NOD Pcn"][">.10"] : "N/A");
-            $(".ghcnd-calc-pcn-gt100").text(data["NOD Pcn"] && data["NOD Pcn"][">1"] !== null ? data["NOD Pcn"][">1"] : "N/A");
-
-            
-
-            // Number of Days Temperature Thresholds
-            $(".ghcnd-calc-max-temp-gt90").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT>=90"] !== null ? data["NOD Tmp"]["MxT>=90"] : "N/A");
-            $(".ghcnd-calc-max-temp-lt32").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT<=32"] !== null ? data["NOD Tmp"]["MxT<=32"] : "N/A");
-            $(".ghcnd-calc-min-temp-lt0").text(data["NOD Tmp"] && data["NOD Tmp"]["MnT<=0"] !== null ? data["NOD Tmp"]["MnT<=0"] : "N/A");
-            
-            // Number of Days with Snowfall >= one inch
-            $(".ghcnd-calc-sf-gt100").text(data["SF>=1"] !== null ? data["SF>=1"] : "N/A");
-            // Number of Days with Snow Depth >= one inch
-            $(".ghcnd-calc-snow-depth-gt100").text(data["SD>=1"] !== null ? data["SD>=1"] : "N/A");
-
-        }
+                        lastFetchedData = response.data;
+                        // ghcnID = "USC00049026"
+                        console.log("lastFetchedData = ", lastFetchedData)
+                        console.log("response keys 2:", Object.keys(response));
+                        console.log("orderedKeys 2:", response.orderedKeys);
+                        showComparisonTable(response.data, response.ordered_keys);
+                        fetchAndRenderStationMetadata(ghcnId);
 
 
-        function fetchAndRenderStationMetadata(ghcnId) {
-            if (!ghcnId) return;
-
-            const container = document.getElementById("station-metadata-view");
-            container.style.display = "none";
-            container.innerHTML = "";
-
-            fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Network response was not ok");
-                    return response.text();
-                })
-                .then(html => {
-                    container.innerHTML = html;
-                    container.style.display = "block";
-                    // If you use tooltips, initialize here, otherwise omit:
-                    // $('[data-toggle="tooltip"]').tooltip();
-                })
-                .catch(err => {
-                    console.error("Failed to load station metadata:", err);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Unit change error:", error);
+                        alert("Failed to reload data with selected units.");
+                    }
                 });
+            }
+        });
+    });
+
+    // **** Change Display Logic **** \\
+    document.addEventListener("DOMContentLoaded", function () {
+        const displaySelector = document.getElementById("display-selector");
+
+        displaySelector.addEventListener("change", function () {
+            selectedDisplayGroup = this.value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const ghcnId = urlParams.get("ghcn_id");
+            const stationType = urlParams.get("station_type");
+            const date = urlParams.get("date");
+            const unitMode = document.getElementById("unit-selector").value;
+            console.log("selectedDisplayGroup:", selectedDisplayGroup);
+
+            
+            if (ghcnId && stationType && date && selectedDisplayGroup) {
+                $.ajax({
+                    url: '/get_data_for_GHCN_table',
+                    method: 'POST',
+                    data: $.param({
+                        ghcn_id: ghcnId,
+                        date: date,
+                        station_type: stationType,
+                        unit_mode: unitMode,
+                        display_group: selectedDisplayGroup
+                    }),
+                    success: function (response) {
+                        console.log("RESPONSE.DATA = ", response.data)
+                        lastFetchedData = response.data;
+                        // ghcnID = "USC00049026"
+                        console.log("lastFetchedData = ", lastFetchedData)
+                        console.log("response keys 3 :", Object.keys(response));
+                        console.log("orderedKeys 3:", response.orderedKeys);
+                        showComparisonTable(response.data, response.ordered_keys);
+                        fetchAndRenderStationMetadata(ghcnId);
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Display group change error:", error);
+                        alert("Failed to reload data with selected display group.");
+                    }
+                });
+            }
+        });
+    });
+
+    
+    
+    /** GHCN Calculation Logic
+     * Populates a data table with GHCND (Global Historical Climatology Network Daily) calculations.
+     *
+     * This function takes a structured data object containing various calculated
+     * meteorological statistics and uses it to populate an HTML element.
+     *
+     * @param {object} data - An object containing calculated GHCND statistics for display.
+     * @param {number} data.AvMax - The average maximum temperature.
+     * @param {number} data.AvMin - The average minimum temperature.
+     * @param {number} data.AvTmp - The overall average temperature.
+     * @param {object} data.MaxTp - Details for the highest temperature recorded.
+     * @param {number} data.MaxTp.MaxTp - The maximum temperature value.
+     * @param {string} data.MaxTp.Day - The date (e.g., 'YYYY-MM-DD') when the maximum temperature occurred.
+     * @param {object} data.MinTp - Details for the lowest temperature recorded.
+     * @param {number} data.MinTp.MinTp - The minimum temperature value.
+     * @param {string} data.MinTp.Day - The date (e.g., 'YYYY-MM-DD') when the minimum temperature occurred.
+     * @param {object} data.Max24Hr - Details for the maximum 24-hour precipitation.
+     * @param {number} data.Max24Hr.Max24Hr - The maximum 24-hour precipitation value.
+     * @param {string} data.Max24Hr.Day - The day (e.g., 'DD') when the maximum 24-hour precipitation occurred.
+     * @param {number} data.TotPcn - The total precipitation.
+     * @param {number} data.Snow - The maximum snowfall.
+     * @param {number} data["S Depth"] - The maximum snow depth.
+     * @param {number} data.HDD - Heating Degree Days.
+     * @param {number} data.CDD - Cooling Degree Days. (currently null/not calculated).
+     * @param {object} data["NOD Pcn"] - Number of Days with Precipitation exceeding certain thresholds.
+     * @param {number} data["NOD Pcn"].">.01" - Number of days with precipitation >= 0.01 units.
+     * @param {number} data["NOD Pcn"].">.10" - Number of days with precipitation >= 0.10 units.
+     * @param {number} data["NOD Pcn"].">1" - Number of days with precipitation >= 1.00 unit.
+     * @param {object} data["NOD Tmp"] - Number of Days with Temperature exceeding certain thresholds.
+     * @param {number} data["NOD Tmp"]."MxT>=90" - Number of days where maximum temperature was >= 90.
+     * @param {number} data["NOD Tmp"]."MxT<=32" - Number of days where maximum temperature was <= 32.
+     * @param {number} data["NOD Tmp"]."MnT<=0" - Number of days where minimum temperature was <= 0.
+     * @param {number} data["SF>=1"] - Number of days with snowfall >= one inch
+     * @param {number} data["SD>=1"] - Number of days with snow depth >= one inch 
+     */
+    function showGHCNDCalculations(data) {
+
+
+        // Temperature
+        $(".ghcnd-calc-av-max").text(data["AvMax"] !== null ? data["AvMax"]  : "N/A");
+        $(".ghcnd-calc-av-min").text(data["AvMin"] !== null ? data["AvMin"]  : "N/A");
+        $(".ghcnd-calc-av-temp").text(data["AvTmp"] !== null ? data["AvTmp"]  : "N/A");
+        $(".ghcnd-calc-max-temp").text(data.MaxTp["MaxTp"] !== null ? data.MaxTp["MaxTp"]  : "N/A");
+        $(".ghcnd-calc-max-temp-date").text(data.MaxTp["Day"] !== null ? data.MaxTp["Day"]  : "N/A");
+        $(".ghcnd-calc-min-temp").text(data.MinTp["MinTp"]  !== null ? data.MinTp["MinTp"]  : "N/A");
+        $(".ghcnd-calc-min-temp-date").text(data.MinTp["Day"] !== null ? data.MinTp["Day"] : "N/A" );
+
+        // Precipitation and Snowfall
+        $(".ghcnd-calc-totpcn").text(data["TotPcn"] !== null ? data["TotPcn"] : "N/A");
+        $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
+        $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
+        $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
+        $(".ghcnd-calc-cdd").text(data["CDD "] !== null ? data["CDD "] : "N/A"); // Note: "CDD " has a trailing space in your data object key
+
+        // Max 24-Hour Precipitation
+        $(".ghcnd-calc-max-24hr").text(data.Max24Hr && data.Max24Hr["Max24Hr"] !== null ? data.Max24Hr["Max24Hr"] : "N/A");
+        $(".ghcnd-calc-max-24hr-date").text(data.Max24Hr && data.Max24Hr["Day"] !== null ? data.Max24Hr["Day"] : "N/A");
+
+        // Number of Days  Precipitation Thresholds
+        $(".ghcnd-calc-pcn-gt01").text(data["NOD Pcn"] && data["NOD Pcn"][">.01"] !== null ? data["NOD Pcn"][">.01"] : "N/A");
+        $(".ghcnd-calc-pcn-gt10").text(data["NOD Pcn"] && data["NOD Pcn"][">.10"] !== null ? data["NOD Pcn"][">.10"] : "N/A");
+        $(".ghcnd-calc-pcn-gt100").text(data["NOD Pcn"] && data["NOD Pcn"][">1"] !== null ? data["NOD Pcn"][">1"] : "N/A");
+
+        
+
+        // Number of Days Temperature Thresholds
+        $(".ghcnd-calc-max-temp-gt90").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT>=90"] !== null ? data["NOD Tmp"]["MxT>=90"] : "N/A");
+        $(".ghcnd-calc-max-temp-lt32").text(data["NOD Tmp"] && data["NOD Tmp"]["MxT<=32"] !== null ? data["NOD Tmp"]["MxT<=32"] : "N/A");
+        $(".ghcnd-calc-min-temp-lt0").text(data["NOD Tmp"] && data["NOD Tmp"]["MnT<=0"] !== null ? data["NOD Tmp"]["MnT<=0"] : "N/A");
+        
+        // Number of Days with Snowfall >= one inch
+        $(".ghcnd-calc-sf-gt100").text(data["SF>=1"] !== null ? data["SF>=1"] : "N/A");
+        // Number of Days with Snow Depth >= one inch
+        $(".ghcnd-calc-snow-depth-gt100").text(data["SD>=1"] !== null ? data["SD>=1"] : "N/A");
+
+    }
+
+
+
+    // **** Logic for saving the GHCN Table data to user's file System **** \\
+    function downloadCSVFromJSON(jsonData, filename) {
+        if (!jsonData || Object.keys(jsonData).length === 0) {
+            alert("No data to export.");
+            return;
         }
+
+        // Extract all unique keys for CSV columns
+        const allKeysSet = new Set();
+        Object.values(jsonData).forEach(dayData => {
+            Object.keys(dayData).forEach(key => allKeysSet.add(key));
+        });
+        const allKeys = Array.from(allKeysSet).sort();
+
+        // Build CSV header
+        let csv = "Day," + allKeys.join(",") + "\n";
+
+        // Build CSV rows
+            Object.keys(jsonData)
+                .sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')))
+                .forEach(dayKey => {
+                    const dayNumber = String(parseInt(dayKey.replace('Day ', ''))).padStart(2, '0');
+                    const dayData = jsonData[dayKey];
+                    let row = [dayNumber];
+                    allKeys.forEach(key => {
+                        let val = dayData[key] !== undefined ? dayData[key] : "";
+                        if (typeof val === "string" && (val.includes(",") || val.includes('"'))) {
+                            val = `"${val.replace(/"/g, '""')}"`;
+                        }
+                        row.push(val);
+                    });
+                    csv += row.join(",") + "\n";
+                });
+
+            // Trigger file download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+    // **** Get the station's metadata **** \\
+    function fetchAndRenderStationMetadata(ghcnId) {
+        if (!ghcnId) return;
+
+        const container = document.getElementById("station-metadata-view");
+        container.style.display = "none";
+        container.innerHTML = "";
+
+        fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.text();
+            })
+            .then(html => {
+                container.innerHTML = html;
+                container.style.display = "block";
+                // If you use tooltips, initialize here, otherwise omit:
+                // $('[data-toggle="tooltip"]').tooltip();
+            })
+            .catch(err => {
+                console.error("Failed to load station metadata:", err);
+            });
+    }
 
 
 
