@@ -58,6 +58,7 @@ class DailyCorrections(FlaskForm):
     o_value = StringField('O-Value')
     e_value = StringField('E-Value')
     datzilla_number = StringField('Datzilla #')
+    source = StringField('Source')
     submit = SubmitField('Submit')
     
     sub_element_SN = SelectField('SubElement', choices=SUB_ELEMENTS[:63])
@@ -85,7 +86,7 @@ class RangeCorrections(FlaskForm):
     begin_date = DateField(validators=[InputRequired()])
     end_date = DateField(validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS)
-    action = SelectField('Action', choices=ACTIONS)
+    action = SelectField('Action', choices=(("1", "1A" ),("3", "3A")))
     defaults = BooleanField(default="checked")
     datzilla_number = StringField('Datzilla #')
     submit = SubmitField('Submit')

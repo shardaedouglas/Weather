@@ -15,6 +15,105 @@
     <div class="container-md form-container">
     <form class="row g-3 align-items-center ">
         <div class="row g-3 align-items-center">
+            <div class="col-md input-group">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
+                {{daily_form.ghcn_id(class_='form-control')}}
+            </div>
+            <div class="col input-group justify-content-start" id="date-div">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                {{daily_form.date(class_='form-control date-picker')}}
+            </div>
+            <div class="w-100 d-lg-none d-block"></div>
+            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Datzilla #</span>
+                {{daily_form.datzilla_number(class_='form-control')}}
+            </div>
+        </div>
+        <div class="row g-3" >
+            <div class="col input-group justify-content-start" style="flex-wrap: nowrap;">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
+                {{daily_form.element(class_='form-select element-select')}}
+            </div>
+            <!-- Sub selection for Element -->
+            <div class="col input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
+                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
+                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+            </div>
+
+        </div>
+        <div class="row g-3">
+
+            <div class="col">
+                <div class="row">
+            
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
+                        {{daily_form.o_value(class_='form-control')}}
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <div class="w-25"></div>
+                        <span class="input-group-text">M Flag</span>
+                        <input type="text" class="form-control" id="m-flag-output">
+                        
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <div class="w-25"></div>
+                        <span class="input-group-text">Q Flag</span>
+                        <input type="text" class="form-control" id="q-flag-output">
+                        
+                        
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <div class="w-25"></div>
+                        <span class="input-group-text">S Flag</span>
+                        <input type="text" class="form-control" id="s-flag-output">
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="col input-group" style=" flex-wrap: nowrap;  max-height: 40px">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">E-Value</span>
+                {{daily_form.e_value(class_='form-control')}}
+            </div>
+            <div class="w-100 d-md-none d-block"></div>
+            <div class="col input-group" style=" flex-wrap: nowrap; max-height: 40px">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Action</span>
+                {{daily_form.action(class_='form-control')}}
+            </div>
+            <div class="col input-group" style=" flex-wrap: nowrap; max-height: 40px">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Source</span>
+                {{daily_form.source(class_='form-control')}}
+            </div>
+        </div>
+        
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;">Compare</button>
+            </div>
+            
+            <div class="col-sm">
+                <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
+                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
+
+            </div>
+
+        </div>
+        <div class="row g-3" >
+            <div class="col-sm">
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
+            </div>
+        </div>
+    </form>
+{#
+    <form class="row g-3 align-items-center ">
+        <div class="row g-3 align-items-center">
             <div class="col input-group">
                 <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
                 {{daily_form.ghcn_id(class_='form-control')}}
@@ -53,12 +152,27 @@
         </div>
         <div class="row g-3">
 
-            <div class="col-md input-group" style=" flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
-                {{daily_form.o_value(class_='form-control')}}
+            <div class="col">
+                <div class="row">
+            
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
+                        {{daily_form.o_value(class_='form-control')}}
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col input-group" style=" flex-wrap: nowrap;">
+                        <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Flags</span>
+                        <span class="input-group-text">M</span>
+                        <input type="text" class="form-control" id="m-flag-output">
+                        <span class="input-group-text">Q</span>
+                        <input type="text" class="form-control" id="q-flag-output">
+                        <span class="input-group-text">S</span>
+                        <input type="text" class="form-control" id="s-flag-output">
+                    </div>
+                </div>
             </div>
-            <div class="col-md input-group" style=" flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">E-Value</span>
+            <div class="col-md input-group" style=" flex-wrap: nowrap;  max-height: 40px">
+                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">E-Value</span>
                 {{daily_form.e_value(class_='form-control')}}
             </div>
         </div>
@@ -81,6 +195,7 @@
             </div>
         </div>
     </form>
+#}
 </div>
 
     
@@ -125,7 +240,7 @@
             formData = formatWeatherDataQuery($("form"));
             const params = new URLSearchParams(formData);
             console.log("SUBMIT Params: ", params);
-            console.log("Form data was gathered. Checked 1")
+            //console.log("Form data was gathered. Checked 1");
             //const formData = $('form').serialize(); // Returns a URL-encoded string
             //const params = new URLSearchParams(formData);
             
@@ -142,6 +257,7 @@
             const dateInput = document.querySelector('input[name="date"]');
             const elementSelect = document.querySelector('select[name="element"]');
             const oValueInput = document.querySelector('[name="o_value"]');  // Correctly target O-Value input field
+            
 
            
 
@@ -193,6 +309,9 @@
                         // Check if O-Value exists in the response
                         if (response.o_value) {
                             oValueInput.value = response.o_value; // Populate the O-Value field
+                            $("#m-flag-output").val(response.o_flag_value.charAt(0));
+                            $("#q-flag-output").val(response.o_flag_value.charAt(1));
+                            $("#s-flag-output").val(response.o_flag_value.charAt(2));
                         } else {
                             alert("O-Value not found.");
                         }

@@ -43,10 +43,11 @@
 
         <div class="row justify-content-center" id="button-row">
             <div class="col-md">
-                <button type="reset" class="btn button-dull" onclick="hideGHCNViewTable()" style="width:100%;display:block;font-weight: bold">Clear</button>
+                <!-- <button type="reset" class="btn button-dull w-100 d-block fw-bold" onclick="hideGHCNViewTable()">Clear</button> -->
+                <button type="reset" class="btn button-dull w-100 d-block fw-bold">Clear</button>
             </div>
             <div class="col-md">
-                <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold">Submit</button>
+                <button type="submit" class="btn btn-success w-100 d-block fw-bold">Submit</button>
             </div>
             
         </div>
@@ -65,6 +66,13 @@
         <!-- {% include "ghcn_data/station_metadata.html" %} -->
     <!-- {% endif %} -->
 </div>
+
+<div id="station-inventory-view" style="display: none;">
+
+        {% include "ghcn_data/station_inventory_view.html" %}
+
+</div>
+
 
 </div>  
 
@@ -92,9 +100,14 @@
     });
     
     // Hide GHCN Data Table until initial Form is complete
-    function hideGHCNViewTable() {
-       document.getElementById('station-data-view').style.display = "none";
-    }
+    // function hideGHCNViewTable() {
+    //    document.getElementById('station-data-view').style.display = "none";
+    // }
+
+    $("button[type='reset']").on("click", function() {
+        $("#station-data-view").hide();
+        $("#station-metadata-view").hide();
+    });
     
     // The Station Identifier Logic
     $(document).ready(function() {
@@ -237,6 +250,18 @@
         tbody.innerHTML = ""; // clear old rows
         thead.innerHTML = ""; // clear old headers
         lastFetchedData = data;
+        console.log("data", data);
+        console.log("orderedKeys", orderedKeys);
+        
+        // Add leading 0 to days < 10
+        const paddedData = {};
+        for (const key in data) {
+        const dayNumber = key.replace('Day ', '');
+        const paddedNumber = dayNumber.padStart(2, '0');
+        const newKey = `Day ${paddedNumber}`;
+        paddedData[newKey] = data[key];
+        }
+        data = paddedData;
 
         // Sort days numerically
         const sortedDays = Object.keys(data).sort(
@@ -261,6 +286,7 @@
         });
         headerRow += `</tr>`;
         thead.insertAdjacentHTML('beforeend', headerRow);
+        console.log("allkeys", allKeys);
 
         // Build table rows dynamically
         sortedDays.forEach(dayKey => {
@@ -274,6 +300,7 @@
             row += `</tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
+        console.log("sortedDays", sortedDays);
 
         table.style.display = "block";
 
@@ -291,7 +318,12 @@
                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
             });
         }
+        $('#GHCND_Table').dataTable({
+            pageLength: 50,
+            destroy: true
+        });
     }
+    
 
     // **** Change Year Logic **** \\
     // Get the years associated with the target station
@@ -629,22 +661,73 @@
         container.style.display = "none";
         container.innerHTML = "";
 
-        fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
-            .then(response => {
-                if (!response.ok) throw new Error("Network response was not ok");
-                return response.text();
-            })
-            .then(html => {
-                container.innerHTML = html;
-                container.style.display = "block";
-                // If you use tooltips, initialize here, otherwise omit:
-                // $('[data-toggle="tooltip"]').tooltip();
-            })
-            .catch(err => {
-                console.error("Failed to load station metadata:", err);
-            });
+            fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    container.style.display = "block";
+                    // If you use tooltips, initialize here, otherwise omit:
+                    // $('[data-toggle="tooltip"]').tooltip();
+
+                    $("#ghcnd-inventory-btn").on("click", function() {
+                        getGhcnIdInventory(ghcnId);
+                    });
+                })
+                .catch(err => {
+                    console.error("Failed to load station metadata:", err);
+                });
     }
 
+
+    $(function() {
+        // Handler for .ready() called.
+        // alert("From the jquery again.");
+        $('#GHCND-Inventory-Table').DataTable({
+            columns: [
+                {title: 'GHCNID', name: 'GHCNID'},
+                {title: 'Latitude', name: 'Latitude'},
+                {title: 'Longitude', name: 'Longitude'},
+                {title: 'Element', name: 'Element'},
+                {title: 'First Year', name: 'First Year'},
+                {title: 'Last Year', name: 'Last Year'}
+
+            ],
+            columnDefs: [{ className: 'text-center', targets: '_all' }],
+
+        });
+    });
+
+
+    function getGhcnIdInventory(ghcnId) {
+
+        const requestData = {
+                ghcn_id: ghcnId
+            };
+        console.log(ghcnId);
+        $.ajax({
+                url: '/ghcn_inventory',
+                method: 'POST',
+                data: $.param(requestData),
+                success: function(response) {
+                    console.log("Success:", response);
+                    // console.log(response);
+
+                    invTable = $('#GHCND-Inventory-Table').DataTable();
+                    invTable.clear().rows.add(response).draw();
+                    $("#station-inventory-view").show();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error, xkr, status);
+                    alert("There was an error processing your request.");
+                }
+            });
+
+        
+
+    }
 
 
     </script>

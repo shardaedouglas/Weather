@@ -4,7 +4,7 @@
     <!-- Main Data Table -->
     <div class="row " style="text-align: center">
         <div class="col">
-            <div class="table-responsive-sm">
+            <div class="table-responsive-lg">
                 <table class="table table-sm table-striped table-borderless border" id="GHCND_Table">
                     <thead>
                         <tr>
@@ -198,28 +198,24 @@
             </select>
         </div>
         <div class="row justify-content-center" id="button-row">
-            <div class="col-sm-3">
-                <button type="button" id="save-button" class="btn btn-success">Save Data</button>
+            <div class="col-sm-4">
+                <button type="button" id="save-button" class="btn btn-success w-100 d-block">Save Data</button>
             </div>
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-primary">Show MS Data</button>
+            <div class="col-sm-4">
+                <button type="button" class="btn btn-primary w-100 d-block">Show MS Data</button>
             </div>
-            <div class="col-sm-3">
-                <button type="reset" class="btn btn-dark">Close</button>
-            </div>
+            <!-- <div class="col-sm-4">
+                <button type="reset" class="btn btn-dark w-100 d-block">Clear</button>
+            </div> -->
         </div>
-        <div class="col">
-        </div>
-        <!--<div class="col">
-            <button type="button" class="btn btn-info">Close</button>
-        </div>-->
+
         
     </div>
 
 </div>
 
 <script>
-    $(document).ready(function(){
-        $('#GHCND_Table').dataTable();
-    });
+    // $(document).ready(function(){
+    //     $('#GHCND_Table').dataTable();
+    // });
 </script>
