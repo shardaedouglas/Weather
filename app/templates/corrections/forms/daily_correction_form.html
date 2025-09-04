@@ -95,12 +95,13 @@
         
         <div class="row g-3" >
             <div class="col-sm">
-                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;">Compare</button>
+                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;" id="compare-daily-btn">Compare</button>
             </div>
             
             <div class="col-sm">
                 <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
+                <!-- <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button> -->
+                {{daily_form.submit(class_='btn btn-success btn-submit', id='submit-daily-corr-btn', style='width:100%;display:block;')}}
 
             </div>
 
@@ -111,91 +112,6 @@
             </div>
         </div>
     </form>
-{#
-    <form class="row g-3 align-items-center ">
-        <div class="row g-3 align-items-center">
-            <div class="col input-group">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
-                {{daily_form.ghcn_id(class_='form-control')}}
-            </div>
-        </div>
-        <div class="row g-3">
-            <div class="col input-group justify-content-start" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
-                {{daily_form.date(class_='form-control date-picker')}}
-            </div>
-        </div>
-        <div class="row g-3" >
-            <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Datzilla #</span>
-                {{daily_form.datzilla_number(class_='form-control')}}
-            </div>
-        </div>
-        <div class="row g-3" >
-            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
-                {{daily_form.element(class_='form-select element-select')}}
-            </div>
-            <!-- Sub selection for Element -->
-            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
-                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
-            </div>
-            <div class="w-100 d-none d-md-block"></div>
-            <div class="col-md input-group justify-content-start" style="flex-wrap: nowrap;">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Action</span>
-                {{daily_form.action(class_='form-select action-select')}}
-            </div>
-        </div>
-        <div class="row g-3">
-
-            <div class="col">
-                <div class="row">
-            
-                    <div class="col input-group" style=" flex-wrap: nowrap;">
-                        <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">O-Value</span>
-                        {{daily_form.o_value(class_='form-control')}}
-                    </div>
-                    <div class="w-100"></div>
-                    <div class="col input-group" style=" flex-wrap: nowrap;">
-                        <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Flags</span>
-                        <span class="input-group-text">M</span>
-                        <input type="text" class="form-control" id="m-flag-output">
-                        <span class="input-group-text">Q</span>
-                        <input type="text" class="form-control" id="q-flag-output">
-                        <span class="input-group-text">S</span>
-                        <input type="text" class="form-control" id="s-flag-output">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md input-group" style=" flex-wrap: nowrap;  max-height: 40px">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">E-Value</span>
-                {{daily_form.e_value(class_='form-control')}}
-            </div>
-        </div>
-        
-        <div class="row g-3" >
-            <div class="col-sm">
-                <button type="submit" class="btn button-light" style="width:100%;display:block;font-weight: bold;">Compare</button>
-            </div>
-            
-            <div class="col-sm">
-                <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
-
-            </div>
-
-        </div>
-        <div class="row g-3" >
-            <div class="col-sm">
-                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
-            </div>
-        </div>
-    </form>
-#}
 </div>
 
     
@@ -212,6 +128,7 @@
 
 <script>
         $(document).ready(function () {
+
             $("form").submit(function (event) {
                 event.preventDefault();
 
@@ -220,34 +137,35 @@
                 loadingWheel.style.display = 'block';
 
                 formData = formatWeatherDataQuery($(this));
+                console.log($(this));
 
                 const params = new URLSearchParams(formData);
                 console.log("Params: ", params);
 
-
-                getDataforStationsAndShowTable(params);
-                //Disabling the spinner happens in showDailyComparisonTable because this isnt async.
+                var clickedButton = event.originalEvent.submitter;
                 
-            })
+                if (typeof clickedButton !== 'undefined') {
+                    if (clickedButton.id === 'compare-daily-btn') {
+                        getDataforStationsAndShowTable(params);
+                    } else if (clickedButton.id === 'submit-daily-corr-btn' ) {
+                        submitCorrections(formData); // Call the submit function separately
+                        // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
+                    }
+                } else {
+                    console.log("No button used to submit daily correction");
+                    document.querySelector("form").requestSubmit(document.querySelector("form").querySelector("#submit-daily-corr-btn"));
+                }
 
-        });
+            });
 
+            $("form").on('keypress', function(event) {
+                // Check if the pressed key is Enter (keyCode 13)
+                if (event.keyCode === 13) {
+                    event.preventDefault(); // Prevent the default form submission
+                    document.querySelector("form").requestSubmit(document.querySelector("form").querySelector("#submit-daily-corr-btn"));
+                }
+            });
 
-        $(".btn-submit").click(function () {
-            //const loadingWheel = document.querySelector('#spinner');
-            //loadingWheel.style.display = 'block';
-
-            formData = formatWeatherDataQuery($("form"));
-            const params = new URLSearchParams(formData);
-            console.log("SUBMIT Params: ", params);
-            //console.log("Form data was gathered. Checked 1");
-            //const formData = $('form').serialize(); // Returns a URL-encoded string
-            //const params = new URLSearchParams(formData);
-            
-            //const correctionData = JSON.parse($('form').val());
-            submitCorrections(formData); // Call the submit function separately
-            // If showing the submission page goes, here, it MUST trigger AFTER the ajax from submitCorrections() runs. 
-            
         });
 
 
