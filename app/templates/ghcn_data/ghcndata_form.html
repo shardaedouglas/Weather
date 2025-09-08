@@ -379,14 +379,29 @@
 
         console.log("COLUMNS:", columns);
 
+        // $('#GHCND_Table').dataTable({
+        //     pageLength: 50,
+        //     destroy: true,
+        //     data: transformedArray,
+        //     columns: columns
+        // });
+
+        //Try manually destroying and recreating the table. 
+
+        if ($.fn.DataTable.isDataTable('#GHCND_Table')) {
+            console.log("Table exists. Deleting.")
+            $("#GHCND_Table")
+                .DataTable()
+                .destroy();
+            $("#GHCND_Table").empty();
+        }
+
         $('#GHCND_Table').dataTable({
             pageLength: 50,
-            destroy: true,
+            // destroy: true,
             data: transformedArray,
             columns: columns
         });
-
-
 
 
         // Attach save button event handler fresh to avoid duplicates
