@@ -419,14 +419,6 @@
             });
         }
 
-
-
-
-
-        // $('#GHCND_Table').dataTable({
-        //     pageLength: 50,
-        //     destroy: true
-        // });
     }
     
 
@@ -485,27 +477,27 @@
                             console.log("ordered_keys 1:", response.ordered_keys);
                             showComparisonTable(response.data, response.ordered_keys);
                             print(response.data)
-                            // fetchAndRenderStationMetadata(ghcnId);
-                            // $.ajax({
-                            //     url: '/get_station_calc_for_GHCND',
-                            //     method: 'POST',
-                            //     data: $.param({
-                            //             ghcn_id: ghcnId,
-                            //             date: correctionDate,
-                            //             station_type: stationType
-                            //         }),
-                            //     success: function(response) {
-                            //         console.log("Success:", response);
-                            //         showGHCNDCalculations(response)
-                            //         console.log("New station calculations");
-                            //         // showComparisonTable(response);
-                            //         // console.log(response);
-                            //     },
-                            //     error: function(xhr, status, error) {
-                            //         console.error("Error:", error);
-                            //         alert("There was an error processing your request.");
-                            //     }
-                            // });
+                            fetchAndRenderStationMetadata(ghcnId);
+                            $.ajax({
+                                url: '/get_station_calc_for_GHCND',
+                                method: 'POST',
+                                data: $.param({
+                                        ghcn_id: ghcnId,
+                                        date: correctionDate,
+                                        station_type: stationType
+                                    }),
+                                success: function(response) {
+                                    console.log("Success:", response);
+                                    showGHCNDCalculations(response)
+                                    console.log("New station calculations");
+                                    // showComparisonTable(response);
+                                    // console.log(response);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error("Error:", error);
+                                    alert("There was an error processing your request.");
+                                }
+                            });
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
