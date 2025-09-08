@@ -322,30 +322,72 @@
                 return Array.from(keysSet).sort();
             })();
 
-        // Build table header row dynamically
-        let headerRow = `<tr><th>Day</th>`;
-        allKeys.forEach(key => {
-            if (key !== "Day") headerRow += `<th>${key}</th>`;
-        });
-        headerRow += `</tr>`;
-        thead.insertAdjacentHTML('beforeend', headerRow);
-        console.log("allkeys", allKeys);
+        
 
-        // Build table rows dynamically
-        sortedDays.forEach(dayKey => {
-            const dayData = data[dayKey];
-            let row = `<tr><td>${dayKey}</td>`;
-            allKeys.forEach(key => {
-                if (key !== "Day") {
-                    row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-                }
-            });
-            row += `</tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
-        console.log("sortedDays", sortedDays);
+        // // Build table header row dynamically
+        // let headerRow = `<tr><th>Day</th>`;
+        // allKeys.forEach(key => {
+        //     if (key !== "Day") headerRow += `<th>${key}</th>`;
+        // });
+        // headerRow += `</tr>`;
+        // thead.insertAdjacentHTML('beforeend', headerRow);
+        // console.log("allkeys", allKeys);
 
-        table.style.display = "block";
+        // // Build table rows dynamically
+        // sortedDays.forEach(dayKey => {
+        //     const dayData = data[dayKey];
+        //     let row = `<tr><td>${dayKey}</td>`;
+        //     allKeys.forEach(key => {
+        //         if (key !== "Day") {
+        //             row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
+        //         }
+        //     });
+        //     row += `</tr>`;
+        //     tbody.insertAdjacentHTML('beforeend', row);
+        // });
+        // console.log("sortedDays", sortedDays);
+
+        // table.style.display = "block";
+        
+        // Onyx Code
+        const transformedArray = [];
+
+        // Iterate over the sorted array of day keys
+        for (const dayKey of sortedDays) {
+            // Check if the key exists in the original object to handle cases where a day might be missing
+            if (data.hasOwnProperty(dayKey)) {
+                const dayData = data[dayKey];
+                
+                const newObject = {
+                Day: dayKey,
+                };
+                
+                Object.assign(newObject, dayData);
+                
+                transformedArray.push(newObject);
+            }
+        }
+
+        console.log("TransformedArray:", transformedArray);
+
+        columns = [ {data: "Day", title: "Day", name: "Day"} ];
+        for (key of orderedKeys) {
+            columns.push(
+                { data: key, title: key, name: key },
+            )
+        }
+
+        console.log("COLUMNS:", columns);
+
+        $('#GHCND_Table').dataTable({
+            pageLength: 50,
+            destroy: true,
+            data: transformedArray,
+            columns: columns
+        });
+
+
+
 
         // Attach save button event handler fresh to avoid duplicates
         const saveBtn = document.getElementById("save-button");
@@ -363,10 +405,13 @@
         }
 
 
-        $('#GHCND_Table').dataTable({
-            pageLength: 50,
-            destroy: true
-        });
+
+
+
+        // $('#GHCND_Table').dataTable({
+        //     pageLength: 50,
+        //     destroy: true
+        // });
     }
     
 
@@ -395,6 +440,8 @@
         
 
         document.addEventListener("DOMContentLoaded", function () {
+            
+            // Change Year function
             document.getElementById("year-selector").addEventListener("change", function () {
                 const selectedYear = this.value;
                 if (selectedYear && selectedYear !== "--Select--") {
@@ -411,37 +458,39 @@
                         data: $.param({
                             ghcn_id: ghcnId,
                             date: correctionDate,
-                            station_type: stationType
+                            station_type: stationType,
+                            display_group: "1"
                         }),
                         success: function (response) {
-                            console.log("RESPONSE.DATA = ", response.data)
+                            console.log("RESPONSE.DATA = ", response.data);
+                            console.log("RESPONSE = ", response);
                             lastFetchedData = response.data;
                             console.log("lastFetchedData = ", lastFetchedData)
                             console.log("response keys 1:", Object.keys(response));
-                            console.log("orderedKeys 1:", response.orderedKeys);
+                            console.log("ordered_keys 1:", response.ordered_keys);
                             showComparisonTable(response.data, response.ordered_keys);
                             print(response.data)
-                            fetchAndRenderStationMetadata(ghcnId);
-                            $.ajax({
-                                url: '/get_station_calc_for_GHCND',
-                                method: 'POST',
-                                data: $.param({
-                                        ghcn_id: ghcnId,
-                                        date: correctionDate,
-                                        station_type: stationType
-                                    }),
-                                success: function(response) {
-                                    console.log("Success:", response);
-                                    showGHCNDCalculations(response)
-                                    console.log("New station calculations");
-                                    // showComparisonTable(response);
-                                    // console.log(response);
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Error:", error);
-                                    alert("There was an error processing your request.");
-                                }
-                            });
+                            // fetchAndRenderStationMetadata(ghcnId);
+                            // $.ajax({
+                            //     url: '/get_station_calc_for_GHCND',
+                            //     method: 'POST',
+                            //     data: $.param({
+                            //             ghcn_id: ghcnId,
+                            //             date: correctionDate,
+                            //             station_type: stationType
+                            //         }),
+                            //     success: function(response) {
+                            //         console.log("Success:", response);
+                            //         showGHCNDCalculations(response)
+                            //         console.log("New station calculations");
+                            //         // showComparisonTable(response);
+                            //         // console.log(response);
+                            //     },
+                            //     error: function(xhr, status, error) {
+                            //         console.error("Error:", error);
+                            //         alert("There was an error processing your request.");
+                            //     }
+                            // });
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
@@ -610,7 +659,7 @@
                         // ghcnID = "USC00049026"
                         console.log("lastFetchedData = ", lastFetchedData)    
                         console.log("response keys 5:", Object.keys(response));
-                        console.log("orderedKeys 5:", response.orderedKeys);                   
+                        console.log("ordered_keys 5:", response.ordered_keys);                   
                         showComparisonTable(response.data, response.ordered_keys);
                         populateYearDropdown(response);
                         fetchAndRenderStationMetadata(ghcnId);
