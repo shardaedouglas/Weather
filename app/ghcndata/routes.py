@@ -649,11 +649,85 @@ def get_state_for_GHCN_table_df():
 
 @ghcndata_bp.route('/get_station_calc_for_GHCND', methods=['POST'])
 def  get_station_calc_for_GHCND():
+    """
+    Compiles temperature and precipitation calculations for a given GHCND station.
+
+    This function processes a month of weather data for a specific station, performing
+    various climatological calculations. The calculations are returned in a structured
+    dictionary format.
+
+    Parameters
+    ----------
+    ghcnID : str, form parameter
+        The unique identifier for the GHCN station.
+    date : str, form parameter
+        The date for which to retrieve data, in the format 'YYYY-MM-DD'.
+
+    Returns
+    -------
+    dict
+        A dictionary containing various calculated climatological statistics.
+        The dictionary has the following keys:
+        - 'AvMax' : float
+            The average maximum temperature.
+        - 'AvMin' : float
+            The average minimum temperature.
+        - 'AvTmp' : float
+            The overall average temperature.
+        - 'NOD Tmp' : dict
+            A dictionary of the number of days temperature exceeded specific thresholds.
+            - 'MxT>=90' : int
+                Number of days with maximum temperature >= 90 degrees.
+            - 'MxT<=32' : int
+                Number of days with maximum temperature <= 32 degrees.
+            - 'MnT<=0' : int
+                Number of days with minimum temperature <= 0 degrees.
+        - 'MaxTp' : dict
+            Details for the highest temperature recorded.
+            - 'MaxTp' : int or float
+                The maximum temperature value.
+            - 'Day' : str
+                The day(s) the maximum temperature occurred.
+        - 'MinTp' : dict
+            Details for the lowest temperature recorded.
+            - 'MinTp' : int or float
+                The minimum temperature value.
+            - 'Day' : str
+                The day(s) the minimum temperature occurred.
+        - 'Snow' : float
+            The total snowfall.
+        - 'S Depth' : int
+            The maximum snow depth.
+        - 'Max24Hr' : dict
+            Details for the maximum 24-hour precipitation.
+            - 'Max24Hr' : float
+                The maximum 24-hour precipitation value.
+            - 'Day' : str
+                The day the maximum 24-hour precipitation occurred.
+        - 'NOD Pcn' : dict
+            Number of days with precipitation exceeding certain thresholds.
+            - '>.01' : int
+                Number of days with precipitation >= 0.01 units.
+            - '>.10' : int
+                Number of days with precipitation >= 0.10 units.
+            - '>1' : int
+                Number of days with precipitation >= 1.00 unit.
+        - 'HDD' : int
+            Heating Degree Days.
+        - 'CDD' : int or None
+            Cooling Degree Days.
+        - 'TotPcn' : str
+            The total precipitation for the month, as a string.
+        - 'SF>=1' : int
+            Number of days with snowfall >= 1 inch.
+        - 'SD>=1' : int
+            Number of days with snow depth >= 1 inch.
+    """
 
     ghcn_id = request.form.get('ghcn_id')
     # country = request.form.get('country')
     # state = request.form.get('state')
-    station_type = request.form.get('station_type')
+    # station_type = request.form.get('station_type')
     correction_date = request.form.get('date')
     
     if correction_date:
@@ -876,11 +950,13 @@ def  get_station_calc_for_GHCND():
     # print(sd_threshold, sf_threshold)
 
 
-    for k, v in comp_calcs.items():
-        if v is not None:
-            print(f"{k}: {v}")
-        else:
-            print(f"{k}: None")
+    # for k, v in comp_calcs.items():
+    #     if v is not None:
+    #         print(f"{k}: {v}")
+    #     else:
+    #         print(f"{k}: None")
+
+    # print(comp_calcs)
             
     return comp_calcs
     
@@ -961,6 +1037,31 @@ def format_as_json(filtered_df, return_response=True):
 
 @ghcndata_bp.route('/ghcn_inventory', methods=['POST'])
 def get_ghcn_inventory():
+    """
+    Retrieves the GHCN inventory for a specified station.
+
+    This Flask route processes a form parameter to retrieve inventory data,
+    including station metadata and the available observation elements with
+    their start and end years, for a given GHCN station ID.
+
+    Parameters
+    ----------
+    GHCNID : str, form parameter
+        The unique identifier for the GHCN station.
+
+    Returns
+    -------
+    list of list of str
+        A list where each inner list represents a specific observation element
+        and its associated details. The data in each inner list is ordered as
+        follows:
+        - str: GHCN ID
+        - str: Latitude
+        - str: Longitude
+        - str: Observation Element (e.g., 'TMAX', 'TMIN')
+        - str: First Year of observation data
+        - str: Last year of observation data
+    """
     ghcn_id = request.form.get('ghcn_id') 
     # ghcn_id = 'USW0009443991'
     file_path = '/data/ops/ghcnd/data/ghcnd-inventory.txt'
@@ -976,14 +1077,13 @@ def get_ghcn_inventory():
         if not data:
             return "NONE"
         else:
+            # print(data)
             return data
 
     except Exception as err:
         print("error: {}".format(traceback.format_exc()))
         return err, traceback.format_exc()
 
-    print(data)
-    return data
 
 
 

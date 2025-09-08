@@ -186,15 +186,29 @@
 
     
 
+        
+        
+
+    /**
+     * Renders or re-renders a GHCND (Global Historical Climatology Network Daily) data table.
+     *
+     * This function takes one month's worth of daily observation data and a specified order of
+     * observation types to dynamically build and display a table. It is intended to be called
+     * whenever the table needs to be initially rendered or updated with new data.
+     *
+     * @param {object} data - An object representing one month's data. Keys are
+     * day identifiers (e.g., 'Day 1'), and each value is a nested object. The keys of
+     * the nested objects represent observation types (e.g., 'PRCP', 'TMAX') and their
+     * corresponding string values. The observation keys are not fixed and can vary.
+     * 
+     * @param {string[]} orderedKeys - An array of strings that specifies the exact observation
+     * types (columns) to be displayed in the table and their order.
+     * 
+     * @returns {void}
+     */
+    
     let selectedDisplayGroup = 1; // Default display group when loading the GHCND Table
-
-
     function showComparisonTable(data, orderedKeys) {
-        const table = document.getElementById("station-data-view");
-        const thead = table.querySelector("thead");
-        const tbody = table.querySelector("tbody");
-        tbody.innerHTML = ""; // clear old rows
-        thead.innerHTML = ""; // clear old headers
         lastFetchedData = data;
         console.log("data", data);
         console.log("orderedKeys", orderedKeys);
@@ -288,7 +302,7 @@
     };
     
 
-
+        
         function populateYearDropdown(response) {
             const yearDropdown = document.getElementById("year-selector");
             yearDropdown.innerHTML = '<option selected>--Select--</option>';
