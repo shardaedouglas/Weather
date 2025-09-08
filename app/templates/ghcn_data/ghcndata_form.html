@@ -321,54 +321,26 @@
                 });
                 return Array.from(keysSet).sort();
             })();
-
         
-
-        // // Build table header row dynamically
-        // let headerRow = `<tr><th>Day</th>`;
-        // allKeys.forEach(key => {
-        //     if (key !== "Day") headerRow += `<th>${key}</th>`;
-        // });
-        // headerRow += `</tr>`;
-        // thead.insertAdjacentHTML('beforeend', headerRow);
-        // console.log("allkeys", allKeys);
-
-        // // Build table rows dynamically
-        // sortedDays.forEach(dayKey => {
-        //     const dayData = data[dayKey];
-        //     let row = `<tr><td>${dayKey}</td>`;
-        //     allKeys.forEach(key => {
-        //         if (key !== "Day") {
-        //             row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-        //         }
-        //     });
-        //     row += `</tr>`;
-        //     tbody.insertAdjacentHTML('beforeend', row);
-        // });
-        // console.log("sortedDays", sortedDays);
-
-        // table.style.display = "block";
         
-        // Onyx Code
-        const transformedArray = [];
+        // Reformat the data object for DataTables()
+        const reformattedData = [];
 
-        // Iterate over the sorted array of day keys
         for (const dayKey of sortedDays) {
-            // Check if the key exists in the original object to handle cases where a day might be missing
             if (data.hasOwnProperty(dayKey)) {
                 const dayData = data[dayKey];
                 
                 const newObject = {
-                Day: dayKey,
+                    Day: dayKey,
                 };
                 
                 Object.assign(newObject, dayData);
                 
-                transformedArray.push(newObject);
+                reformattedData.push(newObject);
             }
         }
 
-        console.log("TransformedArray:", transformedArray);
+        console.log("reformattedData:", reformattedData);
 
         columns = [ {data: "Day", title: "Day", name: "Day"} ];
         for (key of orderedKeys) {
@@ -378,15 +350,6 @@
         }
 
         console.log("COLUMNS:", columns);
-
-        // $('#GHCND_Table').dataTable({
-        //     pageLength: 50,
-        //     destroy: true,
-        //     data: transformedArray,
-        //     columns: columns
-        // });
-
-        //Try manually destroying and recreating the table. 
 
         if ($.fn.DataTable.isDataTable('#GHCND_Table')) {
             console.log("Table exists. Deleting.")
@@ -399,7 +362,7 @@
         $('#GHCND_Table').dataTable({
             pageLength: 50,
             // destroy: true,
-            data: transformedArray,
+            data: reformattedData,
             columns: columns
         });
 
@@ -419,7 +382,7 @@
             });
         }
 
-    }
+    };
     
 
 

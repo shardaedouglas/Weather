@@ -431,7 +431,6 @@ def get_data_for_GHCN_table():
 
         years = extract_years_from_dly(file_path)
         print("YEARS!!!!!!!!!!!!!: ", years)
-        print("Test output")
         
         ordered_keys = []
         if display_group and display_group in ELEMENT_GROUPS:
