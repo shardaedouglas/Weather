@@ -184,106 +184,9 @@
             URL.revokeObjectURL(url);
         }
 
-    //Form Submission and Show data table
-    // $(document).ready(function () {
-    //     $("form").submit(function (event) {
-    //         event.preventDefault(); // Prevent the default form submission
-    //         var formData = $(this).serialize(); //Retrieve the form data
-    //         // Send the request to handle the form data. async?
-    //         // Once data is returned, show the populated data table.
-    //         showGHCNViewTable();
-    //     })
-
-    // });
-
-    // function showComparisonTable(data) {
-    //     const tableBody = document.querySelector("#station-data-view tbody");
-    //     tableBody.innerHTML = ""; // Clear existing rows
-    
-    //     // Sort the days numerically
-    //     const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
-
-    //     sortedDays.forEach(dayKey => {
-    //         const dayData = data[dayKey];
-    //         const row = `
-    //             <tr>
-    //                 <td>${dayKey}</td>
-    //                 <td>${dayData.TMAX || ""}</td>
-    //                 <td>${dayData.TMIN || ""}</td>
-    //                 <td>${dayData.TOBS || ""}</td>
-    //                 <td>${dayData.PRCP || ""}</td>
-    //                 <td>${dayData.SNOW || ""}</td>
-    //                 <td>${dayData.SNWD || ""}</td>
-    //                 <td>${dayData.WTXX || ""}</td>
-    //             </tr>
-    //         `;
-    //         tableBody.insertAdjacentHTML('beforeend', row);
-    //     });
-
-    //     document.getElementById("station-data-view").style.display = "block";
-    // }
     
 
-
-//     function showComparisonTable(data) {
-//         const table = document.getElementById("station-data-view");
-//         const thead = table.querySelector("thead");
-//         const tbody = table.querySelector("tbody");
-//         tbody.innerHTML = ""; // clear old rows
-//         thead.innerHTML = ""; // clear old headers
-//         lastFetchedData = data;
-//         selectedDisplayGroup = 1;
-//         // Sort days numerically
-//         const sortedDays = Object.keys(data).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
-
-//         // Collect all unique keys from data (except day label)
-//         const allKeysSet = new Set();
-//         sortedDays.forEach(dayKey => {
-//             Object.keys(data[dayKey]).forEach(k => allKeysSet.add(k));
-//         });
-
-//         // Convert to array and sort keys alphabetically or keep custom order
-//         const allKeys = Array.from(allKeysSet).sort();
-
-//         // Build table header row dynamically
-//         let headerRow = `<tr><th>Day</th>`;
-//         allKeys.forEach(key => {
-//             headerRow += `<th>${key}</th>`;
-//         });
-//         headerRow += `</tr>`;
-//         thead.insertAdjacentHTML('beforeend', headerRow);
-
-//         // Build table rows dynamically
-//         sortedDays.forEach(dayKey => {
-//             const dayData = data[dayKey];
-//             let row = `<tr><td>${dayKey}</td>`;
-//             allKeys.forEach(key => {
-//                 row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-//             });
-//             row += `</tr>`;
-//             tbody.insertAdjacentHTML('beforeend', row);
-//         });
-
-//         table.style.display = "block";
-
-//          // Attach save button event handler fresh to avoid duplicates
-//         const saveBtn = document.getElementById("save-button");
-//         if (saveBtn) {
-//             // Remove previous listeners by cloning the node and replacing it
-//             const newSaveBtn = saveBtn.cloneNode(true);
-//             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-
-//             newSaveBtn.addEventListener("click", function () {
-//                 if (!lastFetchedData || lastFetchedData.length === 0) {
-//                     alert("No data available to save.");
-//                     return;
-//                 }
-//                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
-//             });
-//         }
-
-// }
-    let selectedDisplayGroup = 1;
+    let selectedDisplayGroup = 1; // Default display group when loading the GHCND Table
 
 
     function showComparisonTable(data, orderedKeys) {
@@ -340,7 +243,7 @@
             }
         }
 
-        console.log("reformattedData:", reformattedData);
+        // console.log("reformattedData:", reformattedData);
 
         columns = [ {data: "Day", title: "Day", name: "Day"} ];
         for (key of orderedKeys) {
@@ -349,7 +252,7 @@
             )
         }
 
-        console.log("COLUMNS:", columns);
+        // console.log("COLUMNS:", columns);
 
         if ($.fn.DataTable.isDataTable('#GHCND_Table')) {
             console.log("Table exists. Deleting.")
@@ -439,7 +342,6 @@
                             console.log("response keys 1:", Object.keys(response));
                             console.log("ordered_keys 1:", response.ordered_keys);
                             showComparisonTable(response.data, response.ordered_keys);
-                            print(response.data)
                             fetchAndRenderStationMetadata(ghcnId);
                             $.ajax({
                                 url: '/get_station_calc_for_GHCND',
