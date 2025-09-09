@@ -209,6 +209,7 @@
     
     let selectedDisplayGroup = 1; // Default display group when loading the GHCND Table
     function showComparisonTable(data, orderedKeys) {
+        $("#GHCND_Table").empty();
         lastFetchedData = data;
         console.log("data", data);
         console.log("orderedKeys", orderedKeys);
