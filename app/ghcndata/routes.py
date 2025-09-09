@@ -768,6 +768,8 @@ def  get_station_calc_for_GHCND():
     print(filtered_df)
     print(filtered_json)
     comp_calcs = {}
+    # comp_calcs = {'AvMax': None, 'AvMin': None, 'AvTmp': None, 'NOD Tmp': {'MxT>=90': None, 'MxT<=32': None, 'MnT<=0': None}, 'MaxTp': {'MaxTp': None, 'Day': None}, 'MinTp': {'MinTp': None, 'Day': None}, 'Snow': 'M', 'S Depth': None, 'Max24Hr': {'Max24Hr': None, 'Day': None}, 'NOD Pcn': {'>.01': None, '>.10': None, '>1': None}, 'HDD': None, 'CDD': None, 'TotPcn': None, 'SF>=1': None, 'SD>=1': None} #Empty for TESTING
+
 
     try:
         station_avgs = calculate_station_avg(filtered_df)[ghcn_id]
