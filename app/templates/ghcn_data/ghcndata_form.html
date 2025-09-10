@@ -109,7 +109,7 @@
         $("#station-metadata-view").hide();
     });
     
-    // The Station Identifier Logic
+    // The Station Identifier Logic for form 1
     $(document).ready(function() {
 
         // Disables other radio options when one is selected.
@@ -209,7 +209,6 @@
 
                     console.log("RESPONSE.DATA = ", response.data)                       
                     lastFetchedData = response.data;
-                    // ghcnID = "USC00049026"
                     console.log("lastFetchedData = ", lastFetchedData)    
                     console.log("response keys 5:", Object.keys(response));
                     console.log("orderedKeys 5:", response.orderedKeys);                   
@@ -416,12 +415,81 @@
         $('#flexCheckDefault').click(function(){
             if($(this).prop("checked") == true){
                 console.log("Initiate Split Month")
+
+                //Get Date Current Date and Station
                 const urlParams = new URLSearchParams(window.location.search);
                 const ghcnId = urlParams.get("ghcn_id");
                 const stationType = urlParams.get("station_type");
-                const date = urlParams.get("date");
+                var date = urlParams.get("date");
+                var newDate = '';
+
+                // Parse Date to get the previous month
+                splitDate = date.split('-');
+                if (splitDate[1] === '01'){
+                    prevMonth = '12'
+                    splitDate[1] = prevMonth;
+                }
+                else{
+                    prevMonth = parseInt(splitDate[1]) - 1;
+                    console.log(prevMonth)
+                    splitDate[1] = '0' + String(prevMonth);
+                }
+                newDate = splitDate.join('-');
+                console.log(newDate);
+            
+
+                //Get the current state of the data table
+                const context = lastFetchedData;
+                console.log(context)
                 
+                //Get the current selected units ***May not need this line
+                const unitMode = document.getElementById("unit-selector").value;
+
+                // Get the data for the Previous Month 
+                $.ajax({
+                    url: '/get_data_for_GHCN_table',
+                    method: 'POST',
+                    data: $.param({
+                        ghcn_id: ghcnId,
+                        date: newDate,
+                        station_type: stationType,
+                        unit_mode: unitMode,
+                        display_group: selectedDisplayGroup
+                    }),
+                    success: function (response) {
+                        console.log("RESPONSE.DATA = ", response.data)
+                        console.log("The table Keys:", response.ordered_keys) 
+
+                        //Combine both month's data
+                        let combined_data = {};
+                        let half_prev_month = {};
+                        let half_current_month = {};
+                        const entries = Object.entries(response.data);
+                        console.log(entries);
+                        for (i=1; i <= 15; i++) {
+                            console.log(response.data['Day ' + i])
+                        }
+                        console.log(half_prev_month);
+
+
+                        //Populate Table with previous month's data
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error reloading year:", error);
+                        alert("Could not load data for selected year.");
+                    }
+                })
+
                 // Get the first 14 days of the previous month
+                const requestData = {
+                    ghcn_id: ghcnId,
+                    date: newDate,
+                    station_type: stationType,
+                    unit_mode: unitMode,
+                    display_group: selectedDisplayGroup || 1
+
+                };
 
             }
             else if($(this).prop("checked") == false){
@@ -465,7 +533,6 @@
                         console.log("RESPONSE.DATA = ", response.data)
 
                         lastFetchedData = response.data;
-                        // ghcnID = "USC00049026"
                         console.log("lastFetchedData = ", lastFetchedData)
                         console.log("response keys 2:", Object.keys(response));
                         console.log("orderedKeys 2:", response.orderedKeys);

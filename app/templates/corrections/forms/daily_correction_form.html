@@ -184,7 +184,8 @@
             
             <div class="col-sm">
                 <!-- <button type="submit" class="btn btn-success" onclick="showComparisonTable()" style="width:100%;display:block;">Submit</button> -->
-                <button type="button" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
+                <button type="submit" class="btn btn-success btn-submit" style="width:100%;display:block;" id="submit-daily-corr-btn">Submit</button>
+                
 
             </div>
 
@@ -236,7 +237,7 @@
         $(".btn-submit").click(function () {
             //const loadingWheel = document.querySelector('#spinner');
             //loadingWheel.style.display = 'block';
-
+            event.preventDefault();
             formData = formatWeatherDataQuery($("form"));
             const params = new URLSearchParams(formData);
             console.log("SUBMIT Params: ", params);

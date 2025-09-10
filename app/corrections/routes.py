@@ -160,22 +160,12 @@ def process_correction():
                         filtered_json["distance"] = station[4]   # Add distance
                         
                         break  # Exit loop once found
-
-                # print(f"Filtered JSON: ", filtered_json)
                 results.append(filtered_json)
-            
-
-
-       
-        #print(f"results: ", results)
-        
         # Return
         return jsonify({
             "message": f"Correction processed successfully for GHCN ID: {ghcn_id}!",
             "returnData": results
-        }), 201    
-
-        
+        }), 201         
     except Exception as e:
         print(f"Error in process_correction: {e}")
         return jsonify({"error": "Internal server error"}), 500
