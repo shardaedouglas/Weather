@@ -243,11 +243,12 @@
         
 
     function showComparisonTable(data, orderedKeys) {
-        const table = document.getElementById("station-data-view");
-        const thead = table.querySelector("thead");
-        const tbody = table.querySelector("tbody");
-        tbody.innerHTML = ""; // clear old rows
-        thead.innerHTML = ""; // clear old headers
+        $("#GHCND_Table").empty();
+        if (data === "EMPTY") {
+            // alert("empty table");
+            $( "#GHCND_Table" ).text( "No data available for the station." );
+            return
+        }
         lastFetchedData = data;
         console.log("data", data);
         console.log("orderedKeys", orderedKeys);
@@ -277,31 +278,51 @@
                 });
                 return Array.from(keysSet).sort();
             })();
+        
+        
+        // Reformat the data object for DataTables()
+        const reformattedData = [];
 
-        // Build table header row dynamically
-        let headerRow = `<tr><th>Day</th>`;
-        allKeys.forEach(key => {
-            if (key !== "Day") headerRow += `<th>${key}</th>`;
+        for (const dayKey of sortedDays) {
+            if (data.hasOwnProperty(dayKey)) {
+                const dayData = data[dayKey];
+                
+                const newObject = {
+                    Day: dayKey,
+                };
+                
+                Object.assign(newObject, dayData);
+                
+                reformattedData.push(newObject);
+            }
+        }
+
+        // console.log("reformattedData:", reformattedData);
+
+        columns = [ {data: "Day", title: "Day", name: "Day"} ];
+        for (key of orderedKeys) {
+            columns.push(
+                { data: key, title: key, name: key },
+            )
+        }
+
+        // console.log("COLUMNS:", columns);
+
+        if ($.fn.DataTable.isDataTable('#GHCND_Table')) {
+            console.log("Table exists. Deleting.")
+            $("#GHCND_Table")
+                .DataTable()
+                .destroy();
+            $("#GHCND_Table").empty();
+        }
+
+        $('#GHCND_Table').dataTable({
+            pageLength: 50,
+            // destroy: true,
+            data: reformattedData,
+            columns: columns
         });
-        headerRow += `</tr>`;
-        thead.insertAdjacentHTML('beforeend', headerRow);
-        console.log("allkeys", allKeys);
 
-        // Build table rows dynamically
-        sortedDays.forEach(dayKey => {
-            const dayData = data[dayKey];
-            let row = `<tr><td>${dayKey}</td>`;
-            allKeys.forEach(key => {
-                if (key !== "Day") {
-                    row += `<td>${dayData[key] !== undefined ? dayData[key] : ""}</td>`;
-                }
-            });
-            row += `</tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
-        console.log("sortedDays", sortedDays);
-
-        table.style.display = "block";
 
         // Attach save button event handler fresh to avoid duplicates
         const saveBtn = document.getElementById("save-button");
@@ -317,11 +338,8 @@
                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
             });
         }
-        $('#GHCND_Table').dataTable({
-            pageLength: 50,
-            destroy: true
-        });
-    }
+        return
+    };
     
 
     // **** Change Year Logic **** \\
@@ -361,53 +379,54 @@
                 // Fake a correction_date using just year + dummy month/day
                 const correctionDate = `${selectedYear}-${month}-01`; 
 
-                $.ajax({
-                    url: '/get_data_for_GHCN_table',
-                    method: 'POST',
-                    data: $.param({
-                        ghcn_id: ghcnId,
-                        date: correctionDate,
-                        station_type: stationType
-                    }),
-                    success: function (response) {
-                        console.log("RESPONSE.DATA = ", response.data)
-                        lastFetchedData = response.data;
-                        console.log("lastFetchedData = ", lastFetchedData)
-                        console.log("response keys 1:", Object.keys(response));
-                        console.log("orderedKeys 1:", response.orderedKeys);
-                        showComparisonTable(response.data, response.ordered_keys);
-                        print(response.data)
-                        fetchAndRenderStationMetadata(ghcnId);
-                        $.ajax({
-                            url: '/get_station_calc_for_GHCND',
-                            method: 'POST',
-                            data: $.param({
-                                    ghcn_id: ghcnId,
-                                    date: correctionDate,
-                                    station_type: stationType
-                                }),
-                            success: function(response) {
-                                console.log("Success:", response);
-                                showGHCNDCalculations(response)
-                                console.log("New station calculations");
-                                // showComparisonTable(response);
-                                // console.log(response);
-                            },
-                            error: function(xhr, status, error) {
-                                console.error("Error:", error);
-                                alert("There was an error processing your request.");
-                            }
-                        });
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Error reloading year:", error);
-                        alert("Could not load data for selected year.");
-                    }
-                });
-            }
+                    $.ajax({
+                        url: '/get_data_for_GHCN_table',
+                        method: 'POST',
+                        data: $.param({
+                            ghcn_id: ghcnId,
+                            date: correctionDate,
+                            station_type: stationType,
+                            display_group: "1"
+                        }),
+                        success: function (response) {
+                            console.log("RESPONSE.DATA = ", response.data);
+                            console.log("RESPONSE = ", response);
+                            lastFetchedData = response.data;
+                            console.log("lastFetchedData = ", lastFetchedData)
+                            console.log("response keys 1:", Object.keys(response));
+                            console.log("ordered_keys 1:", response.ordered_keys);
+                            showComparisonTable(response.data, response.ordered_keys);
+                            fetchAndRenderStationMetadata(ghcnId);
+                            $.ajax({
+                                url: '/get_station_calc_for_GHCND',
+                                method: 'POST',
+                                data: $.param({
+                                        ghcn_id: ghcnId,
+                                        date: correctionDate,
+                                        station_type: stationType
+                                    }),
+                                success: function(response) {
+                                    console.log("Success:", response);
+                                    showGHCNDCalculations(response)
+                                    console.log("New station calculations");
+                                    // showComparisonTable(response);
+                                    // console.log(response);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error("Error:", error);
+                                    alert("There was an error processing your request.");
+                                }
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error reloading year:", error);
+                            alert("Could not load data for selected year.");
+                        }
+                    });
+                }
+            });
+            
         });
-        
-    });
 
     
     // **** Split Month functionality **** \\
@@ -644,12 +663,12 @@
         $(".ghcnd-calc-min-temp").text(data.MinTp["MinTp"]  !== null ? data.MinTp["MinTp"]  : "N/A");
         $(".ghcnd-calc-min-temp-date").text(data.MinTp["Day"] !== null ? data.MinTp["Day"] : "N/A" );
 
-        // Precipitation and Snowfall
-        $(".ghcnd-calc-totpcn").text(data["TotPcn"] !== null ? data["TotPcn"] : "N/A");
-        $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
-        $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
-        $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
-        $(".ghcnd-calc-cdd").text(data["CDD "] !== null ? data["CDD "] : "N/A"); // Note: "CDD " has a trailing space in your data object key
+            // Precipitation and Snowfall
+            $(".ghcnd-calc-totpcn").text(data["TotPcn"] !== null ? data["TotPcn"] : "N/A");
+            $(".ghcnd-calc-snow").text(data["Snow"] !== null ? data["Snow"] : "N/A");
+            $(".ghcnd-calc-snow-depth").text(data["S Depth"] !== null ? data["S Depth"] : "N/A");
+            $(".ghcnd-calc-hdd").text(data["HDD"] !== null ? data["HDD"] : "N/A");
+            $(".ghcnd-calc-cdd").text(data["CDD"] !== null ? data["CDD"] : "N/A"); 
 
         // Max 24-Hour Precipitation
         $(".ghcnd-calc-max-24hr").text(data.Max24Hr && data.Max24Hr["Max24Hr"] !== null ? data.Max24Hr["Max24Hr"] : "N/A");
@@ -728,9 +747,11 @@
         container.style.display = "none";
         container.innerHTML = "";
 
+            // console.log("Hello 4");
             fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
                 .then(response => {
                     if (!response.ok) throw new Error("Network response was not ok");
+                    // console.log("Hello 5");
                     return response.text();
                 })
                 .then(html => {
@@ -738,13 +759,15 @@
                     container.style.display = "block";
                     // If you use tooltips, initialize here, otherwise omit:
                     // $('[data-toggle="tooltip"]').tooltip();
-
+                    // console.log("Hello 6");
                     $("#ghcnd-inventory-btn").on("click", function() {
                         getGhcnIdInventory(ghcnId);
                     });
                 })
                 .catch(err => {
                     console.error("Failed to load station metadata:", err);
+                    // console.log("Hello 7");
+                    return
                 });
     }
 

@@ -442,18 +442,35 @@ def getLeastTotalPrecipitationExtreme(df: pl.DataFrame) -> dict:
     
     
 def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
-    """_summary_
+    """
+    Finds the greatest one-day precipitation extreme from a Polars DataFrame.
+
+    This function identifies and returns the highest single-day precipitation value
+    recorded across all stations in the provided DataFrame, along with the date and
+    station where it occurred.
 
     Parameters
     ----------
     df : pl.DataFrame
-        _description_
+        A Polars DataFrame containing daily precipitation data.
 
     Returns
     -------
     dict
-        _description_
-        {'value': 0.98, 'day': '22', 'station': 'USC00040820'}
+        A dictionary containing details of the greatest one-day precipitation extreme.
+        - 'value' : float or str
+            The precipitation value. This may include a '+' symbol.
+        - 'day' : str
+            The day of the month when the extreme occurred.
+        - 'station' : str
+            The unique identifier of the station where the extreme was recorded.
+
+    Notes
+    -----
+    The 'value' key may contain a '+' symbol. This indicates that the precipitation
+    extreme occurred on one or more earlier dates during the month in addition to
+    the date returned.
+    Example Output: {'value': 0.98, 'day': '22', 'station': 'USC00040820'}
     """
     # Filter for daily precipitation observations only
     prcp_df = df.filter(pl.col("observation_type") == "PRCP")
@@ -484,10 +501,11 @@ def getGreatest1DayPrecipitationExtreme(df: pl.DataFrame) -> dict:
 
     max_val = max(records, key=lambda x: x[0])[0]
     tied_records = [r for r in records if r[0] == max_val]
+    # print(f"max val = {max_val}\n tied_records = {tied_records}")
 
     return {
         "value": round(float(max_val) / 10 / 25.4, 2),
-        "day": "+".join(sorted(r[1].split("_")[1].zfill(2) for r in tied_records)),
+        "day": "+".join(sorted((r[1].split("_")[1].zfill(2) for r in tied_records) , reverse=True))[:3], # Modified to only return the last day with the max record.
         "station": tied_records[0][2] if len(set(r[2] for r in tied_records)) == 1 else "MULTIPLE STATIONS"
     }
 
