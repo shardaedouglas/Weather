@@ -36,6 +36,11 @@ def parse_and_filter(
 
     Returns:
     dict: The data for prior, current, and next day in the required format.
+
+    # If no data is found (check for empty DataFrame using length or shape), return a special message indicating to skip
+    then it returns {'status': 'skip', 'station_code': station_code}
+
+    
     """
     
     country_code = station_code[:2]

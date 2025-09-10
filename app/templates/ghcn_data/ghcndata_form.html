@@ -210,6 +210,11 @@
     let selectedDisplayGroup = 1; // Default display group when loading the GHCND Table
     function showComparisonTable(data, orderedKeys) {
         $("#GHCND_Table").empty();
+        if (data === "EMPTY") {
+            // alert("empty table");
+            $( "#GHCND_Table" ).text( "No data available for the station." );
+            return
+        }
         lastFetchedData = data;
         console.log("data", data);
         console.log("orderedKeys", orderedKeys);
@@ -299,7 +304,7 @@
                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
             });
         }
-
+        return
     };
     
 
@@ -546,10 +551,11 @@
                         // ghcnID = "USC00049026"
                         console.log("lastFetchedData = ", lastFetchedData)    
                         console.log("response keys 5:", Object.keys(response));
-                        console.log("ordered_keys 5:", response.ordered_keys);                   
+                        console.log("ordered_keys 5:", response.ordered_keys);
                         showComparisonTable(response.data, response.ordered_keys);
                         populateYearDropdown(response);
-                        fetchAndRenderStationMetadata(ghcnId);
+                        //NOTE: Should the metadata be linked to the success of the GHCND Data table?
+                        fetchAndRenderStationMetadata(ghcnId); 
 
                     },
                     error: function(xhr, status, error) {
@@ -656,15 +662,19 @@
 
 
         function fetchAndRenderStationMetadata(ghcnId) {
+            // console.log("Is this functionb being called at all?");
+            // console.log(ghcnId);
             if (!ghcnId) return;
 
             const container = document.getElementById("station-metadata-view");
             container.style.display = "none";
             container.innerHTML = "";
 
+            // console.log("Hello 4");
             fetch(`/station_metadata?ghcn_id=${encodeURIComponent(ghcnId)}`)
                 .then(response => {
                     if (!response.ok) throw new Error("Network response was not ok");
+                    // console.log("Hello 5");
                     return response.text();
                 })
                 .then(html => {
@@ -672,13 +682,15 @@
                     container.style.display = "block";
                     // If you use tooltips, initialize here, otherwise omit:
                     // $('[data-toggle="tooltip"]').tooltip();
-
+                    // console.log("Hello 6");
                     $("#ghcnd-inventory-btn").on("click", function() {
                         getGhcnIdInventory(ghcnId);
                     });
                 })
                 .catch(err => {
                     console.error("Failed to load station metadata:", err);
+                    // console.log("Hello 7");
+                    return
                 });
         }
 

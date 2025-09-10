@@ -337,7 +337,19 @@ def get_data_for_GHCN_table():
         )
         
         # # Print results
-        # print("filtered_df in ghcndata routes",filtered_df)
+        print("filtered_df in ghcndata routes",filtered_df)
+
+        # Assuming only one station is returned.
+        if ( not filtered_df or filtered_df.get("status") == "skip"):
+            # No data for this station
+            # Maybe this can be changed to something else more specific
+            return {
+                "data": "EMPTY",
+                "years": None,
+                "ordered_keys": None
+            }
+
+
         
         JSONformattedData = format_as_json(filtered_df, return_response=True)        
         print("JSONformattedData in ghcndata routes", JSONformattedData.get_data(as_text=True))
@@ -453,7 +465,7 @@ def get_data_for_GHCN_table():
             
         
     except Exception as e:
-        print(f"Error in get_data_for_GHCN_table: {e}")
+        print(f"Error in get_data_for_GHCN_table: {e}:\n{traceback.format_exc()}")
         return jsonify({"error": "Internal server error"}), 500
     
     
