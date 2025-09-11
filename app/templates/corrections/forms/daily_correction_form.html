@@ -29,18 +29,28 @@
                 {{daily_form.datzilla_number(class_='form-control')}}
             </div>
         </div>
-        <div class="row g-3" >
-            <div class="col input-group justify-content-start" style="flex-wrap: nowrap;">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
-                {{daily_form.element(class_='form-select element-select')}}
+        <div class="row g-3 justify-content-center" >
+            <div class="col-3 justify-content-start" style="flex-wrap: nowrap;">
+                <div class="input-group">
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
+                    {{daily_form.element(class_='form-select element-select')}}
+                </div>
             </div>
             <!-- Sub selection for Element -->
-            <div class="col input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
-                <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+            <div class="col-4 justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <div class="input-group">
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Sub-Element</span>
+                    <div class="col sub-element-option">{{daily_form.sub_element_SN(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{daily_form.sub_element_SX(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{daily_form.sub_element_WT(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{daily_form.sub_element_WV(class_='form-select element-select')}}</div>
+                </div>
+            </div>
+            <div class="col-3 " style=" flex-wrap: nowrap; max-height: 40px">
+                <div class="input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Action</span>
+                    {{daily_form.action(class_='form-control')}}
+                </div>
             </div>
 
         </div>
@@ -83,10 +93,7 @@
                 {{daily_form.e_value(class_='form-control')}}
             </div>
             <div class="w-100 d-md-none d-block"></div>
-            <div class="col input-group" style=" flex-wrap: nowrap; max-height: 40px">
-                <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Action</span>
-                {{daily_form.action(class_='form-control')}}
-            </div>
+            
             <div class="col input-group" style=" flex-wrap: nowrap; max-height: 40px">
                 <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Source</span>
                 {{daily_form.source(class_='form-control')}}
