@@ -87,7 +87,60 @@
         const urlParams = new URLSearchParams(window.location.search);
         console.log("urlParams", urlParams);
         if (urlParams.size > 0) {
+
+            /**
+             * Synchronizes form input fields with URL parameters.
+             *
+             * This function reads URL query parameters and uses them to set the values of
+             * corresponding form input fields.
+             * This is useful for pre-populating the GHCND form based on a user's previous
+             * selections or a shared URL.
+             *
+             * @param {URLSearchParams} urlParams - An instance of the URLSearchParams
+             * object containing the URL's query parameters.
+             * @returns {void}
+             */
+            function populateInputsFromUrl(urlParams) { 
+
+                if (urlParams.has("id-option")) {
+                    switch (urlParams.get("id-option")){
+                        case "State": 
+                            $("#radio-option-state").prop("checked", true);
+                            
+                            break;
+                        case "Country": 
+                            $("#radio-option-country").prop("checked", true);
+                            
+                            break;
+                        case "GHCN ID": 
+                            $("#radio-option-ghcn-id").prop("checked", true);
+                            break;
+                    }
+                };
+                if (urlParams.has("state")) { 
+                    $('#search-option-state').val(urlParams.get("state") );
+
+                }
+                if (urlParams.has("country")) { 
+                    $('#search-option-country').val(urlParams.get("country") );
+
+                }
+                if (urlParams.has("ghcn_id")) { 
+                    $('#search-option-ghcn-id').val(urlParams.get("ghcn_id") );
+
+                }
+                if (urlParams.has("station_type")) { 
+                    $('#station_type').val(urlParams.get("station_type") );
+
+                }
+                if (urlParams.has("date")) { 
+                    $('#date').val(urlParams.get("date") );
+
+                }
+
+            };
             
+            populateInputsFromUrl(urlParams);
             const loadingWheel = document.querySelector('#spinner');
             loadingWheel.style.display = 'block';
 
@@ -98,15 +151,12 @@
 
         }        
     });
-    
-    // Hide GHCN Data Table until initial Form is complete
-    // function hideGHCNViewTable() {
-    //    document.getElementById('station-data-view').style.display = "none";
-    // }
 
+    // Clear button logic
     $("button[type='reset']").on("click", function() {
         $("#station-data-view").hide();
         $("#station-metadata-view").hide();
+        $("#station-inventory-view").hide();
     });
     
     // The Station Identifier Logic for form 1
