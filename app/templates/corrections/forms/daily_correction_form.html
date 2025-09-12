@@ -77,6 +77,14 @@
                     {{daily_form.e_value(class_='form-control')}}
                 </div>
             </div>
+            <div class="w-100 d-block d-md-none"></div>
+            <div class="col-5 col-md-3 col-xl-2" style=" flex-wrap: nowrap;">
+
+                <div class="input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Source</span>
+                    {{daily_form.source(class_='form-control')}}
+                </div>
+            </div>
 
             
             
@@ -93,13 +101,13 @@
                 <span id="q-flag-output"></span>
                 
             </div>
-            <div class="col-4 col-md-3 col-xl-2" style=" flex-wrap: nowrap;">
+            <div class="col-3 col-md-2 col-xxl-2 text-start" style=" flex-wrap: nowrap;">
 
-                <div class="input-group">
-                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">S Flag</span>
-                    {{daily_form.source(class_='form-control')}}
-                </div>
+                <span class="fw-bold">S Flag:</span> 
+                <span id="s-flag-output"></span>
+                
             </div>
+            
         </div>
         
         <div class="row g-3" >
@@ -237,7 +245,7 @@
                             oValueInput.value = response.o_value; // Populate the O-Value field
                             $("#m-flag-output").text(response.o_flag_value.charAt(0));
                             $("#q-flag-output").text(response.o_flag_value.charAt(1));
-                            $("#source").val(response.o_flag_value.charAt(2));
+                            $("#s-flag-output").text(response.o_flag_value.charAt(2));
                         } else {
                             alert("O-Value not found.");
                         }
