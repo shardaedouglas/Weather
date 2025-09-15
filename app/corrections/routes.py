@@ -267,7 +267,7 @@ def submit_daily_corrections():
         line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number']}, XX\n"
 
         # Append to the text file
-        with open("daily_corrections.txt", "a") as file:
+        with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
             file.write(line)
 
         print("Correction successfully written to daily_corrections.txt")
@@ -303,14 +303,15 @@ def monthly_corrections():
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
     correction_date = request.args.get('date', '')
-    datzilla_number = request.args.get('datzilla_number', '')
     element = request.args.get('element', '')
     action = request.args.get('action', '')
     o_value = request.args.get('o_value', '')
     e_value = request.args.get('e_value', '')
     begin_date = request.args.get('begin_date', '')
     end_date = request.args.get('end_date', '')
+    datzilla_number = request.args.get('datzilla_number', '')
 
+    
     # Convert dates if needed
     if correction_date:
         correction_date = datetime.strptime(correction_date, '%Y-%m-%d').date()
@@ -332,7 +333,7 @@ def monthly_corrections():
         monthly_form=monthly_form
     )
 
-# Save Daily Correction to File
+# Save Monthly Correction to File
 
 @correction_bp.route('/submit_monthly_corrections', methods=['POST'])
 def submit_monthly_corrections():
@@ -342,7 +343,64 @@ def submit_monthly_corrections():
         monthlyInputData = data.get('monthly_input')
         print(formData)
         print(monthlyInputData)
-        return("Success")
+        ghcn_id = formData.get('ghcn_id')
+        ghcn_id = ghcn_id[0]
+        
+        correction_date = formData.get('date')
+        print(correction_date)
+        element = formData.get('element')
+        element = element[0]
+        action = formData.get('action')
+        action = action[0]
+        datzilla_number = formData.get('datzilla_number')
+        print(ghcn_id, action, datzilla_number, element)
+        if datzilla_number != '':
+            datzilla_number = datzilla_number[0]
+            print(datzilla_number)
+        else:
+            datzilla_number = 'null'
+
+        # Parse the correction date into year, month, and day
+        if correction_date:
+            correction_year, correction_month, correction_day = correction_date[0].split('-')
+        else:
+            correction_year, correction_month, correction_day = None, None, None
+
+        if correction_date:
+            date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
+            yyyymm = date_obj.strftime("%Y%m")
+
+        else:
+            yyyymm = ""
+
+        # Get today's date in yyyymmdd format
+        todays_date = datetime.today().strftime("%Y%m%d")
+            
+
+        day = 0
+        for entry in monthlyInputData:
+            if entry != '':
+                # Extract relevant fields for each record           
+                o_value = 'placeholder'
+                e_value = monthlyInputData[day]            
+                day += 1
+
+                
+                # Prepare the line for the text file
+                line = f"{ghcn_id}, {yyyymm}, {day}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+
+                # Append to the text file for each correction
+                with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+                    file.write(line)
+
+                print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
+            else:
+                day += 1
+
+        # Respond with success
+        return jsonify({"message": f"{len(monthlyInputData)} corrections submitted successfully!"}), 201
+
+
 
     except Exception as e:
         print(f"Error in submit_monthly_corrections: {e}")
@@ -535,10 +593,10 @@ def submit_ranged_corrections():
             line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
 
             # Append to the text file for each correction
-            with open("daily_corrections.txt", "a") as file:
+            with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
                 file.write(line)
 
-            print(f"Correction for {ghcn_id} on {correction_date} successfully written to daily_corrections.txt")
+            print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
 
         # Respond with success
         return jsonify({"message": f"{len(correction_data)} corrections submitted successfully!"}), 201
