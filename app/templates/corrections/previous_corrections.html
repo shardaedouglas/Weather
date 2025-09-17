@@ -14,7 +14,8 @@
 
 
   <div class="container">
-
+    <div id="spinner" class="spinner-border text-info text-center" style="display:block; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+    </div>
     <div class="row">
       <div class="col">
         <div class="table-responsive-lg">
@@ -47,7 +48,6 @@
 $(document).ready(function(){
         $('#PrevCorrectionsTable').dataTable({
           pageLength: 25,
-        //   columns: [ null, null,{ width: '70%' }, null, null, null, null, null, null]
         });
 
         
@@ -58,29 +58,32 @@ $(document).ready(function(){
 
 
 function updatePrevCorrTable() {
+  $('#spinner').show();
+  $('#PrevCorrectionsTable').hide();
+
+
   $.ajax({
     url: '/corrections/previous/get',
     method: 'GET',
-    contentType: 'application/json',  // Ensure the server handles the data as JSON
+    contentType: 'application/json', 
     // data: data,  // Send data as JSON
     success: function(response) {
         // Handle processing
-        console.log("Correction Data Recieved");
-        console.log(response);
-        // updatePrevCorrTable(response);
+        // console.log("Correction Data Recieved");
+        // console.log(response);
         $('#PrevCorrectionsTable').DataTable().clear().rows.add(response).draw();
-        // $('#PrevCorrectionsTable').DataTable().clear().rows.add(response).table.columns.adjust().draw();
+        $('#spinner').hide();
+        $('#PrevCorrectionsTable').show();
     },
     error: function(xhr, status, error) {
         console.error("Error:", error);
         alert("There was an error processing your request.");
         $('#PrevCorrectionsTable').DataTable().clear();
+        $('#spinner').hide();
+        $('#PrevCorrectionsTable').show();
     }
     });
 
-  
-  // Display the table by making the section visible
-  // document.getElementById('ranged-form-table').style.display = "flex";
 }
 </script>
 
