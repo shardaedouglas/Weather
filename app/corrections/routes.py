@@ -264,8 +264,7 @@ def submit_daily_corrections():
         todays_date = datetime.today().strftime("%Y%m%d")
 
         # Prepare the line for the text file
-        # line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number']}, XX\n"
-        line = f"{correction_data['ghcn_id'][0]}, {''.join(correction_date.split('-'))}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number'][0]}, XX\n"
+        line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number'][0]}, XX\n"
 
         # Append to the text file
         with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
@@ -591,7 +590,7 @@ def submit_ranged_corrections():
             todays_date = datetime.today().strftime("%Y%m%d")
             
             # Prepare the line for the text file
-            line = f"{ghcn_id}, {''.join(correction_date.split('-'))}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+            line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
 
             # Append to the text file for each correction
             with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
@@ -708,27 +707,26 @@ def get_previous_corrections():
     file_name = 'corrections.txt'
     with open( os.path.join(folder_path, file_name), "r") as file:
         for line in file: 
-            print(line)
+            if line:
+                print(line)
 
-            records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry]
-            print(records)
-            records[1] = records[1] + records.pop(2)
-            # print(records.pop(2))
-            records.insert(0, "User") #Placeholder for Username   
-            print(records)
-            
+                records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry] # Lines end in \n
+                records[1] = records[1] + records.pop(2) # Combine YYYYMM + DD
+                records.insert(0, "User") # Placeholder for Username   
 
-            # records[2] = datetime.strptime(records[2], "%Y%m").date().strftime('%Y-%m-%d')
+                for col in [2,7]: # Reformat dates to YYYY-MM-DD for display only
+                    try:
+                        records[col] = datetime.strptime(records[col], "%Y%m%d").date().strftime('%Y-%m-%d')
+                    except Exception as err:
+                        print(
+                            f"Error reading Date" +
+                            f"{traceback.format_exc()}"
+                            )
+                        records[col] = ""
+                    pass
 
-            for col in [2,7]:
-
-                # date_string = records[2] # AND 7
-                # date_object = 
-                records[col] = datetime.strptime(records[col], "%Y%m%d").date().strftime('%Y-%m-%d')
-                pass
-
-            print(records)
-            data.append(records)
+                # print(records)
+                data.append(records)
     
     # print(data)
     return data
