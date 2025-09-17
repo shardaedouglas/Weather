@@ -1,31 +1,39 @@
 {% extends "base.html" %}
-
+{% block title %}View Previous Corrections{% endblock %}
 {% block content %}
 
+<div class="container-md">
+  <div class="row g-3">
+      <div class="col g-3">
+          <p style="font-size: 260%; font-weight: bold;">View Previous Corrections</p>
+          <p>This is a brief description.</p>
+      </div>
+  </div>
 
 
 <div class="container">
+
   <div class="row">
     <div class="col">
-      <table class="table table-responsive" id="PrevCorrectionsTable">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th >GHCN ID</th>
-            <th >Date</th>
-            <th >Element</th>
-            <th>Action</th>
-            <th>O value</th>
-            <th>E value</th>
-            <th>Correction Submission Date</th>
-            <th>Datzilla Number</th>
-
-          </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-      </table>
+      <div class="table-responsive-lg">
+          <table class="table table-light table-striped" id="PrevCorrectionsTable">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th >GHCN ID</th>
+                <th >Date</th>
+                <th >Element</th>
+                <th>Action</th>
+                <th>O value</th>
+                <th>E value</th>
+                <th>Correction Submission Date</th>
+                <th>Datzilla Number</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+      </div>
     </div>
   </div>
 
@@ -35,7 +43,8 @@
 <script>
 $(document).ready(function(){
         $('#PrevCorrectionsTable').dataTable({
-          pageLength: 25
+          pageLength: 25,
+        //   columns: [ null, null,{ width: '70%' }, null, null, null, null, null, null]
         });
 
         
@@ -57,6 +66,7 @@ function updatePrevCorrTable() {
         console.log(response);
         // updatePrevCorrTable(response);
         $('#PrevCorrectionsTable').DataTable().clear().rows.add(response).draw();
+        // $('#PrevCorrectionsTable').DataTable().clear().rows.add(response).table.columns.adjust().draw();
     },
     error: function(xhr, status, error) {
         console.error("Error:", error);
@@ -71,31 +81,5 @@ function updatePrevCorrTable() {
 }
 </script>
 
-
-
-
-<!--  -->
-
-<h1 class="title">
-    Welcome, {{ name }}!
-  </h1>
-
-<h1>
-    This is a 
-    <span class="tt" data-bs-placement="auto" title="Accoridng to all known laws of aviation">
-        testing
-    </span> 
-    page!
-</h1>
-
-<div class="row g-3 justify-content-center ">
-    <div class="col-10">
-        <p class="text-center">
-            <a href="{{ url_for('auth.signup') }}">Register</a> |
-            <a href="{{ url_for('auth.login') }}">Login</a> |
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </p>
-    </div>
-</div>
 
 {% endblock content %}
