@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}View Previous Corrections{% endblock %}
+{% block content %}
+
+<div class="container-md">
+  <div class="container-md">
+    <div class="row g-3">
+      <div class="col g-3">
+        <h1>View Previous Corrections</h1>
+        <p>This is a brief description.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div id="spinner" class="spinner-border text-info text-center" style="display:block; margin-left: auto; margin-right: auto; margin-top: 20px;" >
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive-lg">
+          <table class="table table-light table-striped" id="PrevCorrectionsTable">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>GHCN ID</th>
+                <th>Date</th>
+                <th>Element</th>
+                <th>Action</th>
+                <th>O value</th>
+                <th>E value</th>
+                <th>Correction Submission Date</th>
+                <th>Datzilla Number</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+$(document).ready(function(){
+        $('#PrevCorrectionsTable').dataTable({
+          pageLength: 25,
+        });
+
+        
+        updatePrevCorrTable();
+        
+  });
+
+
+
+function updatePrevCorrTable() {
+  $('#spinner').show();
+  $('#PrevCorrectionsTable').hide();
+
+
+  $.ajax({
+    url: '/corrections/previous/get',
+    method: 'GET',
+    contentType: 'application/json', 
+    // data: data,  // Send data as JSON
+    success: function(response) {
+        // Handle processing
+        // console.log("Correction Data Recieved");
+        // console.log(response);
+        $('#PrevCorrectionsTable').DataTable().clear().rows.add(response).draw();
+        $('#spinner').hide();
+        $('#PrevCorrectionsTable').show();
+    },
+    error: function(xhr, status, error) {
+        console.error("Error:", error);
+        alert("There was an error processing your request.");
+        $('#PrevCorrectionsTable').DataTable().clear();
+        $('#spinner').hide();
+        $('#PrevCorrectionsTable').show();
+    }
+    });
+
+}
+</script>
+
+
+{% endblock content %}

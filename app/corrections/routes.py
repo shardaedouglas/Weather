@@ -264,7 +264,7 @@ def submit_daily_corrections():
         todays_date = datetime.today().strftime("%Y%m%d")
 
         # Prepare the line for the text file
-        line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number']}, XX\n"
+        line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number'][0]}, XX\n"
 
         # Append to the text file
         with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
@@ -571,7 +571,7 @@ def submit_ranged_corrections():
             action = correction.get('action')
             o_value = correction.get('o_value')
             e_value = correction.get('e_value')
-            datzilla_number = correction.get('datzilla number')
+            datzilla_number = correction.get('datzilla_number')
 
             # Parse the correction date into year, month, and day
             if correction_date:
@@ -681,3 +681,52 @@ _____________________________________________
 
 '''
 ######################################################
+
+
+''' 
+_____________________________________________
+
+Show Previous Corrections Section
+_____________________________________________
+
+'''
+@correction_bp.route('/corrections/previous',  methods=['GET','POST'])
+def previous_corrections():
+
+    return render_template(
+        "/corrections/previous_corrections.html",
+    )
+
+
+# @correction_bp.route('/corrections/previous/get',  methods=['GET','POST']) #If the username needs to be hidden, POST can be used instead.
+@correction_bp.route('/corrections/previous/get',  methods=['GET'])
+def get_previous_corrections():
+
+    data = []
+    folder_path = '/data/ops/ghcndqi/corr/'
+    file_name = 'corrections.txt'
+    with open( os.path.join(folder_path, file_name), "r") as file:
+        for line in file: 
+            if line:
+                print(line)
+
+                records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry] # Lines end in \n
+                records[1] = records[1] + records.pop(2) # Combine YYYYMM + DD
+                records.insert(0, "User") # Placeholder for Username   
+
+                for col in [2,7]: # Reformat dates to YYYY-MM-DD for display only
+                    try:
+                        records[col] = datetime.strptime(records[col], "%Y%m%d").date().strftime('%Y-%m-%d')
+                    except Exception as err:
+                        print(
+                            f"Error reading Date" +
+                            f"{traceback.format_exc()}"
+                            )
+                        records[col] = ""
+                    pass
+
+                # print(records)
+                data.append(records)
+    
+    # print(data)
+    return data
