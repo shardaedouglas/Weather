@@ -18,7 +18,7 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 # All Corrections Landing Page
 @correction_bp.route('/')
 @correction_bp.route('/corrections')
-# @login_required
+@login_required
 def index():
     return render_template("landing_page.html")
 
@@ -362,16 +362,19 @@ def submit_monthly_corrections():
 
         # Parse the correction date into year, month, and day
         if correction_date:
-            correction_year, correction_month, correction_day = correction_date[0].split('-')
+            correction_year = correction_date[0:3]
+            correction_month = correction_date[4:5]
+            yyyymm = correction_date[0]
         else:
-            correction_year, correction_month, correction_day = None, None, None
-
-        if correction_date:
-            date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
-            yyyymm = date_obj.strftime("%Y%m")
-
-        else:
+            correction_year, correction_month = None, None, None
             yyyymm = ""
+
+        # if correction_date:
+        #     date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
+        #     yyyymm = date_obj.strftime("%Y%m")
+
+        # else:
+        #     yyyymm = ""
 
         # Get today's date in yyyymmdd format
         todays_date = datetime.today().strftime("%Y%m%d")

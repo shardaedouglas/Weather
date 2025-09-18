@@ -228,12 +228,12 @@ def get_data_for_GHCN_table():
         display_group = request.form.get('display_group')
         
         if correction_date:
-            correction_year, correction_month, correction_day = correction_date.split('-')
-            correction_year = int(correction_year)
-            correction_month = int(correction_month)
-            correction_day = int(correction_day)
+            correction_year = int(correction_date[0:4])
+            correction_month = int(correction_date[4:6])
+            # correction_day = int(correction_day)
+            print(correction_month, correction_year, correction_date)
         else:
-            correction_year, correction_month, correction_day = None, None, None
+            correction_year, correction_month = None, None
         
         
         file_path = '/data/ops/ghcnd/data/ghcnd_all/' + ghcn_id + ".dly" # I THINK THIS IS HARD CODED IN THE PARSER STILL
@@ -400,9 +400,12 @@ def get_state_for_GHCN_table():
         
         # Parse the date into components
         if correction_date:
-            correction_year, correction_month, correction_day = map(int, correction_date.split('-'))
+            correction_year = int(correction_date[0:4])
+            correction_month = int(correction_date[4:6])
+            # correction_day = int(correction_day)
+            print(correction_month, correction_year, correction_date)
         else:
-            correction_year, correction_month, correction_day = None, None, None
+            correction_year, correction_month = None, None
         
         file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
         matching_stations = []
@@ -489,9 +492,11 @@ def get_state_for_GHCN_table_df():
 
         # Parse the date into components
         if correction_date:
-            correction_year, correction_month, correction_day = map(int, correction_date.split('-'))
+            correction_year = int(correction_date[0:4])
+            correction_month = int(correction_date[4:6])
+            # correction_day = int(correction_day)
         else:
-            correction_year, correction_month, correction_day = None, None, None
+            correction_year, correction_month = None, None
         
         file_path = '/data/ops/ghcnd/data/ghcnd-stations.txt'
         matching_stations = []
@@ -663,12 +668,12 @@ def  get_station_calc_for_GHCND():
     correction_date = request.form.get('date')
     
     if correction_date:
-        correction_year, correction_month, correction_day = correction_date.split('-')
-        correction_year = int(correction_year)
-        correction_month = int(correction_month)
-        correction_day = int(correction_day)
+        correction_year = int(correction_date[0:4])
+       
+        correction_month = int(correction_date[4:6])
+
     else:
-        correction_year, correction_month, correction_day = None, None, None
+        correction_year, correction_month = None, None
     
     # FOR TESTING
     # ghcn_id = 'USC00040212' # Angwin

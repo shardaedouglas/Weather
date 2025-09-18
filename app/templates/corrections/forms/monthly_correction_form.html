@@ -5,187 +5,290 @@
 <!--Monthly Form-->
 <div class="container-md justify-content-center " id="form-monthly">
     <!-- <div class="container-md justify-content-center form-container" id="form-monthly" style="display:none"> -->
-        <div class="container-md">
-            <div class="row g-3">
-                <div class="col g-3">
-                    <h1>Enter a Monthly Correction</h1>
-                    <p>This is a brief description of Monthly Corrections.</p>
-                </div>
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3" style="text-align: center;">
+                <b>Monthly Correction</b>
+                <p>Enter a month's worth of correction data.</p>
             </div>
-        </div>     
-    
-        <div class="container-md form-container">
+        </div>
+    </div>     
+
+    <div class="container-md form-container" style="max-width: max-content;">
         <form class="row g-3 align-items-center">
-                <div class="row g-3">
-                    <div class="col input-group">
-                        <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
-                        {{monthly_form.ghcn_id(class_='form-control') }}
-                    </div>
-                    <div class="row g-3">
-                        <div class="col input-group" id="date-div" style="justify-content: start;">
-                            <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                            {{monthly_form.date(class_='form-control date-picker')}}
+            <div class="row g-3">
+                <div class="col input-group">
+                    <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                    {{monthly_form.ghcn_id(class_='form-control') }}
+                </div>
+                <div class="col-lg-6">
+                    <!-- Date Picker Modal -->
+                    <div id="date-picker-modal" class="modal fade" tabindex="-1" aria-labelledby="date-picker-modal-label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="date-picker-modal-label">Select Date</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container-fluid">
+                                        <div class="row g-4">
+                                            <!-- Month Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
+                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Months will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                            <!-- Year Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Year</h3>
+                                                <div id="year-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Years will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Footer Buttons -->
+                                <div class="modal-footer justify-content-end">
+                                    <button id="cancel-btn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Close
+                                    </button>
+                                    <button id="ok-btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                        Ok
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row justify-content-center g-3" id="button-row">
-                    <div class="col-sm">
-                        <button type="reset" class="btn button-dull w-100 d-block fw-bold" id="monthly-form-clear-1">Clear</button>
-                    </div>
-                    <div class="col-sm">
-                        <button type="button" class="btn btn-success w-100 d-block fw-bold" id="monthly-next-btn">Next</button>
+                    <!-- Correct structure for Bootstrap input-group -->
+                    <div class="input-group">
+                        <label for="date" class="input-group-text">Date</label>
+                        <input type="text" name='date' class="form-control" id="date" placeholder="mm/yyyy" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
                     </div>
                 </div>
-        
-        </div>  
-        
-        <!--Monthly Table -->
-        <div id="monthly-form-table" >
-            {% include "corrections/data_tables/input_monthly_form.html" %}
-            
-        </div>
-    </form>
+            </div>
+            <div class="row justify-content-center g-3" id="button-row">
+                <div class="col-sm">
+                    <button type="reset" class="btn button-dull w-100 d-block fw-bold" id="monthly-form-clear-1">Clear</button>
+                </div>
+                <div class="col-sm">
+                    <button type="button" class="btn btn-success w-100 d-block fw-bold" id="monthly-next-btn">Next</button>
+                </div>
+            </div>
+                
+            <!--Monthly Table -->
+            <div id="monthly-form-table" >
+                {% include "corrections/data_tables/input_monthly_form.html" %}
+                
+            </div>
+        </form>
     </div>
-
+</div>
     <div id="submission-element" style="display: none;">
         {% include "corrections/correction_submitted_element.html" %}
     </div>
 
-    <script>
-        $(document).ready(function () {
 
-            // First Window Next Button
-            $("#monthly-next-btn").click(function() {
-                if (!$("#ghcn_id").val() || !$("#date").val()){
-                    // Error message: need both values.
-                    alert("Both values need to be filled out.");
-                } else {
-                    showMonthTable($("form"));
-                }
-            });
 
-            $("form").submit(function (event) {
-                event.preventDefault();
-                console.log($(this));
-                // console.log($(this).serialize());
-
-                //Monthly_Input holds the data inputted for the 31 days
-                let monthly_input = [];
-
-                // Loops through all 31 input fields within the table with the ID 'data-month-input'
-                $("[id='data-month-input']").each(function() {
-                    // Get the value of the current input field
-                    const inputValue = $(this).val();
-                    
-                    // Push the value into the array
-                    monthly_input.push(inputValue);
-                    
-                });
-                console.log(monthly_input);
-                // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
-                // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
-                var formData = formatWeatherDataQuery($(this));
-                
-                // Remove one of the date fields from formData.
-                formData = formData.split("&");
-                element_index = formData.findIndex((element => element.indexOf("date=") != -1));
-                if (element_index == -1) {
-                    //For some reason there's not a date field. 
-                } else {
-                    formData.splice(element_index,1);
-                }
-                formData = formData.join("&");
-                
-                // Code to Process the monthly data.
-                console.log(formData);
-
-                // Submit Correction Data
-                submitCorrections(formData, monthly_input)
-                // correctionFormHandler(formData, function (output) {
-                //     showMonthTable();
-                // })
-                // Upon Success
-                
-            });
-
-             // Showing sub elements for element selection
-            $("#element").on("change", function() {
-                switch ($("#element").val().toString()) {
-                    case "SN*#":
-                    $("#sub-element-select").removeClass("d-none");
-                    $(".sub-element-option").addClass("d-none");
-                    $("#sub_element_SN").parent().removeClass("d-none");
-                    break;
-                    case "SX*#":
-                    $("#sub-element-select").removeClass("d-none");
-                    $(".sub-element-option").addClass("d-none");
-                    $("#sub_element_SX").parent().removeClass("d-none");
-                    break;
-                    case "WT**":
-                    $("#sub-element-select").removeClass("d-none");
-                    $(".sub-element-option").addClass("d-none");
-                    $("#sub_element_WT").parent().removeClass("d-none");
-                    break;
-                    case "WV**":
-                    $("#sub-element-select").removeClass("d-none");
-                    $(".sub-element-option").addClass("d-none");
-                    $("#sub_element_WV").parent().removeClass("d-none");
-                    break;
-                    
-
-                    default:
-                        // console.log("Selected " + $("#element").val().toString() );
-                        // sub-element-select
-                        $("#sub-element-select").addClass("d-none");
-                }
-            });
-
-            
-
+<script>
+    $(document).ready(function () {
+        // First Window Next Button
+        $("#monthly-next-btn").click(function() {
+            if (!$("#ghcn_id").val() || !$("#date").val()){
+                // Error message: need both values.
+                alert("Both values need to be filled out.");
+            } else {
+                showMonthTable($("form"));
+            }
         });
 
-        function showMonthTable(form_object) {
-            console.log(form_object.get(0).elements);
-            console.log(form_object.get(0).elements.date[0].value);
-            const inputMonthlyTable = document.getElementById('input-monthly-table');
-            $("#ghcn-id-span").text($("#ghcn_id").val());
-            $("#month-ghcn-date-mirror").val($("#date").val());
+        $("form").submit(function (event) {
+            event.preventDefault();
+            console.log($(this));
+            // console.log($(this).serialize());
 
-           inputMonthlyTable.style.display = "block";
-        }
-         
-        //  Date fields mirror each other.
-         $("#month-ghcn-date-mirror").on("change", function() {
-            $("#date").val($("#month-ghcn-date-mirror").val());
-         });
-         $("#date").on("change", function() {
-            $("#month-ghcn-date-mirror").val($("#date").val());
-         });
+            //Monthly_Input holds the data inputted for the 31 days
+            let monthly_input = [];
 
-        //  First Section's Clear button
-         $("#monthly-form-clear-1").on("click", function() {
-            $("#monthly-form-table").hide();
-         });
-         
-        function submitCorrections(formData, monthlyInputData) {
-            // Send the correctionData directly in the request
-            $.ajax({
-                url: '/submit_monthly_corrections',
-                method: 'POST',
-                contentType: 'application/json',  // Ensure the server handles the data as JSON
-                data: JSON.stringify({ form_input: formData, monthly_input: monthlyInputData }),  // Send data as JSON
-                success: function(response) {
-                    // Handle processing
-                    alert("Monthly Correction Submitted Successfully");
-                    showSubmissionConfirmation("monthly");
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error:", error);
-                    alert("There was an error processing your request.");
-                    showSubmissionConfirmation("monthly"); //Should be changed to allow the user to retry their correction
-                }
+            // Loops through all 31 input fields within the table with the ID 'data-month-input'
+            $("[id='data-month-input']").each(function() {
+                // Get the value of the current input field
+                const inputValue = $(this).val();
+                
+                // Push the value into the array
+                monthly_input.push(inputValue);
+                
+            });
+            console.log(monthly_input);
+            // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
+            // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
+            var formData = formatWeatherDataQuery($(this));
+            
+            // Remove one of the date fields from formData.
+            formData = formData.split("&");
+            element_index = formData.findIndex((element => element.indexOf("date=") != -1));
+            if (element_index == -1) {
+                //For some reason there's not a date field. 
+            } else {
+                formData.splice(element_index,1);
+            }
+            formData = formData.join("&");
+            
+            // Code to Process the monthly data.
+            console.log(formData);
+
+            // Submit Correction Data
+            submitCorrections(formData, monthly_input)
+            // correctionFormHandler(formData, function (output) {
+            //     showMonthTable();
+            // })
+            // Upon Success
+            
+        });
+
+            // Showing sub elements for element selection
+        $("#element").on("change", function() {
+            switch ($("#element").val().toString()) {
+                case "SN*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SN").parent().removeClass("d-none");
+                break;
+                case "SX*#":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_SX").parent().removeClass("d-none");
+                break;
+                case "WT**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WT").parent().removeClass("d-none");
+                break;
+                case "WV**":
+                $("#sub-element-select").removeClass("d-none");
+                $(".sub-element-option").addClass("d-none");
+                $("#sub_element_WV").parent().removeClass("d-none");
+                break;
+                
+
+                default:
+                    // console.log("Selected " + $("#element").val().toString() );
+                    // sub-element-select
+                    $("#sub-element-select").addClass("d-none");
+            }
+        });
+
+        
+
+    });
+
+    function showMonthTable(form_object) {
+        console.log(form_object.get(0).elements);
+        console.log(form_object.get(0).elements.date[0].value);
+        const inputMonthlyTable = document.getElementById('input-monthly-table');
+        $("#ghcn-id-span").text($("#ghcn_id").val());
+        $("#month-ghcn-date-mirror").val($("#date").val());
+
+        inputMonthlyTable.style.display = "block";
+    }
+        
+    //  Date fields mirror each other.
+        $("#month-ghcn-date-mirror").on("change", function() {
+        $("#date").val($("#month-ghcn-date-mirror").val());
+        });
+        $("#date").on("change", function() {
+        $("#month-ghcn-date-mirror").val($("#date").val());
+        });
+
+    //  First Section's Clear button
+        $("#monthly-form-clear-1").on("click", function() {
+        $("#monthly-form-table").hide();
+        });
+        
+    function submitCorrections(formData, monthlyInputData) {
+        // Send the correctionData directly in the request
+        $.ajax({
+            url: '/submit_monthly_corrections',
+            method: 'POST',
+            contentType: 'application/json',  // Ensure the server handles the data as JSON
+            data: JSON.stringify({ form_input: formData, monthly_input: monthlyInputData }),  // Send data as JSON
+            success: function(response) {
+                // Handle processing
+                alert("Monthly Correction Submitted Successfully");
+                showSubmissionConfirmation("monthly");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("There was an error processing your request.");
+                showSubmissionConfirmation("monthly"); //Should be changed to allow the user to retry their correction
+            }
+        });
+    }
+</script>
+
+<!-- Date Picker Functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const datePickerInput = document.getElementById('date');
+        const monthList = document.getElementById('month-list');
+        const yearList = document.getElementById('year-list');
+        const okBtn = document.getElementById('ok-btn');
+        
+        const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        const currentYear = new Date().getFullYear();
+        const years = Array.from({ length: 50 }, (_, i) => currentYear  - i);
+
+        let selectedMonth = null;
+        let selectedYear = null;
+
+        function renderLists() {
+            monthList.innerHTML = '';
+            yearList.innerHTML = '';
+
+            months.forEach((month, index) => {
+                const monthElement = document.createElement('a');
+                monthElement.href = "#";
+                monthElement.textContent = month;
+                monthElement.className = `list-group-item list-group-item-action text-center ${index === selectedMonth ? 'active' : ''}`;
+                monthElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedMonth = index;
+                    renderLists();
+                });
+                monthList.appendChild(monthElement);
+            });
+
+            years.forEach(year => {
+                const yearElement = document.createElement('a');
+                yearElement.href = "#";
+                yearElement.textContent = year;
+                yearElement.className = `list-group-item list-group-item-action text-center ${year === selectedYear ? 'active' : ''}`;
+                yearElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedYear = year;
+                    renderLists();
+                });
+                yearList.appendChild(yearElement);
             });
         }
-    </script>
 
-    {% endblock content %}
+        // Populate the list when the modal is shown
+        const datePickerModal = document.getElementById('date-picker-modal');
+        datePickerModal.addEventListener('show.bs.modal', function () {
+            const now = new Date();
+            selectedMonth = now.getMonth();
+            selectedYear = now.getFullYear();
+            renderLists();
+        });
+
+        okBtn.addEventListener('click', () => {
+            if (selectedMonth !== null && selectedYear !== null) {
+                const monthName = months[selectedMonth];
+                datePickerInput.value = `${selectedYear}${monthName}`;
+            }
+        });
+    });
+</script>
+{% endblock content %}
