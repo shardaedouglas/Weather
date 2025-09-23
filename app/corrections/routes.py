@@ -1,7 +1,7 @@
 from app.corrections import correction_bp
 from urllib.parse import urlparse, parse_qs, parse_qsl
 from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections, HourlyCorrections
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, flash
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
@@ -18,7 +18,7 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 # All Corrections Landing Page
 @correction_bp.route('/')
 @correction_bp.route('/corrections')
-@login_required
+# @login_required
 def index():
     return render_template("landing_page.html")
 
@@ -269,7 +269,7 @@ def submit_daily_corrections():
         # Append to the text file
         with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
             file.write(line)
-
+        flash('Correction successfully written')
         print("Correction successfully written to daily_corrections.txt")
 
         return jsonify({"message": "Daily correction submitted successfully!"}), 201
