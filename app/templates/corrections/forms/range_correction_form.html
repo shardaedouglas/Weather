@@ -19,9 +19,77 @@
                     <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
                     {{range_form.ghcn_id(class_='form-control')}}
                 </div>
+                <div class="col datepicker-container">
+                    <!-- Input field that triggers the date picker -->
+                    <div class="input-group">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Date Range</span>
+                        <input type="text" id="date-range-input" name="date" class="form-control" placeholder="Select Date Range" readonly>
+                        <span class="input-group-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-range" viewBox="0 0 16 16">
+                                <path d="M9.796 1.5H4.204a.5.5 0 0 0 0 1h5.592a.5.5 0 0 0 0-1z"/>
+                                <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-4 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-4 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                            </svg>
+                        </span>
+                    </div>
+                    
+                    <!-- Date Picker Card -->
+                    <div id="date-picker-card" class="datepicker-card d-none">
+                        <!-- Header: From/To Display -->
+                        <div class="d-flex text-center p-2 mb-4 bg-light rounded-2 shadow-sm">
+                            <div id="from-date" class="flex-grow-1 border-end border-light-subtle">
+                                <p class="text-sm text-muted">From</p>
+                                <p class="fw-semibold text-dark fs-5">Select Start</p>
+                            </div>
+                            <div id="to-date" class="flex-grow-1">
+                                <p class="text-sm text-muted">To</p>
+                                <p class="fw-semibold text-dark fs-5">Select End</p>
+                            </div>
+                        </div>
+                
+                        <!-- Navigation Header -->
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <button id="prev-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                </svg>
+                            </button>
+                            <h2 class="fs-5 text-dark m-0 d-flex align-items-center">
+                                <select id="month-selector" class="custom-select-header"></select>
+                                <select id="year-selector" class="custom-select-header ms-2"></select>
+                            </h2>
+                            <button id="next-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </button>
+                        </div>
+                
+                        <!-- Calendar Grid -->
+                        <div class="row row-cols-7 text-center text-sm g-2 mb-4">
+                            <div class="date-cell text-muted fw-medium">Mon</div>
+                            <div class="date-cell text-muted fw-medium">Tue</div>
+                            <div class="date-cell text-muted fw-medium">Wed</div>
+                            <div class="date-cell text-muted fw-medium">Thu</div>
+                            <div class="date-cell text-muted fw-medium">Fri</div>
+                            <div class="date-cell text-muted fw-medium">Sat</div>
+                            <div class="date-cell text-muted fw-medium">Sun</div>
+                        </div>
+                        <div id="calendar-grid" class="d-flex flex-wrap text-center g-2">
+                            <!-- Calendar days will be dynamically generated here -->
+                        </div>
+                
+                        <!-- Footer Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button id="cancel-btn" class="btn btn-light rounded-full-lg fw-semibold flex-fill me-2">Cancel</button>
+                            <button id="apply-btn" class="btn blue-bg rounded-full-lg fw-semibold flex-fill ms-2">Apply</button>
+                        </div>
+                    </div>
+                </div>
 
             </div>
-            <div class="row g-3">
+            <!--Ranged Date Picker-->
+            <!-- <div class="row g-3">
                 <div class="col-md input-group" id="date-div">
                     <span class="input-group-text" id="inputGroup-sizing-default">Begin Date</span>
                     {{range_form.begin_date(class_='form-control date-picker')}}
@@ -30,33 +98,39 @@
                     <span class="input-group-text" id="inputGroup-sizing-default">End Date</span>
                     {{range_form.end_date(class_='form-control date-picker')}}
                 </div>
-            </div>
+            </div> -->
+    
             <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
                 <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Datzilla #</span>
                     {{range_form.datzilla_number(class_='form-control')}}
                 </div>
-
-            </div>
-            <div class="row g-3">
                 <div class="col input-group" style="flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
                     {{range_form.element(class_='form-select element-select')}}
                 </div>
-            </div>
-            <!-- Sub selection for Element -->
-            <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
-                <span class="input-group-text element-select" id="inputGroup-sizing-default">Sub-Element</span>
-                <div class="col sub-element-option">{{range_form.sub_element_SN(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{range_form.sub_element_SX(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{range_form.sub_element_WT(class_='form-select element-select')}}</div>
-                <div class="col sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
-            </div>
-            <div class="row g-3">
-                <div class="col input-group" style="width:7%; flex-wrap: nowrap;">
+                <!-- Sub selection for Element -->
+                <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default">Sub-Element</span>
+                    <div class="col sub-element-option">{{range_form.sub_element_SN(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{range_form.sub_element_SX(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{range_form.sub_element_WT(class_='form-select element-select')}}</div>
+                    <div class="col sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
+                </div>
+                <div class="col input-group" style="flex-wrap: nowrap;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
                     {{range_form.action(class_='form-select action-select')}}
                 </div>
+            </div>
+
+            </div>
+            <div class="row g-3">
+                
+            </div>
+            
+            
+            <div class="row g-3">
+                
             </div>
             <div class="row justify-content-center g-3" id="button-row">
                 <div class="col-sm">
@@ -234,5 +308,175 @@
         $("#ranged-form-table").hide();
     });
 </script>
+<!-- Range DatePicker Logic -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('date-range-input');
+            const datePickerCard = document.getElementById('date-picker-card');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
+            const fromDateDisplay = document.querySelector('#from-date p:last-child');
+            const toDateDisplay = document.querySelector('#to-date p:last-child');
+            const monthSelector = document.getElementById('month-selector');
+            const yearSelector = document.getElementById('year-selector');
+            const applyBtn = document.getElementById('apply-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+
+            let selectedStartDate = null;
+            let selectedEndDate = null;
+            let currentDate = new Date();
+
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const daysOfWeekStartMonday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            const format = (date) => {
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${month}-${day}-${year}`;
+            };
+
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                // Populate the month selector dropdown
+                monthSelector.innerHTML = '';
+                months.forEach((m, mIndex) => {
+                    const option = document.createElement('option');
+                    option.value = mIndex;
+                    option.textContent = m;
+                    if (mIndex === month) {
+                        option.selected = true;
+                    }
+                    monthSelector.appendChild(option);
+                });
+
+                // Populate the year selector dropdown
+                yearSelector.innerHTML = '';
+                const startYear = year - 5;
+                const endYear = year + 5;
+                for (let y = startYear; y <= endYear; y++) {
+                    const option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    if (y === year) {
+                        option.selected = true;
+                    }
+                    yearSelector.appendChild(option);
+                }
+                
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+                for (let i = startDay; i > 0; i--) {
+                    const day = prevMonthLastDay - i + 1;
+                    const cell = document.createElement('div');
+                    cell.textContent = day;
+                    cell.className = 'date-cell p-2 text-muted';
+                    calendarGrid.appendChild(cell);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const date = new Date(year, month, i);
+                    const cell = document.createElement('div');
+                    cell.textContent = i;
+                    cell.className = `date-cell p-2 rounded-circle-lg text-dark hover-bg-light transition`;
+                    
+                    if (selectedStartDate && date.getTime() === selectedStartDate.getTime()) {
+                        cell.classList.add('blue-bg');
+                    } else if (selectedEndDate && date.getTime() === selectedEndDate.getTime()) {
+                        cell.classList.add('blue-bg');
+                    } else if (selectedStartDate && selectedEndDate && date > selectedStartDate && date < selectedEndDate) {
+                        cell.classList.add('blue-light-bg');
+                    }
+
+                    cell.addEventListener('click', () => {
+                        handleDateClick(date);
+                    });
+                    calendarGrid.appendChild(cell);
+                }
+            }
+
+            function handleDateClick(date) {
+                if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+                    selectedStartDate = new Date(date);
+                    selectedEndDate = null;
+                } else if (date < selectedStartDate) {
+                    selectedEndDate = new Date(selectedStartDate);
+                    selectedStartDate = new Date(date);
+                } else if (date > selectedStartDate) {
+                    selectedEndDate = new Date(date);
+                }
+                updateDisplayDates();
+                renderCalendar();
+            }
+
+            function updateDisplayDates() {
+                if (selectedStartDate) {
+                    fromDateDisplay.textContent = format(selectedStartDate);
+                } else {
+                    fromDateDisplay.textContent = 'Select Start';
+                }
+
+                if (selectedEndDate) {
+                    toDateDisplay.textContent = format(selectedEndDate);
+                } else {
+                    toDateDisplay.textContent = 'Select End';
+                }
+            }
+            
+            // Event listeners
+            dateInput.addEventListener('click', (e) => {
+                datePickerCard.classList.toggle('d-none');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                datePickerCard.classList.add('d-none');
+            });
+            
+            applyBtn.addEventListener('click', () => {
+                if (selectedStartDate && selectedEndDate) {
+                    const startDateStr = format(selectedStartDate);
+                    const endDateStr = format(selectedEndDate);
+                    dateInput.value = `${startDateStr} - ${endDateStr}`;
+                    datePickerCard.classList.add('d-none');
+                }
+            });
+
+            prevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            nextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            monthSelector.addEventListener('change', (e) => {
+                const newMonth = parseInt(e.target.value);
+                currentDate.setMonth(newMonth);
+                renderCalendar();
+            });
+
+            yearSelector.addEventListener('change', (e) => {
+                const newYear = parseInt(e.target.value);
+                currentDate.setFullYear(newYear);
+                renderCalendar();
+            });
+            
+            // Initial render
+            updateDisplayDates();
+            renderCalendar();
+
+        });
+    </script>
 
 {% endblock content %}

@@ -49,13 +49,6 @@
                                 <div class="modal-body">
                                     <div class="container-fluid">
                                         <div class="row g-4">
-                                            <!-- Month Column -->
-                                            <div class="col">
-                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
-                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
-                                                    <!-- Months will be dynamically generated here -->
-                                                </div>
-                                            </div>
                                             <!-- Year Column -->
                                             <div class="col">
                                                 <h3 class="fw-bold text-dark mb-2">Year</h3>
@@ -63,6 +56,14 @@
                                                     <!-- Years will be dynamically generated here -->
                                                 </div>
                                             </div>
+                                            <!-- Month Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
+                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Months will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -81,7 +82,7 @@
                     <!-- Correct structure for Bootstrap input-group -->
                     <div class="input-group">
                         <label for="date" class="input-group-text">Date</label>
-                        <input type="text" name='date' class="form-control" id="date" placeholder="mm/yyyy" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
+                        <input type="text" name='date' class="form-control" id="date" placeholder="yyyymm" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
                     </div>
                     <!-- <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
                 {{ghcnForm.date(class_='form-control date-picker')}} -->

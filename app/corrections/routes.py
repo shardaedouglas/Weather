@@ -5,6 +5,7 @@ from flask import render_template, request, jsonify, flash
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
+from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
 from datetime import date, datetime
 import calendar
 import os
@@ -161,6 +162,53 @@ def process_correction():
                         
                         break  # Exit loop once found
                 results.append(filtered_json)
+                print('Fileter json here: ', filtered_json)
+                print('results  here: ', results)
+
+
+        # Convert Units
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+
+
+        if element in temp_keys:
+            for entry in results:
+                entry['dayMinus'] = c_tenths_to_f(entry['dayMinus'])
+                entry['dayPlus'] = c_tenths_to_f(entry['dayPlus'])
+                entry['day'] = c_tenths_to_f(entry['day'])
+        elif element in tenths_mm_keys:
+            for entry in results:
+                entry['dayMinus'] = tenths_mm_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = tenths_mm_to_inches(entry['dayPlus'])
+                entry['day'] = tenths_mm_to_inches(entry['day'])
+        elif element in mm_keys:
+            for entry in results:
+                entry['dayMinus'] = mm_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = mm_to_inches(entry['dayPlus'])
+                entry['day'] = mm_to_inches(entry['day'])
+        elif element in wind_keys:
+            for entry in results:
+                entry['dayMinus'] = wind_tenths_to_mph(entry['dayMinus'])
+                entry['dayPlus'] = wind_tenths_to_mph(entry['dayPlus'])
+                entry['day'] = wind_tenths_to_mph(entry['day'])
+        elif element in cm_keys:
+            for entry in results:
+                entry['dayMinus'] = cm_tenths_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = cm_tenths_to_inches(entry['dayPlus'])
+                entry['day'] = cm_tenths_to_inches(entry['day'])
+        elif element in km_keys:
+            for entry in results:
+                entry['dayMinus'] = km_to_miles(entry['dayMinus'])
+                entry['dayPlus'] = km_to_miles(entry['dayPlus'])
+                entry['day'] = km_to_miles(entry['day'])
+        #Km to Miles
+        for entry in results:
+                entry['distance'] = km_to_miles(entry['distance'])
+
         # Return
         return jsonify({
             "message": f"Correction processed successfully for GHCN ID: {ghcn_id}!",
@@ -208,7 +256,7 @@ def get_o_value():
             day=correction_day,
         )
         
-        # print("filtered_json", filtered_json)
+        print("filtered_json", filtered_json)
         
         # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
@@ -216,12 +264,36 @@ def get_o_value():
                 "o_value": "No Value",
                 "o_flag_value": "   "
             })
-            
-        # Return a simple response with the data
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+        
+        ovalue=''
+        if element in temp_keys :
+            ovalue = c_tenths_to_f(filtered_json[0])
+        elif element in mm_keys:
+            ovalue = mm_to_inches(filtered_json[0])
+        elif element in tenths_mm_keys:
+            ovalue = tenths_mm_to_inches(filtered_json[0])
+        elif element in wind_keys:
+            ovalue = wind_tenths_to_mph(filtered_json[0])
+        elif element in km_keys: 
+            ovalue = km_to_miles(filtered_json[0])
+        elif element in cm_keys:
+            ovalue = cm_to_inches(filtered_json[0])
+
         return jsonify({
-            "o_value": filtered_json[0],
+            
+            "o_value": ovalue,
             "o_flag_value": filtered_json[1]
-        })
+            })
+                
+               
+
+        
     except Exception as e:
         print(f"Error in get_o_value: {e}")
         return jsonify({"error": "Internal server error"}), 500
