@@ -1,8 +1,9 @@
 from app.auth import auth_bp
+from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
 from flask import render_template, redirect, url_for, request, flash
 from .models.auth_models import User
 from werkzeug.security import generate_password_hash, check_password_hash
-from .. import db 
+from .. import db
 from flask_login import login_user, login_required, logout_user
 
 
@@ -13,6 +14,11 @@ def login():
 
 @auth_bp.route('/login_service', methods=['POST'])
 def login_post():
+    #json_ds = JSON_DataStore()
+    d = {"foo":"bar", "True":1}
+    js = js_ds()
+    js.run_test(  )
+    
     # login code goes here
     username = request.form.get('username')
     password = request.form.get('password')
