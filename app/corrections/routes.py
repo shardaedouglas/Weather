@@ -552,16 +552,27 @@ def get_ranged_values():
         action = request.form.get('action', '')
         # o_value = request.form.get('o_value', '')
         # e_value = request.form.get('e_value', '')
-        begin_date = request.form.get('begin_date', '')
-        end_date = request.form.get('end_date', '')
-        
+        #print(request.form.get('date'))
+        #begin_date = request.form.get('begin_date', '')
+        #end_date = request.form.get('end_date', '')
+        #date = request.form.get('date')
+        date = request.form.get('date', '')
+        begin_date = date[0:10]
+        end_date = date[13:23]
+        print(begin_date, end_date)
 
         # Convert dates
+        # if begin_date:
+        #     begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+        # if end_date:
+        #     end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         if begin_date:
-            begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+            begin_date = datetime.strptime(begin_date, '%m-%d-%Y').date()
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%m-%d-%Y').date()
 
+
+       
         
         base_file_path = '/data/ops/ghcnd/data/'
         station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
@@ -574,6 +585,7 @@ def get_ranged_values():
             end_date = end_date,
             observation_type=element,
             station_code=ghcn_id,
+            
         )
         
         # Check if 'status' exists in filtered_json and is 'skip'
