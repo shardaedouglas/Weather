@@ -1,6 +1,3 @@
-
-
-
 <!-- Nested Grid using Flex-dirction:column -->
 <div class="container-md form-container-monthly" id="input-monthly-table" style="display:none; flex-wrap: nowrap;">
     <form id="input-monthly-form">
@@ -15,12 +12,6 @@
                 </div>
                 <div class="col">
                     Element: {{monthly_form.element(class_='form-select element-select')}}
-                  <!-- <select class="form-select" >
-                        <option selected>--Select--</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                    </select>--> 
                 </div>
                 <!-- Sub selection for Element -->
                 <div class="col justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
@@ -31,20 +22,21 @@
                     <div class="col sub-element-option">{{monthly_form.sub_element_WV(class_='form-select element-select')}}</div>
                 </div>
                 
+                <!--
                 <div class="col">
-                    Date:  {{monthly_form.date(class_='form-control date-picker', id='month-ghcn-date-mirror')}}
-                    <!--<div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="yyyymm">
-                      </div>-->
+                    Date:  {{monthly_form.date(class_='form-control date-picker', )}}
+
                 </div>
+                -->
+
+
+                <!-- mmYYYY Date Picker -->
+                <div class="col">
+                    Date: <input type="text" name='date' id="month-ghcn-date-mirror" class="form-control" placeholder="mm/yyyy">                 
+                </div>
+
                 <div class="col">
                     Action: {{monthly_form.action(class_='form-select action-select')}}
-                    <!--<select class="form-select" >
-                        <option selected>--Select--</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                    </select>-->
                 </div>
                 
                 <div class="col">
@@ -58,109 +50,89 @@
         <!-- 31 Inputs for Entry  -->
 
         <div class="col">
-        <div class="row" style="display:flex; flex-direction:column">
-            <!-- Month Input Table -->
-            <div class="col">
-                <div class="table-responsive-sm" style="text-align: center">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th scope="col">Day</th>
-                                <th scope="col">Value</th>
-    
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for p in range(31) %}
+            <div class="row" style="display:flex; flex-direction:column">
+                <!-- Month Input Table -->
+                <div class="col">
+                    <div class="table-responsive-sm" style="text-align: center">
+                        <table class="table table-sm">
+                            <thead>
                                 <tr>
-                                    <td>{{loop.index}}</td>
-                                    <td>
-                                        <div class="input-group mb-3">
-                                            <input type="text" class="form-control day-entry" id="data-month-input" placeholder="">
-                                          </div>
-                                    </td>
+                                    <th scope="col">Day</th>
+                                    <th scope="col">Value</th>
                                 </tr>
-                            {% endfor %}
-
-    
-                            <!-- Datzilla Number Input -->
-                            <!-- Should this be outside of the table as its own element? 
-                             <tr>
-                                <td>
-                                    <b>Datzilla #:</b>
-                                </td>
-                                <td>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" placeholder="">
-                                      </div>
-                                </td>
-                            </tr>-->
-                            
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row justify-content-center" id="button-row">
-                
-                
-                    <div class="col-4 me-2 col-lg me-lg-0">
-                        <div class="d-grid">
-                            <button type="button" class="btn btn-primary" id="monthly-total-btn">Total</button>
-                            <!-- <span class="border">Total </span> -->
+                            </thead>
+                            <tbody>
+                                {% for p in range(31) %}
+                                    <tr>
+                                        <td>{{loop.index}}</td>
+                                        <td>
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control day-entry" id="data-month-input" placeholder="">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row justify-content-center" id="button-row">
+                        <div class="col-4 me-2 col-lg me-lg-0">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary" id="monthly-total-btn">Total</button>
+                                <!-- <span class="border">Total </span> -->
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-5 col-lg border pt-1 " id="total-display">
-                        Text
-                    </div>
-                
-                    <div class="w-100 d-block d-lg-none"></div>
-                
-                    <div class="col-6 col-lg-3">
-                        <div class="d-grid"><button type="reset" class="btn btn-dark" >Clear</button></div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="d-grid"><button type="submit" class="btn btn-success" id="submit-monthly-correction">Submit</button></div>
+                        <div class="col-5 col-lg border pt-1 " id="total-display">
+                            Text
+                        </div>
+                        <div class="w-100 d-block d-lg-none"></div>
+                        <div class="col-6 col-lg-3">
+                            <div class="d-grid"><button type="reset" class="btn btn-dark" >Clear</button></div>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <div class="d-grid"><button type="submit" class="btn btn-success" id="submit-monthly-correction">Submit</button></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+    
+<script>
+    function processRangeInput() {
+        let inputText = document.getElementById("rangeTextInput").value.trim();
         
-    </div>
-    </div>
+        // Split input by common delimiters (comma, newline, space, tab)
+        let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
 
-    
-    <script>
-        function processRangeInput() {
-            let inputText = document.getElementById("rangeTextInput").value.trim();
-            
-            // Split input by common delimiters (comma, newline, space, tab)
-            let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
-    
-            console.log("Parsed Values:", values);
-    
-            // Fill table with parsed values (up to 31)
-            let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
-            for (let i = 0; i < inputs.length; i++) {
-                inputs[i].value = values[i] || ""; // Set value or empty if less than 31
-            }
+        console.log("Parsed Values:", values);
+
+        // Fill table with parsed values (up to 31)
+        let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].value = values[i] || ""; // Set value or empty if less than 31
         }
+    }
 
-        // Calculate Monthly Total
-        $("#monthly-total-btn").click( function() {
-            let total = 0;
-            // console.log("Button pressed.");
-            // console.log( $(".day-entry"));
-            $(".day-entry").each(function() {
-                value = parseInt($(this).eq(0).val());
-                if (value) {
-                    total += parseInt($(this).eq(0).val(), 10);
-                }
-                
-            });
-            console.log(total);
-            $("#total-display").text(total);
-
+    // Calculate Monthly Total
+    $("#monthly-total-btn").click( function() {
+        let total = 0;
+        // console.log("Button pressed.");
+        // console.log( $(".day-entry"));
+        $(".day-entry").each(function() {
+            value = parseInt($(this).eq(0).val());
+            if (value) {
+                total += parseInt($(this).eq(0).val(), 10);
+            }
+            
         });
-    </script>
+        console.log(total);
+        $("#total-display").text(total);
+
+    });
+</script>
+
 
 

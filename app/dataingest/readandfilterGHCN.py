@@ -1,5 +1,7 @@
 from app.dataingest.GHCNfilter import filter_data
 from app.dataingest.GHCNreader import parse_fixed_width_file
+
+
 # from GHCNfilter import filter_data
 # from GHCNreader import parse_fixed_width_file
 import polars as pl
@@ -156,6 +158,7 @@ def parse_and_filter(
         
         date_list = get_date_list(begin_date, end_date)
         formatted_range_data = set_ranged_data(date_list, filtered_df)  # Pass the date_list variable
+        print(formatted_range_data)
         return formatted_range_data
         
     elif correction_type == "o_value":
@@ -165,6 +168,9 @@ def parse_and_filter(
         # print(filtered_df.write_json())
         print("O-Value for day:", o_value)
         # print(o_flag_value)
+        
+
+
 
         return o_value, o_flag_value
     
@@ -274,6 +280,7 @@ def get_date_list(begin_date, end_date):
       
       
 def set_ranged_data(date_list, filtered_df):
+    from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
     for date_entry in date_list:
         # Split the date string into year, month, and day
         date_str = date_entry.get("Date", "")
@@ -295,13 +302,41 @@ def set_ranged_data(date_list, filtered_df):
                 if day_column_name in filtered_row.columns:
                     # Extract the value for that specific day
                     value = filtered_row.select(day_column_name)
-
+                    print(value)
+                    element= filtered_df['observation_type'][0]
+                    print(element)
                     if not value.is_empty():
                         # Get the first value from the filtered data (assuming it's unique per day)
-                        value = value[0, 0]  # Assuming the value is the first item in the first row
-                        
+                        value = str(value[0, 0])  # Assuming the value is the first item in the first row
                         # Append the date and value to the date_list
                         date_entry['Value'] = value
+                        # Convert Units
+                        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+                        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+                        mm_keys = {"SNOW", "SNWD", "MDSF"}
+                        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+                        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+                        km_keys = {"MDWM", "WDMV"}
+
+
+                        if element in temp_keys:
+                            date_entry['Value'] = c_tenths_to_f(date_entry['Value'])
+                        elif element in tenths_mm_keys:
+                            date_entry['Value'] = tenths_mm_to_inches(date_entry['Value'])
+                        elif element in mm_keys:
+                            date_entry['Value'] = mm_to_inches(date_entry['Value'])
+                        elif element in wind_keys:
+                            date_entry['Value'] = wind_tenths_to_mph(date_entry['Value'])
+                        elif element in cm_keys:
+                            date_entry['Value'] = cm_tenths_to_inches(date_entry['Value'])
+                        elif element in km_keys:
+                            date_entry['Value'] = km_to_miles(date_entry['Value'])
+                        elif element in cm_keys: 
+                            date_entry['Value'] = cm_to_inches(date_entry['Value'])
+
+
+                        
+                        print(value)
                         # print(f"Appended Value: {value} for {date_str}")
                     else:
                         print(f"No data for {year}-{month}-{day} in column {day_column_name}")

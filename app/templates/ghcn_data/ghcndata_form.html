@@ -19,7 +19,7 @@
                 <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span> {{ghcnForm.ghcn_id(class_='form-control', id='search-option-ghcn-id')}}
             </div>
             
-            <div class="col-md input-group" style="flex-wrap: nowrap;">
+            <!--<div class="col-md input-group" style="flex-wrap: nowrap;">
                 <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-country" name="id-option" value="Country">
                 <span class="input-group-text" id="inputGroup-sizing-default">Country</span> 
                 <span class="tt" title="Country Input">{{ghcnForm.country(class_='form-select country-select', id='search-option-country')}}</span>
@@ -31,13 +31,61 @@
             </div>
         </div>
         <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
+            -->
+            
             <div class="col-md input-group" style="flex-wrap: nowrap;">
                 <span class="input-group-text" id="inputGroup-sizing-default">Type</span>
                 {{ghcnForm.station_type(class_='form-select type-select')}}
             </div>
             <div class="col-md input-group" id="date-div">
-                <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
-                {{ghcnForm.date(class_='form-control date-picker')}}
+                <!-- Date Picker Modal -->
+                    <div id="date-picker-modal" class="modal fade" tabindex="-1" aria-labelledby="date-picker-modal-label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="date-picker-modal-label">Select Date</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container-fluid">
+                                        <div class="row g-4">
+                                            <!-- Year Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Year</h3>
+                                                <div id="year-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Years will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                            <!-- Month Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
+                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Months will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Footer Buttons -->
+                                <div class="modal-footer justify-content-end">
+                                    <button id="cancel-btn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Close
+                                    </button>
+                                    <button id="ok-btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                        Ok
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Correct structure for Bootstrap input-group -->
+                    <div class="input-group">
+                        <label for="date" class="input-group-text">Date</label>
+                        <input type="text" name='date' class="form-control" id="date" placeholder="yyyymm" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
+                    </div>
+                    <!-- <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
+                {{ghcnForm.date(class_='form-control date-picker')}} -->
             </div>
         </div>
 
@@ -193,7 +241,7 @@
         $("input[name='id-option']").click(function() {
             enableSelectedForm();
         });
-    })
+    }) 
 
     
 
@@ -202,9 +250,8 @@
     // Gets the data from the intial form to begin populating the tables and dropdowns with data
     function getDataFromURL(urlParams) {
         const idOption = urlParams.get('id-option');
-
-        const stationType = urlParams.get('station_type');
         const date = urlParams.get('date');
+        const stationType = urlParams.get('station_type');
 
         if (idOption === 'State') {
             const state = urlParams.get('state');
@@ -420,14 +467,17 @@
     document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("year-selector").addEventListener("change", function () {
             const selectedYear = this.value;
+            console.log("Selected Year:", selectedYear)
             // Check if year has changed then grab the data for the new year selected
             if (selectedYear && selectedYear !== "--Select--") {
                 const ghcnId = new URLSearchParams(window.location.search).get("ghcn_id");
                 const stationType = new URLSearchParams(window.location.search).get("station_type");
-                const month = new URLSearchParams(window.location.search).get("date").substring(5,7);
-                
+                const date = new URLSearchParams(window.location.search).get("date");
+                //const month = new URLSearchParams(window.location.search).get("date").substring(4);
+                month = date.substring(4,6)
+                console.log(month)
                 // Fake a correction_date using just year + dummy month/day
-                const correctionDate = `${selectedYear}-${month}-01`; 
+                const correctionDate = `${selectedYear}${month}`; 
 
                     $.ajax({
                         url: '/get_data_for_GHCN_table',
@@ -491,25 +541,24 @@
                 const stationType = urlParams.get("station_type");
                 var date = urlParams.get("date");
                 var newDate = '';
-
+                prevMonth = '';
+                month = date.substring(4,6)
+                year = date.substring(0,4)
                 // Parse Date to get the previous month
-                splitDate = date.split('-');
-                if (splitDate[1] === '01'){
-                    prevMonth = '12'
-                    splitDate[1] = prevMonth;
+                if (month === '01'){
+                    prevMonth = '12';
+                    year = parseInt(year) - 1
+                    newDate = year.toString() + prevMonth
                 }
                 else{
-                    prevMonth = parseInt(splitDate[1]) - 1;
-                    console.log(prevMonth)
-                    splitDate[1] = '0' + String(prevMonth);
+                    prevMonth = parseInt(month) - 1;
+                    newDate = year + prevMonth.toString()
                 }
-                newDate = splitDate.join('-');
-                console.log(newDate);
-            
+                
 
                 //Get the current state of the data table
                 const context = lastFetchedData;
-                console.log(context)
+                console.log('Last Month\'s data..Context:', context)
                 
                 //Get the current selected units ***May not need this line
                 const unitMode = document.getElementById("unit-selector").value;
@@ -530,19 +579,21 @@
                         console.log("The table Keys:", response.ordered_keys) 
 
                         //Combine both month's data
-                        let combined_data = {};
-                        let half_prev_month = {};
-                        let half_current_month = {};
-                        const entries = Object.entries(response.data);
-                        console.log(entries);
+                        let split_month_data = {};
+                        
+                        //const entries = Object.entries(response.data);
+
                         for (i=1; i <= 15; i++) {
-                            console.log(response.data['Day ' + i])
+                            split_month_data['Day ' + i] = response.data['Day ' + i]
+                            
                         }
-                        console.log(half_prev_month);
-
-
+                        
+                        for (i=16; i <=31; i++){
+                            split_month_data['Day ' + i] = context['Day ' + i]
+                        }
+                        console.log('split month data', split_month_data)
                         //Populate Table with previous month's data
-
+                        showComparisonTable(split_month_data, response.ordered_keys)
                     },
                     error: function (xhr, status, error) {
                         console.error("Error reloading year:", error);
@@ -550,15 +601,7 @@
                     }
                 })
 
-                // Get the first 14 days of the previous month
-                const requestData = {
-                    ghcn_id: ghcnId,
-                    date: newDate,
-                    station_type: stationType,
-                    unit_mode: unitMode,
-                    display_group: selectedDisplayGroup || 1
-
-                };
+                
 
             }
             else if($(this).prop("checked") == false){
@@ -871,6 +914,68 @@
 
 
     </script>
+<!-- Date Picker Functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const datePickerInput = document.getElementById('date');
+        const monthList = document.getElementById('month-list');
+        const yearList = document.getElementById('year-list');
+        const okBtn = document.getElementById('ok-btn');
+        
+        const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        const currentYear = new Date().getFullYear();
+        const years = Array.from({ length: 50 }, (_, i) => currentYear  - i);
 
+        let selectedMonth = null;
+        let selectedYear = null;
+
+        function renderLists() {
+            monthList.innerHTML = '';
+            yearList.innerHTML = '';
+
+            months.forEach((month, index) => {
+                const monthElement = document.createElement('a');
+                monthElement.href = "#";
+                monthElement.textContent = month;
+                monthElement.className = `list-group-item list-group-item-action text-center ${index === selectedMonth ? 'active' : ''}`;
+                monthElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedMonth = index;
+                    renderLists();
+                });
+                monthList.appendChild(monthElement);
+            });
+
+            years.forEach(year => {
+                const yearElement = document.createElement('a');
+                yearElement.href = "#";
+                yearElement.textContent = year;
+                yearElement.className = `list-group-item list-group-item-action text-center ${year === selectedYear ? 'active' : ''}`;
+                yearElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedYear = year;
+                    renderLists();
+                });
+                yearList.appendChild(yearElement);
+            });
+        }
+
+        // Populate the list when the modal is shown
+        const datePickerModal = document.getElementById('date-picker-modal');
+        datePickerModal.addEventListener('show.bs.modal', function () {
+            const now = new Date();
+            selectedMonth = now.getMonth();
+            selectedYear = now.getFullYear();
+            renderLists();
+        });
+
+        okBtn.addEventListener('click', () => {
+            if (selectedMonth !== null && selectedYear !== null) {
+                const monthName = months[selectedMonth];
+                datePickerInput.value = `${selectedYear}${monthName}`;
+            }
+        });
+    });
+</script>
 {% endblock content %}
 

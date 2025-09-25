@@ -1,10 +1,11 @@
 from app.corrections import correction_bp
 from urllib.parse import urlparse, parse_qs, parse_qsl
 from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections, HourlyCorrections
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, flash
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
+from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
 from datetime import date, datetime
 import calendar
 import os
@@ -161,6 +162,53 @@ def process_correction():
                         
                         break  # Exit loop once found
                 results.append(filtered_json)
+                print('Fileter json here: ', filtered_json)
+                print('results  here: ', results)
+
+
+        # Convert Units
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+
+
+        if element in temp_keys:
+            for entry in results:
+                entry['dayMinus'] = c_tenths_to_f(entry['dayMinus'])
+                entry['dayPlus'] = c_tenths_to_f(entry['dayPlus'])
+                entry['day'] = c_tenths_to_f(entry['day'])
+        elif element in tenths_mm_keys:
+            for entry in results:
+                entry['dayMinus'] = tenths_mm_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = tenths_mm_to_inches(entry['dayPlus'])
+                entry['day'] = tenths_mm_to_inches(entry['day'])
+        elif element in mm_keys:
+            for entry in results:
+                entry['dayMinus'] = mm_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = mm_to_inches(entry['dayPlus'])
+                entry['day'] = mm_to_inches(entry['day'])
+        elif element in wind_keys:
+            for entry in results:
+                entry['dayMinus'] = wind_tenths_to_mph(entry['dayMinus'])
+                entry['dayPlus'] = wind_tenths_to_mph(entry['dayPlus'])
+                entry['day'] = wind_tenths_to_mph(entry['day'])
+        elif element in cm_keys:
+            for entry in results:
+                entry['dayMinus'] = cm_tenths_to_inches(entry['dayMinus'])
+                entry['dayPlus'] = cm_tenths_to_inches(entry['dayPlus'])
+                entry['day'] = cm_tenths_to_inches(entry['day'])
+        elif element in km_keys:
+            for entry in results:
+                entry['dayMinus'] = km_to_miles(entry['dayMinus'])
+                entry['dayPlus'] = km_to_miles(entry['dayPlus'])
+                entry['day'] = km_to_miles(entry['day'])
+        #Km to Miles
+        for entry in results:
+                entry['distance'] = km_to_miles(entry['distance'])
+
         # Return
         return jsonify({
             "message": f"Correction processed successfully for GHCN ID: {ghcn_id}!",
@@ -208,7 +256,7 @@ def get_o_value():
             day=correction_day,
         )
         
-        # print("filtered_json", filtered_json)
+        print("filtered_json", filtered_json)
         
         # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
@@ -216,12 +264,36 @@ def get_o_value():
                 "o_value": "No Value",
                 "o_flag_value": "   "
             })
-            
-        # Return a simple response with the data
+        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+        mm_keys = {"SNOW", "SNWD", "MDSF"}
+        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+        km_keys = {"MDWM", "WDMV"}
+        
+        ovalue=''
+        if element in temp_keys :
+            ovalue = c_tenths_to_f(filtered_json[0])
+        elif element in mm_keys:
+            ovalue = mm_to_inches(filtered_json[0])
+        elif element in tenths_mm_keys:
+            ovalue = tenths_mm_to_inches(filtered_json[0])
+        elif element in wind_keys:
+            ovalue = wind_tenths_to_mph(filtered_json[0])
+        elif element in km_keys: 
+            ovalue = km_to_miles(filtered_json[0])
+        elif element in cm_keys:
+            ovalue = cm_to_inches(filtered_json[0])
+
         return jsonify({
-            "o_value": filtered_json[0],
+            
+            "o_value": ovalue,
             "o_flag_value": filtered_json[1]
-        })
+            })
+                
+               
+
+        
     except Exception as e:
         print(f"Error in get_o_value: {e}")
         return jsonify({"error": "Internal server error"}), 500
@@ -269,7 +341,7 @@ def submit_daily_corrections():
         # Append to the text file
         with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
             file.write(line)
-
+        flash('Correction successfully written')
         print("Correction successfully written to daily_corrections.txt")
 
         return jsonify({"message": "Daily correction submitted successfully!"}), 201
@@ -362,16 +434,19 @@ def submit_monthly_corrections():
 
         # Parse the correction date into year, month, and day
         if correction_date:
-            correction_year, correction_month, correction_day = correction_date[0].split('-')
+            correction_year = correction_date[0:3]
+            correction_month = correction_date[4:5]
+            yyyymm = correction_date[0]
         else:
-            correction_year, correction_month, correction_day = None, None, None
-
-        if correction_date:
-            date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
-            yyyymm = date_obj.strftime("%Y%m")
-
-        else:
+            correction_year, correction_month = None, None, None
             yyyymm = ""
+
+        # if correction_date:
+        #     date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
+        #     yyyymm = date_obj.strftime("%Y%m")
+
+        # else:
+        #     yyyymm = ""
 
         # Get today's date in yyyymmdd format
         todays_date = datetime.today().strftime("%Y%m%d")
@@ -477,16 +552,27 @@ def get_ranged_values():
         action = request.form.get('action', '')
         # o_value = request.form.get('o_value', '')
         # e_value = request.form.get('e_value', '')
-        begin_date = request.form.get('begin_date', '')
-        end_date = request.form.get('end_date', '')
-        
+        #print(request.form.get('date'))
+        #begin_date = request.form.get('begin_date', '')
+        #end_date = request.form.get('end_date', '')
+        #date = request.form.get('date')
+        date = request.form.get('date', '')
+        begin_date = date[0:10]
+        end_date = date[13:23]
+        print(begin_date, end_date)
 
         # Convert dates
+        # if begin_date:
+        #     begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+        # if end_date:
+        #     end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         if begin_date:
-            begin_date = datetime.strptime(begin_date, '%Y-%m-%d').date()
+            begin_date = datetime.strptime(begin_date, '%m-%d-%Y').date()
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%m-%d-%Y').date()
 
+
+       
         
         base_file_path = '/data/ops/ghcnd/data/'
         station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
@@ -499,6 +585,7 @@ def get_ranged_values():
             end_date = end_date,
             observation_type=element,
             station_code=ghcn_id,
+            
         )
         
         # Check if 'status' exists in filtered_json and is 'skip'

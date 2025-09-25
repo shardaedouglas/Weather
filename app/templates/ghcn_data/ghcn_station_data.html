@@ -1,5 +1,57 @@
 
 <div class="container p-4" style="margin-top: 20px;">
+    <!-- User Selection Menu -->
+    <div class="row align-items-center light" id="filter-row">
+        <div class="col-sm-3">
+            Change Yr:
+            <select class="form-select" id="year-selector">
+                <option selected></option>
+            </select>
+        </div>
+        <div class="col-sm-3">
+            Display: 
+            <select class="form-select" id="display-selector">
+                <option value="0">--Select--</option>
+                <option value="1" selected>Core Elements</option>
+                <option value="2">Temp Elements</option>
+                <option value="3">Precip Elements</option>
+                <option value="4">Evap/Pan Temp/Wind</option>
+                <option value="5">Sunshine</option>
+                <option value="6">Soils</option>
+                <option value="7">Multi Day</option>
+                <option value="8">ASOS Winds</option>
+            </select>
+        </div>
+        <div class="col-sm-3">
+            Units:
+            <select class="form-select" id="unit-selector">
+                <option value="imperial">--Select--</option>
+                <option value="imperial" selected>U.S. (Imperial)</option>
+                <option value="metric">Metric</option>
+                <option value="raw">Raw</option>
+            </select>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                    Split Month
+                </label>
+            </div>
+        </div>
+        <!--<div class="col">     
+            <button type="button" class="btn btn-info">Show MS Data</button>
+        </div>
+        <div class="col">
+            
+            <button type="button" class="btn btn-info">Save Data</button>
+        </div>-->
+        
+    </div>
+    <div class="row ">
+        
+       
+    </div>
 
     <!-- Main Data Table -->
     <div class="row " style="text-align: center">
@@ -37,7 +89,19 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="row justify-content-center" id="button-row">
+            <div class="col-sm-4">
+                <button type="button" id="save-button" class="btn btn-success w-100 d-block">Save Data</button>
+            </div>
+            <div class="col-sm-4">
+                <button type="button" class="btn btn-primary w-100 d-block">Show MS Data</button>
+            </div>
+            <!-- <div class="col-sm-4">
+                <button type="reset" class="btn btn-dark w-100 d-block">Clear</button>
+            </div> -->
+        </div>
+        <br>
     <!-- Secondary Data table -->
     <div class="container text-center">
         <div class="row border ghcnd-calc-table">
@@ -137,81 +201,6 @@
             </div>
         </div>
     </div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <!-- User Selection Menu -->
-    <div class="row">
-        <div class="col">
-            Change Yr:
-            <select class="form-select" id="year-selector">
-                <option selected>--Select--</option>
-            </select>
-        </div>
-        <div class="col">
-            Display: 
-            <select class="form-select" id="display-selector">
-                <option selected value="0">--Select--</option>
-                <option value="1">Core Elements</option>
-                <option value="2">Temp Elements</option>
-                <option value="3">Precip Elements</option>
-                <option value="4">Evap/Pan Temp/Wind</option>
-                <option value="5">Sunshine</option>
-                <option value="6">Soils</option>
-                <option value="7">Multi Day</option>
-                <option value="8">ASOS Winds</option>
-            </select>
-        </div>
-        
-        <!--<div class="col">     
-            <button type="button" class="btn btn-info">Show MS Data</button>
-        </div>
-        <div class="col">
-            
-            <button type="button" class="btn btn-info">Save Data</button>
-        </div>-->
-        
-    </div>
-    <div class="row ">
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                <label class="form-check-label" for="flexCheckDefault">
-                    Split Month? 
-                </label>
-            </div>
-        </div>
-        <div class="col">
-            Units:
-            <select class="form-select" id="unit-selector">
-                <option value="imperial" selected>--Select--</option>
-                <option value="imperial">U.S. (Imperial)</option>
-                <option value="metric">Metric</option>
-                <option value="raw">Raw</option>
-            </select>
-        </div>
-        <div class="row justify-content-center" id="button-row">
-            <div class="col-sm-4">
-                <button type="button" id="save-button" class="btn btn-success w-100 d-block">Save Data</button>
-            </div>
-            <div class="col-sm-4">
-                <button type="button" class="btn btn-primary w-100 d-block">Show MS Data</button>
-            </div>
-            <!-- <div class="col-sm-4">
-                <button type="reset" class="btn btn-dark w-100 d-block">Clear</button>
-            </div> -->
-        </div>
-
-        
-    </div>
-
 </div>
 
 <script>

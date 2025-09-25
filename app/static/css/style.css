@@ -266,3 +266,62 @@ Gives a border between the columns of the table. */
 .dark-mode .dropdown-item{
     color: #fff;
 }
+/* Range Date Picker Style */
+
+.datepicker-container {
+            position: relative;
+        }
+        .datepicker-card {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 384px;
+            max-width: 100%;
+            padding: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .blue-bg {
+            background-color: #1b29f0 !important;
+            color: white !important;
+        }
+        .blue-light-bg {
+            background-color: #9ab5ff !important;
+            color: #2d4fe2 !important;
+        }
+        .rounded-full-lg {
+            border-radius: 9999px;
+        }
+        .date-cell {
+            cursor: pointer;
+            width: 14.28%;
+        }
+        .custom-select-header {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            appearance: none;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 700;
+            padding: 0 0.5rem;
+            transition: all 0.2s ease-in-out;
+            border-radius: 0.25rem;
+        }
+        .custom-select-header:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+        }
+        .custom-select-header:hover {
+            background-color: #f0f4f8;
+            text-decoration: none;
+        }
+        .fs-5 {
+            font-size: 1.25rem !important;
+        }
+        #date-range-input {
+            cursor: pointer;
+        }
