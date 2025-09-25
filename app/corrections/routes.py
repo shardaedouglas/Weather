@@ -9,8 +9,10 @@ from datetime import date, datetime
 import calendar
 import os
 from flask_login import login_required
+from flask import session
 from wtforms import SelectMultipleField
 import traceback
+
 
 
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
@@ -20,6 +22,7 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 # @login_required
 def index():
+    print( session["_user_id"] )
     return render_template("landing_page.html")
 
 
