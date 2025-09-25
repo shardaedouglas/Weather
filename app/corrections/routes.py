@@ -7,11 +7,12 @@ from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
 from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
 from datetime import date, datetime
-import calendar
 import os
 from flask_login import login_required
-from wtforms import SelectMultipleField
+from flask import session
 import traceback
+from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
+
 
 
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
@@ -21,7 +22,11 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 # @login_required
 def index():
-    return render_template("landing_page.html")
+    js = js_ds()
+    page_settings = js.get_admin_settings()
+    page_settings["username"] = session["_username"]
+    #print( session["_user_id"] )
+    return render_template("landing_page.html", page_settings=page_settings)
 
 
 
