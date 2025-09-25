@@ -14,10 +14,10 @@ def login():
 
 @auth_bp.route('/login_service', methods=['POST'])
 def login_post():
-    #json_ds = JSON_DataStore()
-    d = {"foo":"bar", "True":1}
+    #Query the DataStore for the user list
     js = js_ds()
-    js.run_test(  )
+    users = js.get_users()
+    print(users)
     
     # login code goes here
     username = request.form.get('username')

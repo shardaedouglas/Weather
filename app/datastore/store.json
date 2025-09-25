@@ -1,1 +1,11 @@
-{"users": [{"username": "bkorzeniewski", "password": "admin2010"}, {"username": "hvance", "password": "admin2010"}], "new": "data"}
+{
+    "users": [
+        {"username": "bkorzeniewski", "password": "admin2010"}, 
+        {"username": "hvance", "password": "admin2010"}
+    ],
+    
+    "admin_settings":{
+        "foo":"bar",
+        "hello_world":true
+    }
+}

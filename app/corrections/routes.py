@@ -6,12 +6,11 @@ from app.extensions import get_db, find_stations, parse_station_file, get_statio
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
 from datetime import date, datetime
-import calendar
 import os
 from flask_login import login_required
 from flask import session
-from wtforms import SelectMultipleField
 import traceback
+from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
 
 
 
@@ -22,8 +21,11 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 # @login_required
 def index():
-    print( session["_user_id"] )
-    return render_template("landing_page.html")
+    js = js_ds()
+    page_settings = js.get_admin_settings()
+    page_settings["username"] = session["_username"]
+    #print( session["_user_id"] )
+    return render_template("landing_page.html", page_settings=page_settings)
 
 
 

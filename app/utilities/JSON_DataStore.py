@@ -2,40 +2,35 @@ import json
 from pathlib import Path
 
 class JSON_DataStore():
+    
+    path = "../datastore/store.json"
+    base_path = Path(__file__).parent
+    file_path = (base_path / path ).resolve()
 
-    def write_json(self, path, json_data):
-        
-        base_path = Path(__file__).parent
-        file_path = (base_path / path ).resolve()
+    #Takes a Python dictionary, which will be saved as JSON
+    #Careful, you're updating the WHOLE THING
+    def update_datastore(self, json_data):
 
-        with open(file_path, 'w') as file_out:
+        with open(self.file_path, 'w') as file_out:
             json.dump(json_data, file_out)
-
-    def read_json(self, path):
+    
+    def get_datastore(self):
         
-        base_path = Path(__file__).parent
-        file_path = (base_path / path ).resolve()
-        
-        with open(file_path) as file_in:
+        with open(self.file_path) as file_in:
             return json.load(file_in)
 
-    def run_test(self):
-        
-        path = "../datastore/store.json"
-
-        # input from form or wherever your new JSON is coming from...
-        # It could also be coming from a REST API etc:
-        #input = request.form['data']
-        py_dict = {"new": "data"}
+    def get_users(self):
 
         # read in existing JSON
-        existing_json = self.read_json(path)
-        # {"existing": "json"}
+        db = self.get_datastore()
+        user_list = db["users"]
+        return user_list
+    
+    def get_admin_settings(self):
 
-        # add new JSON to existing JSON however you see fit
-        [(k, v)] = py_dict.items()
-        existing_json[k] = v
-        {"existing": "json", "new": "data"}
+        # read in existing JSON
+        db = self.get_datastore()
+        admin_settings = db["admin_settings"]
+        return admin_settings
 
-        # now update datastore
-        self.write_json(path, existing_json)
+        
