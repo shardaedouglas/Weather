@@ -19,6 +19,12 @@
                 {% endif %}
                 {% endwith %}
             <form method="POST" action="/signup">
+                <!-- Name input -->
+                <div class=" mb-4">
+                    <input type="name" id="signUpName" class="form-control" name="name"/>
+                    <label class="form-label" for="signUpName">First Name</label>
+                </div>
+                
                 <!-- Email/Username input -->
                 <div class=" mb-4">
                     <input type="text" id="signUpUser" class="form-control" name="username" />

@@ -1,3 +1,4 @@
+import polars as pl
 import json
 from pathlib import Path
 
@@ -13,11 +14,17 @@ class JSON_DataStore():
 
         with open(self.file_path, 'w') as file_out:
             json.dump(json_data, file_out)
-    
+
     def get_datastore(self):
         
         with open(self.file_path) as file_in:
             return json.load(file_in)
+
+    def save_user(self, user):
+        db = self.get_datastore()
+        db["users"].append( user )
+        self.update_datastore(db)
+
 
     def get_users(self):
 
