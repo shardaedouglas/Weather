@@ -1,48 +1,92 @@
-
+image: artifacts.ncei.noaa.gov/ncei/base:alma9  # Use the internal AlmaLinux 9 image
 stages:
-  - test
+  
   - build
+  - security
+  - artifactory
+  - test
+
   #- deploy
 
-variables:
-  PYTHON_VERSION: "3.11"
-  FLASK_ENV: "testing"
+# variables:
+#   PYTHON_VERSION: "3.11"
+#   FLASK_ENV: "testing"
 
-# Test and Build
-test_and_build:
-  stage: test
+build-job:
+  stage: build
+  before_script:
+    - python3 --version  # Verify Python version (optional)
   script:
-    - echo "Setting up Python environment..."
-    - python3 -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-    - pip install pytest pytest-cov flake8
-    - echo "Running tests..."
-    - pytest --cov=app --cov-report=xml --cov-report=term-missing
-    - echo "Running linting..."
-    - flake8 . --count --max-line-length=127 --statistics
-    - echo "Building application..."
-    - python -c "from app import create_app; app = create_app(); print('Build successful')"
-    - echo "Creating deployment package..."
-    - mkdir -p dist
-    - cp -r app dist/
-    - cp requirements.txt dist/
-    - cp config.py dist/
-    - tar -czf datzilla-flask-$CI_COMMIT_SHORT_SHA.tar.gz -C dist .
+      - echo "Setting up Python environment..."
+      # - python3 -m venv venv
+      # - source venv/bin/activate
+      # - pip install --upgrade pip
+      # - pip install -r requirements.txt
+      - tar -cvf datzilla-flask.tar.gz ./requirements.txt ./app/
+
   artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
     paths:
-      - datzilla-flask-$CI_COMMIT_SHORT_SHA.tar.gz
-    expire_in: 1 week
-  coverage: '/TOTAL.*\s+(\d+%)$/'
-  only:
-    - main
-    - develop
-    - merge_requests
+      - datzilla-flask.tar.gz  # Artifact to be moved to the next stage
+test-job:
+  stage: test
+  dependencies:
+    - build-job  # Get the datzilla-flas.tar.gz artifact from the build-job
+  before_script:
+    - yum install -y python3-pip  # Install pip (if not already installed)
+    - pip install -r requirements.txt
+    - pip install -e . # Install datzila from setup.py
+
+  script:
+    - pytest ./test/  # Run the tests using pytest on the source code
+
+
+# Push artifact to artifactory dev repository
+include:
+  # The utilities for uploading to Artifactory.
+  - component: git.ncei.noaa.gov/pipeline-components/artifactory/upload_artifact_dev_repo@main
+    inputs:
+      job_name: artifactory-upload-bdd
+      artifact_path: '.'
+      artifact_name: 'datzilla-flask.tar.gz'
+  # Include security scanning jobs
+  - project: "commons/gitlab-templates"
+    file: "gitlab-ci/security-autoscan.gitlab-ci.yml"
+
+# # Test and Build
+# test_and_build:
+#   stage: test
+#   script:
+#     - echo "Setting up Python environment..."
+#     - python3 -m venv venv
+#     - source venv/bin/activate
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - pip install pytest pytest-cov flake8
+#     - echo "Running tests..."
+#     - pytest --cov=app --cov-report=xml --cov-report=term-missing
+#     - echo "Running linting..."
+#     - flake8 . --count --max-line-length=127 --statistics
+#     - echo "Building application..."
+#     - python -c "from app import create_app; app = create_app(); print('Build successful')"
+#     - echo "Creating deployment package..."
+#     - mkdir -p dist
+#     - cp -r app dist/
+#     - cp requirements.txt dist/
+#     - cp config.py dist/
+#     - tar -czf datzilla-flask-$CI_COMMIT_SHORT_SHA.tar.gz -C dist .
+#   artifacts:
+#     reports:
+#       coverage_report:
+#         coverage_format: cobertura
+#         path: coverage.xml
+#     paths:
+#       - datzilla-flask-$CI_COMMIT_SHORT_SHA.tar.gz
+#     expire_in: 1 week
+#   coverage: '/TOTAL.*\s+(\d+%)$/'
+#   only:
+#     - main
+#     - develop
+#     - merge_requests
 
 # Deploy to staging
 # deploy-staging:
