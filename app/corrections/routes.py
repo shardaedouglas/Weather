@@ -24,7 +24,10 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 def index():
     js = js_ds()
     page_settings = js.get_admin_settings()
-    page_settings["username"] = session["_username"]
+    username = "NCEI User"
+    if "_username" in session:
+        username= session["_username"]
+    page_settings["username"] = username
     #print( session["_user_id"] )
     return render_template("landing_page.html", page_settings=page_settings)
 

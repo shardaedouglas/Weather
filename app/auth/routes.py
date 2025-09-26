@@ -1,7 +1,7 @@
 import polars as pl
 from app.auth import auth_bp
 from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
-from flask import render_template, redirect, url_for, request, flash
+from flask import render_template, redirect, url_for, session, request, flash
 from .models.auth_models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from .. import db
@@ -88,5 +88,6 @@ def signup_post():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    session.pop('_username', None)
     logout_user()
     return redirect(url_for('auth.login'))
