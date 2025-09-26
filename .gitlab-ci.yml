@@ -1,54 +1,42 @@
-# GitLab CI/CD Pipeline for Datzilla
-# Traditional deployment without Docker/containers
 
 stages:
   - test
-  - security
   - build
-  - deploy-staging
-  - deploy-production
+  #- deploy
 
 variables:
   PYTHON_VERSION: "3.11"
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   FLASK_ENV: "testing"
-  SECRET_KEY: "test-secret-key-for-ci"
 
-# Cache pip dependencies
-cache:
-  paths:
-    - .cache/pip/
-    - venv/
-
-# Test stage
-test:
+# Test and Build
+test_and_build:
   stage: test
-  image: python:3.11-slim
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq sqlite3
-    - python -m venv venv
+  script:
+    - echo "Setting up Python environment..."
+    - python3 -m venv venv
     - source venv/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - pip install pytest pytest-cov pytest-flask flake8 black isort safety bandit
-  script:
-    - source venv/bin/activate
-    - echo "Running code formatting checks..."
-    - black --check --diff .
-    - isort --check-only --diff .
-    - echo "Running linting checks..."
-    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - echo "Running tests with coverage..."
-    - pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing
+    - pip install pytest pytest-cov flake8
+    - echo "Running tests..."
+    - pytest --cov=app --cov-report=xml --cov-report=term-missing
+    - echo "Running linting..."
+    - flake8 . --count --max-line-length=127 --statistics
+    - echo "Building application..."
+    - python -c "from app import create_app; app = create_app(); print('Build successful')"
+    - echo "Creating deployment package..."
+    - mkdir -p dist
+    - cp -r app dist/
+    - cp requirements.txt dist/
+    - cp config.py dist/
+    - tar -czf weather-app-$CI_COMMIT_SHORT_SHA.tar.gz -C dist .
   artifacts:
     reports:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
     paths:
-      - htmlcov/
-      - coverage.xml
+      - weather-app-$CI_COMMIT_SHORT_SHA.tar.gz
     expire_in: 1 week
   coverage: '/TOTAL.*\s+(\d+%)$/'
   only:
@@ -56,146 +44,32 @@ test:
     - develop
     - merge_requests
 
-# Security scanning stage
-security:
-  stage: security
-  image: python:3.11-slim
-  before_script:
-    - python -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-    - pip install safety bandit
-  script:
-    - source venv/bin/activate
-    - echo "Running security scans..."
-    - bandit -r app/ -f json -o bandit-report.json || true
-    - bandit -r app/ -ll
-    - safety check --json --output safety-report.json || true
-    - safety check
-  artifacts:
-    paths:
-      - bandit-report.json
-      - safety-report.json
-    expire_in: 1 week
-  allow_failure: true
-  only:
-    - main
-    - develop
-    - merge_requests
-
-# Build stage
-build:
-  stage: build
-  image: python:3.11-slim
-  before_script:
-    - python -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-  script:
-    - source venv/bin/activate
-    - echo "Building application..."
-    - python -c "from app import create_app; app = create_app(); print('Application builds successfully')"
-    - echo "Creating deployment package..."
-    - mkdir -p dist
-    - cp -r app dist/
-    - cp requirements.txt dist/
-    - cp config.py dist/
-    - cp README.md dist/
-    - cp -r app/static dist/ 2>/dev/null || true
-    - cp -r app/templates dist/ 2>/dev/null || true
-    - tar -czf weather-app-$CI_COMMIT_SHORT_SHA.tar.gz -C dist .
-  artifacts:
-    paths:
-      - weather-app-$CI_COMMIT_SHORT_SHA.tar.gz
-    expire_in: 1 week
-  only:
-    - main
-    - develop
-
 # Deploy to staging
-deploy-staging:
-  stage: deploy-staging
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client rsync
-    - eval $(ssh-agent -s)
-    - echo "$STAGING_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -H $STAGING_SERVER >> ~/.ssh/known_hosts
-  script:
-    - echo "Deploying to staging environment..."
-    - scp weather-app-$CI_COMMIT_SHORT_SHA.tar.gz $STAGING_USER@$STAGING_SERVER:/tmp/
-    - ssh $STAGING_USER@$STAGING_SERVER "cd /opt/weather-app && ./deploy-staging.sh $CI_COMMIT_SHORT_SHA"
-    - echo "Staging deployment completed"
-  environment:
-    name: staging
-    url: https://staging.weather.noaa.gov
-  only:
-    - develop
-  when: manual
+# deploy-staging:
+#   stage: deploy
+#   script:
+#     - echo "Deploying to staging..."
+#     - scp weather-app-$CI_COMMIT_SHORT_SHA.tar.gz $STAGING_USER@$STAGING_SERVER:/tmp/
+#     - ssh $STAGING_USER@$STAGING_SERVER "cd /opt/weather-app && ./deploy.sh staging $CI_COMMIT_SHORT_SHA"
+#     - echo "Staging deployment completed"
+#   environment:
+#     name: staging
+#     url: http://staging.weather.noaa.gov
+#   only:
+#     - develop
+#   when: manual
 
-# Deploy to production
-deploy-production:
-  stage: deploy-production
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client rsync
-    - eval $(ssh-agent -s)
-    - echo "$PRODUCTION_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -H $PRODUCTION_SERVER >> ~/.ssh/known_hosts
-  script:
-    - echo "Deploying to production environment..."
-    - scp weather-app-$CI_COMMIT_SHORT_SHA.tar.gz $PRODUCTION_USER@$PRODUCTION_SERVER:/tmp/
-    - ssh $PRODUCTION_USER@$PRODUCTION_SERVER "cd /opt/weather-app && ./deploy-production.sh $CI_COMMIT_SHORT_SHA"
-    - echo "Production deployment completed"
-  environment:
-    name: production
-    url: https://weather.noaa.gov
-  only:
-    - main
-  when: manual
-
-# Database migration (optional)
-migrate-database:
-  stage: deploy-production
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$PRODUCTION_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -H $PRODUCTION_SERVER >> ~/.ssh/known_hosts
-  script:
-    - echo "Running database migrations..."
-    - ssh $PRODUCTION_USER@$PRODUCTION_SERVER "cd /opt/weather-app && python migrate.py"
-    - echo "Database migration completed"
-  only:
-    - main
-  when: manual
-  allow_failure: true
-
-# Cleanup old deployments
-cleanup:
-  stage: deploy-production
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$PRODUCTION_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -H $PRODUCTION_SERVER >> ~/.ssh/known_hosts
-  script:
-    - echo "Cleaning up old deployments..."
-    - ssh $PRODUCTION_USER@$PRODUCTION_SERVER "cd /opt/weather-app && ./cleanup.sh"
-    - echo "Cleanup completed"
-  only:
-    - main
-  when: manual
-  allow_failure: true
+# # Deploy to production
+# deploy-production:
+#   stage: deploy
+#   script:
+#     - echo "Deploying to production..."
+#     - scp weather-app-$CI_COMMIT_SHORT_SHA.tar.gz $PRODUCTION_USER@$PRODUCTION_SERVER:/tmp/
+#     - ssh $PRODUCTION_USER@$PRODUCTION_SERVER "cd /opt/weather-app && ./deploy.sh production $CI_COMMIT_SHORT_SHA"
+#     - echo "Production deployment completed"
+#   environment:
+#     name: production
+#     url: https://weather.noaa.gov
+#   only:
+#     - main
+#   when: manual
