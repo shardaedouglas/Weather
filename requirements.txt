@@ -4,7 +4,7 @@ blinker==1.8.2
 cffi==1.14.5
 chardet==4.0.0
 click==8.1.7
-cockpit @ file:///builddir/build/BUILD/cockpit-323.1/tmp/wheel/cockpit-323.1-py3-none-any.whl
+#cockpit @ file:///builddir/build/BUILD/cockpit-323.1/tmp/wheel/cockpit-323.1-py3-none-any.whl # Only works on linux server
 colorama==0.4.6
 cryptography==36.0.1
 cx-Oracle==8.3.0
@@ -74,7 +74,7 @@ s3cmd==2.4.0
 selinux==3.6
 sepolicy==3.6
 setools==4.4.4
-setroubleshoot @ file:///builddir/build/BUILD/setroubleshoot-3.3.32/src
+# setroubleshoot @ file:///builddir/build/BUILD/setroubleshoot-3.3.32/src # Only works on linux server
 six==1.15.0
 sos==4.8.2
 SQLAlchemy==2.0.37
