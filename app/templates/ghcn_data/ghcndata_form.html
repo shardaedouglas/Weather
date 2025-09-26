@@ -279,7 +279,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error("Error:", error);
-                    alert("There was an error processing your request.");
+                    handleAjaxError(xhr, status, error, "There was an error processing your data request.");
                 }
             });
 
@@ -316,7 +316,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error("Error:", error);
-                    alert("There was an error processing your request.");
+                    handleAjaxError(xhr, status, error, "There was an error processing your data request.");
                 }
             });
 
@@ -332,7 +332,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error("Error:", error);
-                    alert("There was an error processing your request.");
+                    handleAjaxError(xhr, status, error, "There was an error processing your data request.");
                 }
             });
         }
@@ -429,7 +429,7 @@
 
             newSaveBtn.addEventListener("click", function () {
                 if (!lastFetchedData || Object.keys(lastFetchedData).length === 0) {
-                    alert("No data available to save.");
+                    errorPopup.warning("No data available to save.");
                     return;
                 }
                 downloadCSVFromJSON(lastFetchedData, "GHCN_data_export.csv");
@@ -514,13 +514,13 @@
                                 },
                                 error: function(xhr, status, error) {
                                     console.error("Error:", error);
-                                    alert("There was an error processing your request.");
+                                    handleAjaxError(xhr, status, error, "There was an error processing your data request.");
                                 }
                             });
                         },
                         error: function (xhr, status, error) {
                             console.error("Error reloading year:", error);
-                            alert("Could not load data for selected year.");
+                                    handleAjaxError(xhr, status, error, "Could not load data for the selected year.");
                         }
                     });
                 }
@@ -597,7 +597,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Error reloading year:", error);
-                        alert("Could not load data for selected year.");
+                        handleAjaxError(xhr, status, error, "Could not load data for the selected year.");
                     }
                 })
 
@@ -655,7 +655,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Unit change error:", error);
-                        alert("Failed to reload data with selected units.");
+                        handleAjaxError(xhr, status, error, "Failed to reload data with selected units.");
                     }
                 });
             }
@@ -700,7 +700,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Display group change error:", error);
-                        alert("Failed to reload data with selected display group.");
+                        handleAjaxError(xhr, status, error, "Failed to reload data with selected display group.");
                     }
                 });
             }
@@ -791,7 +791,7 @@
     // **** Logic for saving the GHCN Table data to user's file System **** \\
     function downloadCSVFromJSON(jsonData, filename) {
         if (!jsonData || Object.keys(jsonData).length === 0) {
-            alert("No data to export.");
+            errorPopup.warning("No data to export.");
             return;
         }
 
@@ -904,7 +904,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error("Error:", error, xkr, status);
-                    alert("There was an error processing your request.");
+                    handleAjaxError(xhr, status, error, "There was an error processing your data request.");
                 }
             });
 

@@ -245,13 +245,13 @@
                             $("#q-flag-output").text(response.o_flag_value.charAt(1));
                             $("#s-flag-output").text(response.o_flag_value.charAt(2));
                         } else {
-                            alert("O-Value not found.");
+                            errorPopup.warning("O-Value not found.");
                         }
                     },
                     
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
-                        alert("There was an error processing your request.");
+                        handleAjaxError(xhr, status, error, "There was an error retrieving the O-Value.");
                     }
                 });
             }
@@ -371,7 +371,7 @@
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
             }
         });
         }
@@ -464,14 +464,14 @@
             data: JSON.stringify({ correction_data: correctionData }), // Convert array to JSON string
             success: function(response) {
                 // Handle processing
-                alert("Corrections Submitted Successfully");
+                handleAjaxSuccess("Corrections Submitted Successfully");
                 // Return true?
                 // If correction was successful, show the submission confirmation screen. 
                 showSubmissionConfirmation("daily");
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
                 // Return false?
                 // FOR TESTING 
                 showSubmissionConfirmation("daily");

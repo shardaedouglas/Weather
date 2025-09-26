@@ -346,7 +346,7 @@ def submit_daily_corrections():
         # Append to the text file
         with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
             file.write(line)
-        flash('Correction successfully written')
+        flash('Correction successfully written', 'success')
         print("Correction successfully written to daily_corrections.txt")
 
         return jsonify({"message": "Daily correction submitted successfully!"}), 201

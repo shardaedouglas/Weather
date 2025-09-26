@@ -12,7 +12,9 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/error-popup.css') }}">
         <!-- <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
   
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script> -->
@@ -25,17 +27,230 @@
         <!-- Tailwind CSS via CDN -->
 
 
-        <script>
-            // Set the dark theme
-            if (readCookie("theme") == "dark") {
-                // window.alert(s);
-                $("html").addClass("dark-mode");
-                // $("table").addClass("table-dark");
-                // $(".container").toggleClass("dark-mode");
+        <!-- Global Accessibility CSS -->
+        <style>
+            /* Global accessibility styles */
+            .high-contrast {
+                filter: contrast(150%) brightness(120%);
             }
+            
+            .high-contrast .card {
+                border: 2px solid #000000 !important;
+            }
+            
+            .high-contrast .btn {
+                border-width: 2px !important;
+            }
+            
+            .high-contrast .navbar {
+                border-bottom: 2px solid #000000 !important;
+            }
+            
+            .high-contrast .dropdown-menu {
+                border: 2px solid #000000 !important;
+            }
+            
+            .high-contrast .form-control {
+                border-width: 2px !important;
+            }
+            
+            .high-contrast .table {
+                border: 2px solid #000000 !important;
+            }
+            
+            .high-contrast .table th,
+            .high-contrast .table td {
+                border: 1px solid #000000 !important;
+            }
+            
+            /* Enhanced focus indicators */
+            .enhanced-focus *:focus {
+                outline: 3px solid #0d6efd !important;
+                outline-offset: 2px !important;
+                box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
+            }
+            
+            .enhanced-focus .btn:focus {
+                outline: 3px solid #0d6efd !important;
+                outline-offset: 2px !important;
+            }
+            
+            .enhanced-focus .form-control:focus {
+                outline: 3px solid #0d6efd !important;
+                outline-offset: 2px !important;
+            }
+            
+            .enhanced-focus .nav-link:focus {
+                outline: 3px solid #0d6efd !important;
+                outline-offset: 2px !important;
+            }
+            
+            .enhanced-focus .dropdown-item:focus {
+                outline: 3px solid #0d6efd !important;
+                outline-offset: 2px !important;
+            }
+            
+            /* Reduce motion */
+            .reduce-motion * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .reduce-motion .motion-element {
+                animation: none !important;
+            }
+            
+            /* Dark mode enhancements */
+            .dark-mode {
+                background-color: #1a1a1a !important;
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .navbar {
+                background-color: #2d3748 !important;
+                border-bottom: 1px solid #4a5568 !important;
+            }
+            
+            .dark-mode .navbar-nav .nav-link {
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .navbar-nav .nav-link:hover {
+                color: #ffffff !important;
+            }
+            
+            .dark-mode .dropdown-menu {
+                background-color: #2d3748 !important;
+                border: 1px solid #4a5568 !important;
+            }
+            
+            .dark-mode .dropdown-item {
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .dropdown-item:hover {
+                background-color: #4a5568 !important;
+                color: #ffffff !important;
+            }
+            
+            .dark-mode .card {
+                background-color: #2d3748 !important;
+                border: 1px solid #4a5568 !important;
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .btn-primary {
+                background-color: #3182ce !important;
+                border-color: #3182ce !important;
+            }
+            
+            .dark-mode .btn-secondary {
+                background-color: #4a5568 !important;
+                border-color: #4a5568 !important;
+            }
+            
+            .dark-mode .btn-outline-primary {
+                color: #3182ce !important;
+                border-color: #3182ce !important;
+            }
+            
+            .dark-mode .btn-outline-primary:hover {
+                background-color: #3182ce !important;
+                border-color: #3182ce !important;
+            }
+            
+            .dark-mode .form-control {
+                background-color: #4a5568 !important;
+                border: 1px solid #718096 !important;
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .form-control:focus {
+                background-color: #4a5568 !important;
+                border-color: #3182ce !important;
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .table {
+                color: #e2e8f0 !important;
+            }
+            
+            .dark-mode .table-striped > tbody > tr:nth-of-type(odd) > td {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+            
+            .dark-mode .bg-light {
+                background-color: #4a5568 !important;
+            }
+            
+            .dark-mode .text-muted {
+                color: #a0aec0 !important;
+            }
+            
+            /* High contrast dark mode */
+            .dark-mode.high-contrast {
+                background-color: #000000 !important;
+                color: #ffffff !important;
+            }
+            
+            .dark-mode.high-contrast .card {
+                background-color: #000000 !important;
+                border: 2px solid #ffffff !important;
+                color: #ffffff !important;
+            }
+            
+            .dark-mode.high-contrast .navbar {
+                background-color: #000000 !important;
+                border-bottom: 2px solid #ffffff !important;
+            }
+            
+            .dark-mode.high-contrast .btn {
+                border-width: 2px !important;
+            }
+        </style>
 
-            //Set Font Size
-            $("html").css("font-size", 100 + parseInt(readCookie("font-resize")) + "%");
+        <script>
+            // Global accessibility initialization
+            $(document).ready(function() {
+                initializeAccessibilitySettings();
+            });
+
+            // Initialize all accessibility settings
+            function initializeAccessibilitySettings() {
+                // Apply dark theme
+                if (readCookie("theme") == "dark") {
+                    $("html").addClass("dark-mode");
+                }
+
+                // Apply font size
+                var fontResize = readCookie("font-resize");
+                if (fontResize) {
+                    $("html").css("font-size", (100 + parseInt(fontResize)) + "%");
+                }
+
+                // Apply high contrast
+                if (readCookie("high-contrast") == "true") {
+                    $("html").addClass("high-contrast");
+                }
+
+                // Apply enhanced focus indicators
+                if (readCookie("focus-indicators") == "true") {
+                    $("html").addClass("enhanced-focus");
+                }
+
+                // Apply reduce motion
+                if (readCookie("reduce-motion") == "true") {
+                    $("html").addClass("reduce-motion");
+                }
+
+                // Apply tooltips
+                if (readCookie("tooltips") == "true") {
+                    enableTooltips(true);
+                } else {
+                    enableTooltips(false);
+                }
+            }
 
             // Create/Read/Erase Cookies
             function createCookie(name, value, days) {
@@ -66,11 +281,87 @@
             function enableTooltips(bool) {
                 if (bool) {
                     $(".tt").tooltip('enable');
-
                 } else {
                     $(".tt").tooltip('disable');
                 }
-                
+            }
+
+            // Global keyboard shortcuts
+            $(document).keydown(function(e) {
+                if (e.ctrlKey) {
+                    switch(e.key) {
+                        case '+':
+                        case '=':
+                            e.preventDefault();
+                            increaseFontSize();
+                            break;
+                        case '-':
+                            e.preventDefault();
+                            decreaseFontSize();
+                            break;
+                        case 'd':
+                            e.preventDefault();
+                            toggleTheme();
+                            break;
+                        case 'r':
+                            e.preventDefault();
+                            resetAccessibilitySettings();
+                            break;
+                    }
+                }
+            });
+
+            // Global accessibility functions
+            function increaseFontSize() {
+                var currentSize = parseInt(readCookie("font-resize")) || 0;
+                var newSize = currentSize + 10;
+                $("html").css("font-size", (100 + newSize) + "%");
+                createCookie("font-resize", newSize, "");
+            }
+
+            function decreaseFontSize() {
+                var currentSize = parseInt(readCookie("font-resize")) || 0;
+                var newSize = currentSize - 10;
+                $("html").css("font-size", (100 + newSize) + "%");
+                createCookie("font-resize", newSize, "");
+            }
+
+            function toggleTheme() {
+                if (readCookie("theme") == "dark") {
+                    $("html").removeClass("dark-mode");
+                    createCookie("theme", "", "");
+                } else {
+                    $("html").addClass("dark-mode");
+                    createCookie("theme", "dark", "");
+                }
+            }
+
+            function resetAccessibilitySettings() {
+                if (confirm("Are you sure you want to reset all accessibility settings?")) {
+                    // Reset font size
+                    $("html").css("font-size", "100%");
+                    createCookie("font-resize", 0, "");
+
+                    // Reset theme
+                    $("html").removeClass("dark-mode");
+                    createCookie("theme", "", "");
+
+                    // Reset high contrast
+                    $("html").removeClass("high-contrast");
+                    createCookie("high-contrast", false, "");
+
+                    // Reset focus indicators
+                    $("html").removeClass("enhanced-focus");
+                    createCookie("focus-indicators", true, "");
+
+                    // Reset reduce motion
+                    $("html").removeClass("reduce-motion");
+                    createCookie("reduce-motion", false, "");
+
+                    // Reset tooltips
+                    enableTooltips(false);
+                    createCookie("tooltips", false, "");
+                }
             }
         </script>
 
@@ -85,6 +376,12 @@
         -->
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+        
+        <!-- Error Popup System -->
+        <script src="{{ url_for('static', filename='javascript/error-popup.js') }}"></script>
+        
+        <!-- Global Accessibility System -->
+        <script src="{{ url_for('static', filename='javascript/accessibility.js') }}"></script>
 
         {% if show_navbar != false %}
         <nav class="navbar navbar-expand-lg my-5" id="nav-bar">
@@ -163,22 +460,37 @@
             </div>
           </nav>
           {% endif %}
+       
+       <!-- Flash Messages Integration -->
+       {% with messages = get_flashed_messages(with_categories=true) %}
+           {% if messages %}
+               <script>
+                   document.addEventListener('DOMContentLoaded', function() {
+                       {% for category, message in messages %}
+                           {% if category == 'error' %}
+                               errorPopup.error('{{ message|e }}');
+                           {% elif category == 'warning' %}
+                               errorPopup.warning('{{ message|e }}');
+                           {% elif category == 'info' %}
+                               errorPopup.info('{{ message|e }}');
+                           {% elif category == 'success' %}
+                               errorPopup.success('{{ message|e }}');
+                           {% else %}
+                               errorPopup.info('{{ message|e }}');
+                           {% endif %}
+                       {% endfor %}
+                   });
+               </script>
+           {% endif %}
+       {% endwith %}
+       
        {% block content %}{% endblock content %}
 
     
         <script>
             window.onload = function() {
-                    
-                // Tooltip Cookie Check
-                if (readCookie("tooltips") == "true") {
-                    enableTooltips(true);
-                }
-                else if (readCookie("tooltips") == "false") {
-                    enableTooltips(false);
-                } else {
-                    enableTooltips(false);
-                }
-                
+                // Accessibility settings are now initialized globally in the head section
+                // This ensures they apply across all pages
             };
             
             // Tool Tip Functionality
@@ -203,7 +515,7 @@
                             },
                             error: function (xhr, status, error) {
                                 console.error("Error:", error);
-                                alert("There was an error processing your request.");
+                                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
                                 // Debugging
                                 handleData()
                             }
@@ -220,11 +532,11 @@
                             method: 'GET',
                             success: function(response) {
                                 console.log("Response:", response);
-                                alert("Monthly pub generated successfully!");
+                                handleAjaxSuccess("Monthly publication generated successfully!");
                             },
                             error: function(xhr, status, error) {
                                 console.error("Error:", error);
-                                alert("Error generating monthly pub.");
+                                handleAjaxError(xhr, status, error, "Error generating monthly publication.");
                             }
                         });
                     }

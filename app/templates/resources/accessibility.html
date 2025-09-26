@@ -1,169 +1,599 @@
 {% extends "base.html" %}
 
+{% block title %}Accessibility Settings{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <p style="font-size: 260%; font-weight: bold;">Accessibility Settings</p>
+<div class="container-fluid py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="accessibility-header display-4 fw-bold mb-3">Accessibility Settings</h1>
+            <p class="lead text-muted">Customize your experience to make the site more accessible and comfortable to use.</p>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="row mb-3">
-                <div class="col" style="font-size: 150%;">
-                    Change Font Size:
+    
+    <!-- Accessibility Controls Grid -->
+    <div class="row g-4 justify-content-center">
+        <!-- Font Size Control -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-text-height accessibility-feature-icon"></i>
+                    </div>
+                    <h3 class="card-title h5 fw-bold mb-3">Font Size</h3>
+                    <p class="card-text text-muted mb-4">Adjust the text size to make content easier to read.</p>
+                    
+                    <div class="font-controls">
+                        <div class="btn-group w-100 mb-3" role="group" aria-label="Font size controls">
+                            <button type="button" class="btn btn-outline-primary" id="decrease-font" aria-label="Decrease font size">
+                                <i class="fas fa-minus me-2"></i>Smaller
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="increase-font" aria-label="Increase font size">
+                                <i class="fas fa-plus me-2"></i>Larger
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary w-100" id="reset-font">
+                            <i class="fas fa-undo me-2"></i>Reset to Default
+                        </button>
+                    </div>
+                    
+                    <div class="font-preview mt-3">
+                        <small class="text-muted">Preview: <span class="font-preview-text">Sample text</span></small>
+                    </div>
                 </div>
-        
-            </div>
-            <div class="row my-1">
-                <div class="col mb-1">
-        
-                    <button type="button" class="btn btn-success" id="decrease-font"
-                        style="width:100%;display:block;font-weight: bold">Decrease Font Size</button>
-        
-                </div>
-                <div class="col">
-        
-                    <button type="button" class="btn btn-success" id="increase-font"
-                        style="width:100%;display:block;font-weight: bold">Increase Font Size</button>
-                </div>
-        
-            </div>
-            <div class="row">
-                <div class="col">
-        
-                    <button type="button" class="btn btn-danger" id="reset-font"
-                        style="width:100%;display:block;font-weight: bold">Reset Font Size</button>
-                </div>
-        
             </div>
         </div>
 
-
-        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="col">
-                <div class="row mb-3">
-                    <div class="col" style="font-size: 150%;">
-                        Toggle Light/Dark Mode:
+        <!-- Theme Control -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-palette accessibility-feature-icon"></i>
                     </div>
-
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <button type="button" class="btn btn-success" id="theme-toggle" style="width:100%;display:block;font-weight: bold">Theme Toggle</button>
-                    </div>
-
-                </div>
-                
-            </div>
-        </div>
-
-
-        <div class="col-7 col-md-3 rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="col">
-                <div class="row mb-3">
-                    <div class="col" style="font-size: 150%;">
-                        <label class="form-check-label" for="tooltipCheckbox">
-                            Enable Tooltips
-                          </label>
-                    </div>
-
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-check form-switch tt" title="Default Tooltip">
-                            <input class="form-check-input" type="checkbox" value="" id="tooltipCheckbox">
+                    <h3 class="card-title h5 fw-bold mb-3">Theme</h3>
+                    <p class="card-text text-muted mb-4">Switch between light and dark modes for better visibility.</p>
+                    
+                    <div class="theme-controls">
+                        <button type="button" class="btn btn-primary btn-lg w-100 mb-3" id="theme-toggle" style="background-color: #056FB7; border-color: #056FB7;">
+                            <i class="fas fa-moon me-2"></i>
+                            <span class="theme-toggle-text">Switch to Dark Mode</span>
+                        </button>
+                        
+                        <div class="theme-preview d-flex justify-content-center gap-3">
+                            <div class="theme-sample theme-light-sample" title="Light theme preview">
+                                <div class="theme-sample-header"></div>
+                                <div class="theme-sample-content"></div>
+                            </div>
+                            <div class="theme-sample theme-dark-sample" title="Dark theme preview">
+                                <div class="theme-sample-header"></div>
+                                <div class="theme-sample-content"></div>
+                            </div>
                         </div>
                     </div>
-
                 </div>
-                
             </div>
         </div>
 
+        <!-- Tooltips Control -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-info-circle accessibility-feature-icon"></i>
+                    </div>
+                    <h3 class="card-title h5 fw-bold mb-3">Tooltips</h3>
+                    <p class="card-text text-muted mb-4">Enable helpful tooltips to provide additional context.</p>
+                    
+                    <div class="tooltip-controls">
+                        <div class="form-check form-switch form-switch-lg d-flex justify-content-center mb-3">
+                            <input class="form-check-input" type="checkbox" id="tooltipCheckbox" role="switch">
+                            <label class="form-check-label ms-3" for="tooltipCheckbox">
+                                Enable Tooltips
+                            </label>
+                        </div>
+                        
+                        <div class="tooltip-demo">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="This is a sample tooltip">
+                                <i class="fas fa-question-circle me-2"></i>Hover for Demo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- High Contrast Control -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-adjust accessibility-feature-icon"></i>
+                    </div>
+                    <h3 class="card-title h5 fw-bold mb-3">High Contrast</h3>
+                    <p class="card-text text-muted mb-4">Increase contrast for better visibility and readability.</p>
+                    
+                    <div class="contrast-controls">
+                        <div class="form-check form-switch form-switch-lg d-flex justify-content-center mb-3">
+                            <input class="form-check-input" type="checkbox" id="highContrastCheckbox" role="switch">
+                            <label class="form-check-label ms-3" for="highContrastCheckbox">
+                                Enable High Contrast
+                            </label>
+                        </div>
+                        
+                        <div class="contrast-preview d-flex justify-content-center gap-3">
+                            <div class="contrast-sample contrast-normal-sample" title="Normal contrast">
+                                <div class="contrast-sample-text">Normal</div>
+                            </div>
+                            <div class="contrast-sample contrast-high-sample" title="High contrast">
+                                <div class="contrast-sample-text">High</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Focus Indicators -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-mouse-pointer accessibility-feature-icon"></i>
+                    </div>
+                    <h3 class="card-title h5 fw-bold mb-3">Focus Indicators</h3>
+                    <p class="card-text text-muted mb-4">Enhance keyboard navigation with visible focus indicators.</p>
+                    
+                    <div class="focus-controls">
+                        <div class="form-check form-switch form-switch-lg d-flex justify-content-center mb-3">
+                            <input class="form-check-input" type="checkbox" id="focusIndicatorsCheckbox" role="switch" checked>
+                            <label class="form-check-label ms-3" for="focusIndicatorsCheckbox">
+                                Enhanced Focus Indicators
+                            </label>
+                        </div>
+                        
+                        <div class="focus-demo">
+                            <button type="button" class="btn btn-outline-primary focus-demo-btn">
+                                <i class="fas fa-keyboard me-2"></i>Tab to Focus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motion Control -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card accessibility-card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="accessibility-icon-wrapper mb-3">
+                        <i class="fas fa-running accessibility-feature-icon"></i>
+                    </div>
+                    <h3 class="card-title h5 fw-bold mb-3">Motion</h3>
+                    <p class="card-text text-muted mb-4">Reduce motion for users sensitive to animations.</p>
+                    
+                    <div class="motion-controls">
+                        <div class="form-check form-switch form-switch-lg d-flex justify-content-center mb-3">
+                            <input class="form-check-input" type="checkbox" id="reduceMotionCheckbox" role="switch">
+                            <label class="form-check-label ms-3" for="reduceMotionCheckbox">
+                                Reduce Motion
+                            </label>
+                        </div>
+                        
+                        <div class="motion-demo">
+                            <div class="motion-sample">
+                                <div class="motion-element"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Keyboard Shortcuts Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border: 1px solid #babcbf !important;">
+                <div class="card-body p-4">
+                    <h3 class="card-title h4 fw-bold mb-4" style="color: #003087;">
+                        <i class="fas fa-keyboard me-2" style="color: #056FB7;"></i>Keyboard Shortcuts
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="shortcut-item d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="shortcut-description">Increase font size</span>
+                                <kbd class="shortcut-key">Ctrl + +</kbd>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="shortcut-item d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="shortcut-description">Decrease font size</span>
+                                <kbd class="shortcut-key">Ctrl + -</kbd>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="shortcut-item d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="shortcut-description">Toggle theme</span>
+                                <kbd class="shortcut-key">Ctrl + D</kbd>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="shortcut-item d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="shortcut-description">Reset settings</span>
+                                <kbd class="shortcut-key">Ctrl + R</kbd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset All Settings -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button type="button" class="btn btn-outline-secondary btn-lg" id="reset-all-settings">
+                <i class="fas fa-undo me-2"></i>Reset All Accessibility Settings
+            </button>
+        </div>
+    </div>
 </div>
+
+<!-- Custom CSS for Accessibility Page -->
+<style>
+.accessibility-header {
+    background: linear-gradient(135deg, #056FB7 0%, #1b29f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.accessibility-card {
+    transition: all 0.3s ease;
+    border-radius: 10px !important;
+    border: 1px solid #babcbf;
+    background-color: #ffffff;
+}
+
+.accessibility-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(5, 111, 183, 0.15) !important;
+    border-color: #056FB7;
+}
+
+.accessibility-card .card-body {
+    padding: 2rem;
+}
+
+.accessibility-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #056FB7 0%, #1b29f0 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.accessibility-feature-icon {
+    font-size: 24px;
+    color: white;
+}
+
+.font-preview-text {
+    font-weight: 500;
+}
+
+.theme-sample {
+    width: 40px;
+    height: 30px;
+    border-radius: 5px;
+    border: 2px solid #dee2e6;
+    overflow: hidden;
+}
+
+.theme-light-sample {
+    background: #ffffff;
+}
+
+.theme-light-sample .theme-sample-header {
+    height: 8px;
+    background: #f8f9fa;
+}
+
+.theme-light-sample .theme-sample-content {
+    height: 14px;
+    background: #ffffff;
+}
+
+.theme-dark-sample {
+    background: #212529;
+}
+
+.theme-dark-sample .theme-sample-header {
+    height: 8px;
+    background: #343a40;
+}
+
+.theme-dark-sample .theme-sample-content {
+    height: 14px;
+    background: #212529;
+}
+
+.contrast-sample {
+    width: 60px;
+    height: 30px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #dee2e6;
+}
+
+.contrast-normal-sample {
+    background: #ffffff;
+    color: #6c757d;
+}
+
+.contrast-high-sample {
+    background: #000000;
+    color: #ffffff;
+}
+
+.contrast-sample-text {
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.motion-sample {
+    width: 100px;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.motion-element {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #056FB7 0%, #1b29f0 100%);
+    border-radius: 50%;
+    position: absolute;
+    animation: move 2s infinite ease-in-out;
+}
+
+@keyframes move {
+    0%, 100% { left: 0; }
+    50% { left: 80px; }
+}
+
+.reduce-motion .motion-element {
+    animation: none;
+}
+
+.shortcut-item {
+    transition: all 0.2s ease;
+}
+
+.shortcut-item:hover {
+    background-color: #e9ecef !important;
+}
+
+.shortcut-key {
+    background-color: #056FB7;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.focus-demo-btn:focus {
+    outline: 3px solid #056FB7;
+    outline-offset: 2px;
+}
+
+/* Button hover effects to match site theme */
+.btn-outline-primary:hover {
+    background-color: #056FB7;
+    border-color: #056FB7;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+#theme-toggle:hover {
+    background-color: #003087 !important;
+    border-color: #003087 !important;
+}
+
+/* High contrast mode styles */
+.high-contrast {
+    filter: contrast(150%) brightness(120%);
+}
+
+.high-contrast .card {
+    border: 2px solid #000000 !important;
+}
+
+.high-contrast .btn {
+    border-width: 2px !important;
+}
+
+/* Dark mode adjustments */
+.dark-mode .accessibility-card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+.dark-mode .accessibility-card:hover {
+    border-color: #3182ce;
+    box-shadow: 0 10px 25px rgba(49, 130, 206, 0.15) !important;
+}
+
+.dark-mode .shortcut-item {
+    background-color: #4a5568 !important;
+    color: #e2e8f0;
+}
+
+.dark-mode .shortcut-item:hover {
+    background-color: #2d3748 !important;
+}
+
+.dark-mode .accessibility-icon-wrapper {
+    background: linear-gradient(135deg, #3182ce 0%, #1b29f0 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .accessibility-header h1 {
+        font-size: 2rem;
+    }
+    
+    .accessibility-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
-        if (readCookie("font-resize")) {
-            resize = parseInt(readCookie("font-resize"));
-        } else {
-            resize = 0;
-        }
+        // Initialize variables
+        let resize = 0;
+        let isDarkMode = false;
+        let isHighContrast = false;
+        let isReduceMotion = false;
 
-        // resize;
+        // Load saved settings
+        loadAccessibilitySettings();
+
+        // Font Size Controls - Use global functions
         $("#increase-font").click(function () {
-            resize += 10;
-
-            $("html").css("font-size", function (index, value) {
-
-                return 100 + resize + "%";
-            });
-            createCookie("font-resize", resize, "");
+            window.AccessibilityFunctions.increaseFontSize();
+            updateFontPreview();
         });
 
-        // Decrease font size
         $("#decrease-font").click(function () {
-            resize -= 10;
-            $("html").css("font-size", function (index, value) {
-                return 100 + resize + "%";
-            });
-            createCookie("font-resize", resize, "");
+            window.AccessibilityFunctions.decreaseFontSize();
+            updateFontPreview();
         });
 
-        // Reset Font Size
         $("#reset-font").click(function () {
-            resize = 0;
-            $("html").css("font-size", function (index, value) {
-
-                return 100 + "%";
-            });
-            // eraseCookie("font-resize");
-            createCookie("font-resize", resize, "");
+            window.AccessibilitySettings.fontResize = 0;
+            $("html").css("font-size", "100%");
+            createCookie("font-resize", 0, "");
+            updateFontPreview();
         });
 
-        //Toggle Dark/Light Mode
+        // Theme Toggle - Use global functions
         $("#theme-toggle").click(function () {
-            // $("body").toggleClass("dark-mode");
-            // $("table").toggleClass("table-dark");
-            $("html").toggleClass("dark-mode");
-            if (readCookie("theme") == "dark") {
-                createCookie("theme", "", "");
-            } else {
-                createCookie("theme", "dark", "");
-            }
-
+            window.AccessibilityFunctions.toggleTheme();
+            updateThemeButton();
         });
 
-        // Tooltips Checkbox
-        $('#tooltipCheckbox').on('change',function(){
-            if(this.checked){
-                enableTooltips(true);
-                createCookie("tooltips", true, "");
-            }
-            else{
-                enableTooltips(false);
-                createCookie("tooltips", false, "");
-            };
+        // Tooltips Control - Use global functions
+        $('#tooltipCheckbox').on('change', function() {
+            window.AccessibilityFunctions.toggleTooltips();
         });
 
-        $(function (){
-        if(readCookie("tooltips") == "true"){           
-            $("#tooltipCheckbox").prop('checked',true);
-        }else{
-            $("#tooltipCheckbox").prop('checked', false);
+        // High Contrast Control - Use global functions
+        $('#highContrastCheckbox').on('change', function() {
+            window.AccessibilityFunctions.toggleHighContrast();
+        });
+
+        // Focus Indicators Control - Use global functions
+        $('#focusIndicatorsCheckbox').on('change', function() {
+            window.AccessibilityFunctions.toggleEnhancedFocus();
+        });
+
+        // Reduce Motion Control - Use global functions
+        $('#reduceMotionCheckbox').on('change', function() {
+            window.AccessibilityFunctions.toggleReduceMotion();
+        });
+
+        // Reset All Settings - Use global functions
+        $("#reset-all-settings").click(function() {
+            window.AccessibilityFunctions.resetAllAccessibilitySettings();
+            updateAllControls();
+        });
+
+        // Keyboard shortcuts
+        $(document).keydown(function(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        $("#increase-font").click();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        $("#decrease-font").click();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        $("#theme-toggle").click();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        $("#reset-all-settings").click();
+                        break;
+                }
+            }
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Helper Functions - Updated to work with global accessibility system
+        function loadAccessibilitySettings() {
+            // Wait for global accessibility system to initialize
+            setTimeout(function() {
+                updateAllControls();
+            }, 100);
         }
-});
 
+        function updateFontPreview() {
+            var currentSize = window.AccessibilitySettings ? window.AccessibilitySettings.fontResize : 0;
+            $(".font-preview-text").css("font-size", (100 + currentSize) + "%");
+        }
 
+        function updateThemeButton() {
+            if (window.AccessibilitySettings && window.AccessibilitySettings.isDarkMode) {
+                $(".theme-toggle-text").text("Switch to Light Mode");
+                $("#theme-toggle i").removeClass("fa-moon").addClass("fa-sun");
+            } else {
+                $(".theme-toggle-text").text("Switch to Dark Mode");
+                $("#theme-toggle i").removeClass("fa-sun").addClass("fa-moon");
+            }
+        }
+
+        function updateAllControls() {
+            if (!window.AccessibilitySettings) return;
+            
+            // Update checkboxes based on global state
+            $("#tooltipCheckbox").prop('checked', window.AccessibilitySettings.tooltipsEnabled);
+            $("#highContrastCheckbox").prop('checked', window.AccessibilitySettings.isHighContrast);
+            $("#focusIndicatorsCheckbox").prop('checked', window.AccessibilitySettings.enhancedFocus);
+            $("#reduceMotionCheckbox").prop('checked', window.AccessibilitySettings.isReduceMotion);
+            
+            // Update theme button
+            updateThemeButton();
+            
+            // Update font preview
+            updateFontPreview();
+        }
     });
-
-
 </script>
 {% endblock content %}
