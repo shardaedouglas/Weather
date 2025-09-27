@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+{% block title %}Multi-Day Correction{% endblock %}
+{% block content %}
+
+<!--Multi-Day Form-->
+<div class="container-md justify-content-center" id="form-multiday">
+    <div class="container-md">
+        <div class="row g-3">
+            <div class="col g-3" style="text-align: center;">
+                <b>Multi-Day Correction</b>
+                <p>Add individual correction entries for multiple days and elements.</p>
+            </div>
+        </div>
+    </div>     
+
+    <div class="container-md form-container" style="max-width: 100%;">
+        <form id="multiday-correction-form">
+            <!-- Correction Entries Table -->
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Correction Entries</h5>
+                            <button type="button" class="btn btn-primary" id="add-entry-btn">
+                                <i class="fas fa-plus me-2"></i>Add Entry
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-borderless border mb-0" id="correction-entries-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ghcn-table-cell" scope="col">GHCN ID</th>
+                                                <th class="ghcn-table-cell" scope="col">Date</th>
+                                                <th class="ghcn-table-cell" scope="col">Element</th>
+                                                <th class="ghcn-table-cell" scope="col">Sub-Element</th>
+                                                <th class="ghcn-table-cell" scope="col">Action</th>
+                                                <th class="ghcn-table-cell" scope="col">E-Value</th>
+                                                <th class="ghcn-table-cell" scope="col">Datzilla #</th>
+                                                <th class="ghcn-table-cell" scope="col" style="width: 80px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                    <tbody id="correction-entries-tbody">
+                                        <!-- Dynamic rows will be added here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Form Actions -->
+                <div class="row justify-content-center g-3 mt-4">
+                    <div class="col-sm">
+                        <button type="button" class="btn button-dull" id="clear-all-btn"
+                            style="width:100%;display:block;font-weight: bold">Clear</button>
+                    </div>
+                    <div class="col-sm">
+                        <button type="submit" class="btn btn-success" id="submit-corrections-btn"
+                            style="width:100%;display:block;font-weight: bold">Submit</button>
+                    </div>
+                </div>
+        </form>
+    </div>
+</div>
+
+<div id="submission-element" style="display: none;">
+    {% include "corrections/correction_submitted_element.html" %}
+</div>
+
+<style>
+    /* Styling for inherited fields */
+    .inherited-field {
+        background-color: #f8f9fa !important;
+        border-left: 3px solid #056FB7 !important;
+        font-style: italic;
+    }
+    
+    .inherited-field:focus {
+        background-color: #ffffff !important;
+        border-left: 3px solid #056FB7 !important;
+        box-shadow: 0 0 0 0.2rem rgba(5, 111, 183, 0.25);
+    }
+    
+    /* Tooltip for inherited fields */
+    .inherited-field[title] {
+        position: relative;
+    }
+    
+    /* Add entry button styling */
+    #add-entry-btn {
+        background-color: #056FB7;
+        border-color: #056FB7;
+    }
+    
+    #add-entry-btn:hover {
+        background-color: #003087;
+        border-color: #003087;
+    }
+    
+    /* Table styling improvements */
+    #correction-entries-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    #correction-entries-table .ghcn-table-cell {
+        vertical-align: middle;
+    }
+    
+    /* Element field plus button styling */
+    .input-group .btn-outline-primary {
+        border-color: #056FB7;
+        color: #056FB7;
+    }
+    
+    .input-group .btn-outline-primary:hover {
+        background-color: #056FB7;
+        border-color: #056FB7;
+        color: white;
+    }
+    
+    .input-group .btn-outline-primary:focus {
+        box-shadow: 0 0 0 0.2rem rgba(5, 111, 183, 0.25);
+    }
+    
+    /* Ensure seamless integration between select and button */
+    .input-group .form-select {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .input-group .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+    
+    /* New entry highlight animation */
+    .new-entry-highlight {
+        background-color: rgba(5, 111, 183, 0.1) !important;
+        animation: newEntryPulse 1s ease-in-out;
+    }
+    
+    @keyframes newEntryPulse {
+        0% { background-color: rgba(5, 111, 183, 0.3); }
+        50% { background-color: rgba(5, 111, 183, 0.1); }
+        100% { background-color: rgba(5, 111, 183, 0.1); }
+    }
+</style>
+
+<script>
+    // Global variables for dynamic row management
+    let entryCounter = 0;
+    let correctionEntries = [];
+
+    // Element choices for dropdown
+    const elementChoices = [
+        {% for value, label in multiday_form.elements.choices %}
+            { value: "{{ value }}", label: "{{ label }}" },
+        {% endfor %}
+    ];
+
+    // Action choices for dropdown
+    const actionChoices = [
+        {% for value, label in multiday_form.action.choices %}
+            { value: "{{ value }}", label: "{{ label }}" },
+        {% endfor %}
+    ];
+
+    // Sub-element choices for dropdowns
+    const subElementChoices = {
+        SN: [
+            {% for value, label in multiday_form.sub_element_SN.choices %}
+                { value: "{{ value }}", label: "{{ label }}" },
+            {% endfor %}
+        ],
+        SX: [
+            {% for value, label in multiday_form.sub_element_SX.choices %}
+                { value: "{{ value }}", label: "{{ label }}" },
+            {% endfor %}
+        ],
+        WT: [
+            {% for value, label in multiday_form.sub_element_WT.choices %}
+                { value: "{{ value }}", label: "{{ label }}" },
+            {% endfor %}
+        ],
+        WV: [
+            {% for value, label in multiday_form.sub_element_WV.choices %}
+                { value: "{{ value }}", label: "{{ label }}" },
+            {% endfor %}
+        ]
+    };
+
+    $(document).ready(function () {
+        // Add entry button click handler
+        $("#add-entry-btn").click(function() {
+            addCorrectionEntry();
+        });
+
+        // Clear all button click handler
+        $("#clear-all-btn").click(function() {
+            clearAllEntries();
+        });
+
+        // Form submission handler
+        $("#multiday-correction-form").submit(function(event) {
+            event.preventDefault();
+            submitCorrections();
+        });
+
+
+        // Add initial empty row
+        addCorrectionEntry();
+    });
+
+    function addCorrectionEntry() {
+        entryCounter++;
+        const entryId = `entry-${entryCounter}`;
+        
+        // Get the last entry's values for inheritance
+        const lastEntry = correctionEntries[correctionEntries.length - 1];
+        let inheritedGhcnId = '';
+        let inheritedDate = '';
+        let inheritedDatzillaNumber = '';
+        
+        if (lastEntry) {
+            inheritedGhcnId = lastEntry.ghcn_id || '';
+            inheritedDatzillaNumber = lastEntry.datzilla_number || '';
+            
+            // Calculate next date (increment by one day)
+            if (lastEntry.date) {
+                const lastDate = new Date(lastEntry.date);
+                lastDate.setDate(lastDate.getDate() + 1);
+                inheritedDate = lastDate.toISOString().split('T')[0];
+            }
+        }
+        
+        // Create new entry object with inherited values
+        const newEntry = {
+            id: entryId,
+            ghcn_id: inheritedGhcnId,
+            date: inheritedDate,
+            element: '',
+            action: '',
+            e_value: '',
+            datzilla_number: inheritedDatzillaNumber
+        };
+        
+        correctionEntries.push(newEntry);
+        
+        // Create table row
+        const row = createCorrectionEntryRow(entryId, inheritedGhcnId, inheritedDate, inheritedDatzillaNumber);
+        $("#correction-entries-tbody").append(row);
+        
+        // Focus on the element dropdown (since GHCN ID and date are pre-filled)
+        $(`#${entryId}-element`).focus();
+        
+        // Show visual feedback for new entry creation
+        $(`#row-${entryId}`).addClass('new-entry-highlight');
+        setTimeout(() => {
+            $(`#row-${entryId}`).removeClass('new-entry-highlight');
+        }, 1000);
+    }
+
+    function createCorrectionEntryRow(entryId, inheritedGhcnId = '', inheritedDate = '', inheritedDatzillaNumber = '') {
+        const elementOptions = elementChoices.map(choice => 
+            `<option value="${choice.value}">${choice.label}</option>`
+        ).join('');
+        
+        const actionOptions = actionChoices.map(choice => 
+            `<option value="${choice.value}">${choice.label}</option>`
+        ).join('');
+
+        return `
+            <tr id="row-${entryId}">
+                <td class="ghcn-table-cell">
+                    <input type="text" class="form-control form-control-sm ${inheritedGhcnId ? 'inherited-field' : ''}" 
+                           id="${entryId}-ghcn_id" 
+                           value="${inheritedGhcnId}"
+                           placeholder="Enter GHCN ID"
+                           title="${inheritedGhcnId ? 'Inherited from previous entry' : 'Enter GHCN ID'}"
+                           onchange="updateEntry('${entryId}', 'ghcn_id', this.value)">
+                </td>
+                <td class="ghcn-table-cell">
+                    <input type="date" class="form-control form-control-sm ${inheritedDate ? 'inherited-field' : ''}" 
+                           id="${entryId}-date" 
+                           value="${inheritedDate}"
+                           title="${inheritedDate ? 'Inherited from previous entry (+1 day)' : 'Select date'}"
+                           onchange="updateEntry('${entryId}', 'date', this.value)">
+                </td>
+                <td class="ghcn-table-cell">
+                    <div class="input-group input-group-sm">
+                        <select class="form-select" 
+                                id="${entryId}-element" 
+                                onchange="updateEntryAndShowSubElement('${entryId}', this.value)">
+                            <option value="">Select Element</option>
+                            ${elementOptions}
+                        </select>
+                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                onclick="duplicateEntry('${entryId}')" 
+                                title="Duplicate entry with same GHCN ID and date"
+                                style="border-left: 0;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="ghcn-table-cell">
+                    <select class="form-select form-select-sm d-none" 
+                            id="${entryId}-sub_element" 
+                            onchange="updateEntry('${entryId}', 'sub_element', this.value)">
+                        <option value="">Select Sub-Element</option>
+                    </select>
+                </td>
+                <td class="ghcn-table-cell">
+                    <select class="form-select form-select-sm" 
+                            id="${entryId}-action" 
+                            onchange="updateEntry('${entryId}', 'action', this.value)">
+                        <option value="">Select Action</option>
+                        ${actionOptions}
+                    </select>
+                </td>
+                <td class="ghcn-table-cell">
+                    <input type="text" class="form-control form-control-sm" 
+                           id="${entryId}-e_value" 
+                           placeholder="Enter E-Value"
+                           onchange="updateEntry('${entryId}', 'e_value', this.value)">
+                </td>
+                <td class="ghcn-table-cell">
+                    <input type="text" class="form-control form-control-sm ${inheritedDatzillaNumber ? 'inherited-field' : ''}" 
+                           id="${entryId}-datzilla_number" 
+                           value="${inheritedDatzillaNumber}"
+                           placeholder="Datzilla #"
+                           title="${inheritedDatzillaNumber ? 'Inherited from previous entry' : 'Enter Datzilla number'}"
+                           onchange="updateEntry('${entryId}', 'datzilla_number', this.value)">
+                </td>
+                <td class="ghcn-table-cell text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            onclick="removeEntry('${entryId}')" 
+                            title="Remove Entry">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    function updateEntry(entryId, field, value) {
+        const entry = correctionEntries.find(e => e.id === entryId);
+        if (entry) {
+            entry[field] = value;
+        }
+    }
+
+    function updateEntryAndShowSubElement(entryId, elementValue) {
+        // Update the entry
+        updateEntry(entryId, 'element', elementValue);
+        
+        // Handle sub-element display
+        const subElementSelect = $(`#${entryId}-sub_element`);
+        
+        // Hide sub-element by default
+        subElementSelect.addClass('d-none');
+        subElementSelect.html('<option value="">Select Sub-Element</option>');
+        
+        // Show sub-element for specific element types
+        let subElementOptions = [];
+        switch (elementValue) {
+            case "SN*#":
+                subElementOptions = subElementChoices.SN;
+                break;
+            case "SX*#":
+                subElementOptions = subElementChoices.SX;
+                break;
+            case "WT**":
+                subElementOptions = subElementChoices.WT;
+                break;
+            case "WV**":
+                subElementOptions = subElementChoices.WV;
+                break;
+            default:
+                // No sub-element needed
+                return;
+        }
+        
+        // Populate sub-element options
+        const optionsHtml = subElementOptions.map(choice => 
+            `<option value="${choice.value}">${choice.label}</option>`
+        ).join('');
+        
+        subElementSelect.html('<option value="">Select Sub-Element</option>' + optionsHtml);
+        subElementSelect.removeClass('d-none');
+    }
+
+    function removeEntry(entryId) {
+        // Remove from array
+        correctionEntries = correctionEntries.filter(e => e.id !== entryId);
+        
+        // Remove from DOM
+        $(`#row-${entryId}`).remove();
+        
+        // Show message if no entries left
+        if (correctionEntries.length === 0) {
+            errorPopup.info("No correction entries remaining. Click 'Add Entry' to add a new correction.");
+        }
+    }
+
+    function duplicateEntry(entryId) {
+        // Find the entry to duplicate
+        const sourceEntry = correctionEntries.find(e => e.id === entryId);
+        
+        if (!sourceEntry) {
+            errorPopup.error("Could not find entry to duplicate.");
+            return;
+        }
+        
+        // Validate that the source entry has required fields
+        if (!sourceEntry.ghcn_id || !sourceEntry.date) {
+            errorPopup.warning("Please fill in GHCN ID and Date before duplicating this entry.");
+            return;
+        }
+        
+        // Create new entry
+        entryCounter++;
+        const newEntryId = `entry-${entryCounter}`;
+        
+        // Create new entry object with same GHCN ID and date
+        const newEntry = {
+            id: newEntryId,
+            ghcn_id: sourceEntry.ghcn_id,  // Same GHCN ID
+            date: sourceEntry.date,        // Same date
+            element: '',                   // Empty element (user needs to select)
+            action: sourceEntry.action || '', // Inherit action if available
+            e_value: '',                   // Empty E-value (user needs to enter)
+            datzilla_number: sourceEntry.datzilla_number || '' // Inherit Datzilla number
+        };
+        
+        correctionEntries.push(newEntry);
+        
+        // Create table row
+        const row = createCorrectionEntryRow(newEntryId, newEntry.ghcn_id, newEntry.date, newEntry.datzilla_number);
+        $("#correction-entries-tbody").append(row);
+        
+        // Focus on the element dropdown
+        $(`#${newEntryId}-element`).focus();
+        
+        // Show success message
+        errorPopup.success("Entry duplicated! Please select a different element.");
+    }
+
+    function clearAllEntries() {
+        if (correctionEntries.length === 0) {
+            errorPopup.info("No entries to clear.");
+            return;
+        }
+        
+        if (confirm("Are you sure you want to clear all correction entries?")) {
+            correctionEntries = [];
+            entryCounter = 0;
+            $("#correction-entries-tbody").empty();
+            addCorrectionEntry(); // Add one empty row (no inheritance since array is empty)
+            errorPopup.success("All entries cleared.");
+        }
+    }
+
+    function validateEntries() {
+        const validEntries = correctionEntries.filter(entry => {
+            // Check basic required fields
+            const hasBasicFields = entry.ghcn_id && entry.date && entry.element && entry.action;
+            
+            // Check if sub-element is required and provided
+            const needsSubElement = ["SN*#", "SX*#", "WT**", "WV**"].includes(entry.element);
+            const hasSubElement = !needsSubElement || entry.sub_element;
+            
+            return hasBasicFields && hasSubElement;
+        });
+        
+        if (validEntries.length === 0) {
+            errorPopup.warning("Please add at least one complete correction entry (GHCN ID, Date, Element, and Action are required).");
+            return false;
+        }
+        
+        // Check for incomplete entries
+        const incompleteEntries = correctionEntries.filter(entry => {
+            const hasSomeFields = entry.ghcn_id || entry.date || entry.element || entry.action || entry.sub_element;
+            const needsSubElement = ["SN*#", "SX*#", "WT**", "WV**"].includes(entry.element);
+            const isComplete = entry.ghcn_id && entry.date && entry.element && entry.action && 
+                              (!needsSubElement || entry.sub_element);
+            
+            return hasSomeFields && !isComplete;
+        });
+        
+        if (incompleteEntries.length > 0) {
+            errorPopup.warning("Please complete all partially filled entries or remove them. Sub-elements are required for SN*#, SX*#, WT**, and WV** elements.");
+            return false;
+        }
+        
+        return true;
+    }
+
+        function submitCorrections() {
+            if (!validateEntries()) {
+                return;
+            }
+            
+            const validEntries = correctionEntries.filter(entry => {
+                const hasBasicFields = entry.ghcn_id && entry.date && entry.element && entry.action;
+                const needsSubElement = ["SN*#", "SX*#", "WT**", "WV**"].includes(entry.element);
+                const hasSubElement = !needsSubElement || entry.sub_element;
+                return hasBasicFields && hasSubElement;
+            });
+        
+        console.log("Submitting corrections:", validEntries);
+        
+        // Show loading state
+        const submitBtn = $("#submit-corrections-btn");
+        const originalText = submitBtn.html();
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Submitting...');
+        submitBtn.prop('disabled', true);
+        
+        // Submit via AJAX
+        $.ajax({
+            url: '/submit_multiday_corrections',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ 
+                correction_entries: validEntries,
+                entry_count: validEntries.length
+            }),
+            success: function(response) {
+                handleAjaxSuccess(`Successfully submitted ${validEntries.length} correction entries!`);
+                showSubmissionConfirmation("multiday");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                handleAjaxError(xhr, status, error, "There was an error processing your correction entries.");
+            },
+            complete: function() {
+                // Reset button state
+                submitBtn.html(originalText);
+                submitBtn.prop('disabled', false);
+            }
+        });
+    }
+
+        // Make functions globally available
+        window.addCorrectionEntry = addCorrectionEntry;
+        window.removeEntry = removeEntry;
+        window.updateEntry = updateEntry;
+        window.clearAllEntries = clearAllEntries;
+        window.duplicateEntry = duplicateEntry;
+</script>
+{% endblock content %}

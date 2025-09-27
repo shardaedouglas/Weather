@@ -406,6 +406,7 @@
                                 <a class="dropdown-item" href="{{ url_for('corrections.monthly_corrections') }}">Monthly Correction</a>
                                 <a class="dropdown-item" href="{{ url_for('corrections.range_corrections') }}">Ranged Correction</a>
                                 <a class="dropdown-item" href="{{ url_for('corrections.hourly_corrections') }}">Hourly Correction</a>
+                                <a class="dropdown-item" href="{{ url_for('corrections.multiday_corrections') }}">Multi-Day Correction</a>
                                 <a class="dropdown-item" href="{{ url_for('corrections.previous_corrections') }}">Previous Corrections</a>
                       
                             </div>
@@ -548,7 +549,7 @@
              * It provides options for the user to submit another correction of the same type or to
              * select a different type of correction.
              *
-             * @param {string} type - The type of correction that was submitted (e.g., 'daily', 'monthly', 'ranged', 'hourly').
+             * @param {string} type - The type of correction that was submitted (e.g., 'daily', 'monthly', 'ranged', 'hourly', 'multiday').
              */
             function showSubmissionConfirmation(type) {
 
@@ -556,6 +557,7 @@
                 $("#form-hourly").hide(); 
                 $("#form-monthly").hide(); 
                 $("#form-range").hide(); 
+                $("#form-multiday").hide();
                 
                 $(".correction-type-text-target").text(type);
                 
@@ -577,6 +579,9 @@
                 } else if (type == "hourly") {
                     link = '{{ url_for('corrections.hourly_corrections') }}';
                     $("#submitted-hourly-link").hide();
+                } else if (type == "multiday") {
+                    link = '{{ url_for('corrections.multiday_corrections') }}';
+                    $("#submitted-multiday-link").hide();
                 }
 
                 console.log(link);

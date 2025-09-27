@@ -69,6 +69,21 @@
                     <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.hourly_corrections') }}'">Enter a Correction</button>
                 </div>
         
+            </div>
+        </div>
+        <div class="col rounded p-3 m-4" style="border: 1px solid #707070">
+            <div class="row flex-column">
+                <div class="col my-2" style="font-size:160%;font-weight: 600;" >
+                    Multi-Day corrections
+                </div>
+                <div class="col my-2" style="font-size:106%;"> 
+                    Add individual correction entries with dynamic row management. Each entry includes GHCN ID, date, element, action, and E-value. Perfect for flexible correction workflows.
+                </div>
+                <div class="col my-2" style="font-size:106%;"> 
+                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.multiday_corrections') }}'">Enter a Correction</button>
+                </div>
+        
+            </div>
         </div>
         </div>
 
