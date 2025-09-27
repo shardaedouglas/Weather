@@ -132,8 +132,12 @@
     <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
     </div>
 
-    <div id="correction-comparison-table" style="display:none;">
-        {% include "corrections/data_tables/correction_comparison_table.html" %}
+    <div class="row" style="text-align: center">
+        <div class="col">
+            <div id="correction-comparison-table" style="display:none;">
+                {% include "corrections/data_tables/correction_comparison_table.html" %}
+            </div>
+        </div>
     </div>
 </div>
 <div id="submission-element" style="display: none;">
@@ -245,13 +249,13 @@
                             $("#q-flag-output").text(response.o_flag_value.charAt(1));
                             $("#s-flag-output").text(response.o_flag_value.charAt(2));
                         } else {
-                            alert("O-Value not found.");
+                            errorPopup.warning("O-Value not found.");
                         }
                     },
                     
                     error: function(xhr, status, error) {
                         console.error("Error:", error);
-                        alert("There was an error processing your request.");
+                        handleAjaxError(xhr, status, error, "There was an error retrieving the O-Value.");
                     }
                 });
             }
@@ -316,12 +320,12 @@
         filteredData.returnData.forEach(item => {
                     const newRow = `
                         <tr>
-                            <td>${item.distance} mi</td>
-                            <td>${item.elevation} ft</td>
-                            <td>${item.station_code}</td>
-                            <td>${item.dayMinus}</td>
-                            <td>${item.day}</td>
-                            <td>${item.dayPlus}</td>
+                            <td class="ghcn-table-cell">${item.distance} mi</td>
+                            <td class="ghcn-table-cell">${item.elevation} ft</td>
+                            <td class="ghcn-table-cell">${item.station_code}</td>
+                            <td class="ghcn-table-cell">${item.dayMinus}</td>
+                            <td class="ghcn-table-cell">${item.day}</td>
+                            <td class="ghcn-table-cell">${item.dayPlus}</td>
                         </tr>
                     `;
                     tableBody.insertAdjacentHTML('beforeend', newRow);
@@ -371,7 +375,7 @@
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
             }
         });
         }
@@ -398,12 +402,12 @@
         filteredData.returnData.forEach(item => {
                     const newRow = `
                         <tr>
-                            <td>${item.distance} mi</td>
-                            <td>${item.elevation} ft</td>
-                            <td>${item.station_code}</td>
-                            <td>${item.dayMinus}</td>
-                            <td>${item.day}</td>
-                            <td>${item.dayPlus}</td>
+                            <td class="ghcn-table-cell">${item.distance} mi</td>
+                            <td class="ghcn-table-cell">${item.elevation} ft</td>
+                            <td class="ghcn-table-cell">${item.station_code}</td>
+                            <td class="ghcn-table-cell">${item.dayMinus}</td>
+                            <td class="ghcn-table-cell">${item.day}</td>
+                            <td class="ghcn-table-cell">${item.dayPlus}</td>
                         </tr>
                     `;
                     tableBody.insertAdjacentHTML('beforeend', newRow);
@@ -429,12 +433,12 @@
     
             const newRow = `
                 <tr>
-                    <td>Dist</td>
-                    <td>Elev</td>
-                    <td>${filteredData.station_code}</td>
-                    <td>${filteredData.dayMinus}</td>
-                    <td>${filteredData.day}</td>
-                    <td>${filteredData.dayPlus}</td>
+                    <td class="ghcn-table-cell">Dist</td>
+                    <td class="ghcn-table-cell">Elev</td>
+                    <td class="ghcn-table-cell">${filteredData.station_code}</td>
+                    <td class="ghcn-table-cell">${filteredData.dayMinus}</td>
+                    <td class="ghcn-table-cell">${filteredData.day}</td>
+                    <td class="ghcn-table-cell">${filteredData.dayPlus}</td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', newRow);
@@ -464,14 +468,14 @@
             data: JSON.stringify({ correction_data: correctionData }), // Convert array to JSON string
             success: function(response) {
                 // Handle processing
-                alert("Corrections Submitted Successfully");
+                handleAjaxSuccess("Corrections Submitted Successfully");
                 // Return true?
                 // If correction was successful, show the submission confirmation screen. 
                 showSubmissionConfirmation("daily");
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
                 // Return false?
                 // FOR TESTING 
                 showSubmissionConfirmation("daily");

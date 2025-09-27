@@ -98,7 +98,7 @@
         $("#monthly-next-btn").click(function() {
             if (!$("#ghcn_id").val() || !$("#date").val()){
                 // Error message: need both values.
-                alert("Both values need to be filled out.");
+                errorPopup.warning("Both values need to be filled out.");
             } else {
                 showMonthTable($("form"));
             }
@@ -216,12 +216,12 @@
             data: JSON.stringify({ form_input: formData, monthly_input: monthlyInputData }),  // Send data as JSON
             success: function(response) {
                 // Handle processing
-                alert("Monthly Correction Submitted Successfully");
+                handleAjaxSuccess("Monthly Correction Submitted Successfully");
                 showSubmissionConfirmation("monthly");
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your monthly correction request.");
                 showSubmissionConfirmation("monthly"); //Should be changed to allow the user to retry their correction
             }
         });

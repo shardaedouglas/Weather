@@ -129,7 +129,7 @@
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your correction request.");
             }
         });
         }

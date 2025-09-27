@@ -1,24 +1,26 @@
-<table class="table">
-  <thead>
-      <tr>
-          <th scope="col">Distance</th>
-          <th scope="col">Elevation</th>
-          <th scope="col">ID</th>
-          <th scope="col">Day-1</th>
-          <th scope="col">Day</th>
-          <th scope="col">Day+1</th>
-      </tr>
-  </thead>
-  <tbody>
-      {% for row in data %}
-      <tr>
-          <td>{{ row['country_code'] }}-{{ row['station_code'] }}</td>
-          <td>{{ row['observation_type'] }}</td>
-          <td>{{ row['station_code'] }}</td>
-          <td>{{ row['day_12'] }}</td>
-          <td>{{ row['flag_12'] }}</td>
-          <td>{{ row.get('day_13', 'N/A') }}</td>  <!-- For day+1, change if needed -->
-      </tr>
-      {% endfor %}
-  </tbody>
-</table>
+<div class="table-responsive-lg">
+    <table class="table table-sm table-striped table-borderless border" id="correction-comparison-table">
+        <thead>
+            <tr>
+                <th class="ghcn-table-cell" scope="col">Distance</th>
+                <th class="ghcn-table-cell" scope="col">Elevation</th>
+                <th class="ghcn-table-cell" scope="col">ID</th>
+                <th class="ghcn-table-cell" scope="col">Day-1</th>
+                <th class="ghcn-table-cell" scope="col">Day</th>
+                <th class="ghcn-table-cell" scope="col">Day+1</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td class="ghcn-table-cell">{{ row['country_code'] }}-{{ row['station_code'] }}</td>
+                <td class="ghcn-table-cell">{{ row['observation_type'] }}</td>
+                <td class="ghcn-table-cell">{{ row['station_code'] }}</td>
+                <td class="ghcn-table-cell">{{ row['day_12'] }}</td>
+                <td class="ghcn-table-cell">{{ row['flag_12'] }}</td>
+                <td class="ghcn-table-cell">{{ row.get('day_13', 'N/A') }}</td>  <!-- For day+1, change if needed -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

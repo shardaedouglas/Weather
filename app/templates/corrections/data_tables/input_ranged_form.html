@@ -58,12 +58,12 @@
             data: JSON.stringify({ correction_data: correctionData }),  // Send data as JSON
             success: function(response) {
                 // Handle processing
-                alert("Ranged Correction Submitted Successfully");
+                handleAjaxSuccess("Ranged Correction Submitted Successfully");
                 showSubmissionConfirmation("ranged");
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("There was an error processing your request.");
+                handleAjaxError(xhr, status, error, "There was an error processing your ranged correction request.");
             }
         });
     }

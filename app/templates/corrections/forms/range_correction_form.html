@@ -49,7 +49,7 @@
                 
                         <!-- Navigation Header -->
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <button id="prev-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
+                            <button type="button" id="prev-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
                                 </svg>
@@ -58,7 +58,7 @@
                                 <select id="month-selector" class="custom-select-header"></select>
                                 <select id="year-selector" class="custom-select-header ms-2"></select>
                             </h2>
-                            <button id="next-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
+                            <button type="button" id="next-month-btn" class="btn p-2 rounded-circle hover-bg-light transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
                                 </svg>
@@ -81,8 +81,8 @@
                 
                         <!-- Footer Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                            <button id="cancel-btn" class="btn btn-light rounded-full-lg fw-semibold flex-fill me-2">Cancel</button>
-                            <button id="apply-btn" class="btn blue-bg rounded-full-lg fw-semibold flex-fill ms-2">Apply</button>
+                            <button type="button" id="cancel-btn" class="btn btn-light rounded-full-lg fw-semibold flex-fill me-2">Cancel</button>
+                            <button type="button" id="apply-btn" class="btn blue-bg rounded-full-lg fw-semibold flex-fill ms-2">Apply</button>
                         </div>
                     </div>
                 </div>
@@ -198,7 +198,7 @@
                     // console.error("Error:", error);
                     console.error("Error:", error, xhr, xhr.responseText);
                     // alert("There was an error processing your request.");
-                    alert("There was an error processing your request:\n" + xhr.responseJSON.error);
+                    handleAjaxError(xhr, status, error, "There was an error processing your ranged correction request.");
                     loadingWheel.style.display = 'none';
                 }
             });
