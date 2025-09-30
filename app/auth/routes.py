@@ -32,20 +32,17 @@ def login_post():
     if user_found:
         user_validated = User.password_is_valid(user_table, username, password)
 
-    user = {
-        "username": username,
-        "password": password
-    }
-
     # check if the user actually exists
     # take the user-supplied password, hash it, and compare it to the hashed password in the database
     if not user_found or not user_validated:
         flash('Please check your login details and try again.', 'error')
         return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
-
+    else:
+        session["_username"] = username
     # if the above check passes, then we know the user has the right credentials
     # return redirect(url_for('index'))
-    login_user(user, remember=remember)
+    
+    #login_user(user, remember=remember)
 
     return redirect(url_for('corrections.index'))
 
@@ -86,8 +83,8 @@ def signup_post():
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/logout')
-@login_required
+#@login_required
 def logout():
     session.pop('_username', None)
-    logout_user()
+    #logout_user()
     return redirect(url_for('auth.login'))
