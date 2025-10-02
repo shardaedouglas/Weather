@@ -8,13 +8,13 @@ from app.corrections.models.corrections import Corrections
 from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
 from datetime import date, datetime, timedelta
 import os
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flask import session
 import traceback
 from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
 
-
-
+user = current_user.username
+print(user)
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
 # All Corrections Landing Page
@@ -22,6 +22,7 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 @login_required
 def index():
+    
     js = js_ds()
     page_settings = js.get_admin_settings()
     username = "NCEI User"
@@ -52,8 +53,9 @@ _____________________________________________
 @correction_bp.route('/corrections/daily')
 @login_required
 def daily_corrections():
+    
 
-        # Extract query parameters for default values
+    # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
     correction_date = request.args.get('date', '')
@@ -351,7 +353,7 @@ def submit_daily_corrections():
         line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number'][0]}, XX\n"
 
         # Append to the text file
-        with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+        with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
             file.write(line)
         flash('Correction successfully written', 'success')
         print("Correction successfully written to daily_corrections.txt")
@@ -395,7 +397,7 @@ def monthly_corrections():
     begin_date = request.args.get('begin_date', '')
     end_date = request.args.get('end_date', '')
     datzilla_number = request.args.get('datzilla_number', '')
-
+    
     
     # Convert dates if needed
     if correction_date:
@@ -424,6 +426,7 @@ def monthly_corrections():
 @login_required
 def submit_monthly_corrections():
     try:  
+        
         data = request.get_json()  # Get the parsed JSON data
         formData = parse_qs(data.get('form_input'), keep_blank_values=True)
         monthlyInputData = data.get('monthly_input')
@@ -479,7 +482,7 @@ def submit_monthly_corrections():
                 line = f"{ghcn_id}, {yyyymm}, {day}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
 
                 # Append to the text file for each correction
-                with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+                with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
                     file.write(line)
 
                 print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
@@ -877,7 +880,7 @@ def submit_ranged_corrections():
             line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
 
             # Append to the text file for each correction
-            with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+            with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
                 file.write(line)
 
             print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
@@ -991,7 +994,7 @@ def get_previous_corrections():
 
     data = []
     folder_path = '/data/ops/ghcndqi/corr/'
-    file_name = 'corrections.txt'
+    file_name = f'{user}corrections.txt'
     with open( os.path.join(folder_path, file_name), "r") as file:
         for line in file: 
             if line:
@@ -999,7 +1002,7 @@ def get_previous_corrections():
 
                 records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry] # Lines end in \n
                 records[1] = records[1] + records.pop(2) # Combine YYYYMM + DD
-                records.insert(0, "User") # Placeholder for Username   
+                records.insert(0, user) # Placeholder for Username   
 
                 for col in [2,7]: # Reformat dates to YYYY-MM-DD for display only
                     try:
