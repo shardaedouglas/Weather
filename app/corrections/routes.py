@@ -50,6 +50,7 @@ _____________________________________________
 
 # Daily Correction Form & Landing Page
 @correction_bp.route('/corrections/daily')
+@login_required
 def daily_corrections():
 
         # Extract query parameters for default values
@@ -91,6 +92,7 @@ def daily_corrections():
 
 # Compare Target to Neighboring Stations
 @correction_bp.route('/get_data_for_daily_corrections', methods=['POST'])
+@login_required
 def process_correction():
     try:
         
@@ -228,6 +230,7 @@ def process_correction():
 
 # Auto-populate O-Value when Form input is given    
 @correction_bp.route('/get_o_value', methods=['POST'])
+@login_required
 def get_o_value():
 
     try:
@@ -308,6 +311,7 @@ def get_o_value():
     
 # Save Daily Correction to File
 @correction_bp.route('/submit_daily_corrections', methods=['POST'])
+@login_required
 def submit_daily_corrections():
     try:
 
@@ -378,6 +382,7 @@ _____________________________________________
 '''
 
 @correction_bp.route('/corrections/monthly')
+@login_required
 def monthly_corrections():
     # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
@@ -416,6 +421,7 @@ def monthly_corrections():
 # Save Monthly Correction to File
 
 @correction_bp.route('/submit_monthly_corrections', methods=['POST'])
+@login_required
 def submit_monthly_corrections():
     try:  
         data = request.get_json()  # Get the parsed JSON data
@@ -508,6 +514,7 @@ _____________________________________________
 
 # Multi-Day Correction Form & Landing Page
 @correction_bp.route('/corrections/multiday')
+@login_required
 def multiday_corrections():
     # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'multiday')
@@ -535,6 +542,7 @@ def multiday_corrections():
 
 # Save Multi-Day Correction to File
 @correction_bp.route('/submit_multiday_corrections', methods=['POST'])
+@login_required
 def submit_multiday_corrections():
     try:  
         data = request.get_json()
@@ -686,6 +694,7 @@ _____________________________________________
 
 #Invalidate Range Form & Landing Page
 @correction_bp.route('/corrections/range')
+@login_required
 def range_corrections():
 
     # Extract query parameters for default values
@@ -726,6 +735,7 @@ def range_corrections():
 
 # Render Invalidated Range Table (Post Form Submittal)
 @correction_bp.route('/get_ranged_values', methods=['POST'])
+@login_required
 def get_ranged_values():
     try:
         
@@ -826,6 +836,7 @@ def get_ranged_values():
     
 
 @correction_bp.route('/submit_ranged_corrections', methods=['POST'])
+@login_required
 def submit_ranged_corrections():
 
     try:
@@ -896,6 +907,7 @@ _____________________________________________
 
 '''
 @correction_bp.route('/corrections/hourly')
+@login_required
 def hourly_corrections():
 
     # Extract query parameters for default values
@@ -964,6 +976,7 @@ _____________________________________________
 
 '''
 @correction_bp.route('/corrections/previous',  methods=['GET','POST'])
+@login_required
 def previous_corrections():
 
     return render_template(
@@ -973,6 +986,7 @@ def previous_corrections():
 
 # @correction_bp.route('/corrections/previous/get',  methods=['GET','POST']) #If the username needs to be hidden, POST can be used instead.
 @correction_bp.route('/corrections/previous/get',  methods=['GET'])
+@login_required
 def get_previous_corrections():
 
     data = []

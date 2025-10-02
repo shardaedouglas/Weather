@@ -34,8 +34,8 @@ def create_app(config_class=Config):
 
     @login_manager.user_loader
     def load_user(user_id):
-        # since the user_id is just the primary key of our user table, use it in the query for the user
-        return 0
+        # Load user from JSON datastore by username (which is our user_id)
+        return User.get(user_id)
 
 
     # Close the database when the context closes
@@ -396,127 +396,146 @@ def create_app(config_class=Config):
 
 
     @app.route('/test_error_popup')
+    @login_required
     def test_error_popup():
         return render_template('test_error_popup.html')
     
     @app.route('/test_flash_error')
+    @login_required
     def test_flash_error():
         flash('This is a test error flash message!', 'error')
         return redirect(url_for('test_error_popup'))
     
     @app.route('/test_flash_success')
+    @login_required
     def test_flash_success():
         flash('This is a test success flash message!', 'success')
         return redirect(url_for('test_error_popup'))
     
     @app.route('/test_flash_warning')
+    @login_required
     def test_flash_warning():
         flash('This is a test warning flash message!', 'warning')
         return redirect(url_for('test_error_popup'))
     
     @app.route('/test_flash_info')
+    @login_required
     def test_flash_info():
         flash('This is a test info flash message!', 'info')
         return redirect(url_for('test_error_popup'))
     
     # Test routes for detailed error handling
     @app.route('/test_server_error')
+    @login_required
     def test_server_error():
         """Test route that triggers a 500 error"""
         raise FileNotFoundError("The requested file '/path/to/missing/file.txt' could not be found (errno 2)")
     
     @app.route('/test_validation_error')
+    @login_required
     def test_validation_error():
         """Test route that triggers a 422 error"""
         from flask import abort
         abort(422, description="The email field is required and must be a valid email address (errno 22)")
     
     @app.route('/test_not_found')
+    @login_required
     def test_not_found():
         """Test route that triggers a 404 error"""
         from flask import abort
         abort(404, description="The requested user with ID 12345 does not exist (errno 2)")
     
     @app.route('/test_bad_request')
+    @login_required
     def test_bad_request():
         """Test route that triggers a 400 error"""
         from flask import abort
         abort(400, description="The 'username' parameter is required but was not provided (errno 22)")
     
     @app.route('/test_permission_error')
+    @login_required
     def test_permission_error():
         """Test route that triggers a permission error"""
         raise PermissionError("You do not have sufficient privileges to access this resource (errno 13)")
     
     @app.route('/test_value_error')
+    @login_required
     def test_value_error():
         """Test route that triggers a value error"""
         raise ValueError("The provided age value 'abc' is not a valid number (errno 22)")
     
     @app.route('/test_connection_error')
+    @login_required
     def test_connection_error():
         """Test route that triggers a connection error"""
         raise ConnectionError("Unable to connect to the database server at localhost:5432 (errno 111)")
     
     @app.route('/test_timeout_error')
+    @login_required
     def test_timeout_error():
         """Test route that triggers a timeout error"""
         raise TimeoutError("The request timed out after 30 seconds (errno 110)")
     
     @app.route('/test_database_error')
+    @login_required
     def test_database_error():
         """Test route that triggers a database error"""
         raise Exception("Database connection failed: Unable to connect to MySQL server (errno 2002)")
     
     @app.route('/test_memory_error')
+    @login_required
     def test_memory_error():
         """Test route that triggers a memory error"""
         raise MemoryError("Server has run out of available memory (errno 12)")
     
     @app.route('/test_disk_space_error')
+    @login_required
     def test_disk_space_error():
         """Test route that triggers a disk space error"""
         raise OSError("No space left on device (errno 28)")
     
     @app.route('/test_network_error')
+    @login_required
     def test_network_error():
         """Test route that triggers a network error"""
         raise ConnectionError("Network is unreachable (errno 101)")
     
     @app.route('/test_config_error')
+    @login_required
     def test_config_error():
         """Test route that triggers a configuration error"""
         raise ValueError("Invalid configuration: missing required setting 'database_url' (errno 22)")
     
     @app.route('/test_email_report')
+    @login_required
     def test_email_report():
         """Test route to verify email reporting functionality"""
         try:
-            # Create a test error report
-            msg = Message(
-                subject="Test Error Report",
-                recipients=[app.config['ERROR_REPORT_EMAIL']],
-                sender=app.config['MAIL_DEFAULT_SENDER']
-            )
+            # Create a test error report - commented out due to missing flask_mail
+            # msg = Message(
+            #     subject="Test Error Report",
+            #     recipients=[app.config['ERROR_REPORT_EMAIL']],
+            #     sender=app.config['MAIL_DEFAULT_SENDER']
+            # )
             
-            msg.body = """
-Test Error Report
-================
-
-This is a test email to verify that the error reporting system is working correctly.
-
-Timestamp: """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """
-Test Type: Email Functionality Test
-Status: SUCCESS
-
-If you receive this email, the error reporting system is properly configured and working.
-"""
+            # msg.body = """
+            # Test Error Report
+            # ================
+            # 
+            # This is a test email to verify that the error reporting system is working correctly.
+            # 
+            # Timestamp: """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """
+            # Test Type: Email Functionality Test
+            # Status: SUCCESS
+            # 
+            # If you receive this email, the error reporting system is properly configured and working.
+            # """
             
-            mail.send(msg)
+            # mail.send(msg)  # Commented out due to missing flask_mail
             
             return jsonify({
                 'success': True,
-                'message': 'Test email sent successfully to ' + app.config['ERROR_REPORT_EMAIL']
+                'message': 'Email functionality disabled due to missing flask_mail dependency'
             }), 200
             
         except Exception as e:
@@ -526,6 +545,7 @@ If you receive this email, the error reporting system is properly configured and
             }), 500
     
     @app.route('/report_error', methods=['POST'])
+    @login_required
     def report_error():
         """Handle error report submissions via email"""
         try:
@@ -550,12 +570,12 @@ If you receive this email, the error reporting system is properly configured and
             if not current_user.is_anonymous:
                 user_info = f"User: {current_user.username if hasattr(current_user, 'username') else 'Unknown'}"
             
-            # Create email message
-            msg = Message(
-                subject=f"Error Report: {error_title}",
-                recipients=[app.config['ERROR_REPORT_EMAIL']],
-                sender=app.config['MAIL_DEFAULT_SENDER']
-            )
+            # Create email message - commented out due to missing flask_mail
+            # msg = Message(
+            #     subject=f"Error Report: {error_title}",
+            #     recipients=[app.config['ERROR_REPORT_EMAIL']],
+            #     sender=app.config['MAIL_DEFAULT_SENDER']
+            # )
             
             # Create email body
             email_body = f"""
@@ -601,14 +621,14 @@ Browser Information:
 {error_details.get('browserInfo', 'No browser information available')}
 """
             
-            msg.body = email_body
+            # msg.body = email_body
             
-            # Send email
-            mail.send(msg)
+            # Send email - commented out due to missing flask_mail
+            # mail.send(msg)
             
             return jsonify({
                 'success': True,
-                'message': 'Error report sent successfully'
+                'message': 'Error report functionality disabled due to missing flask_mail dependency'
             }), 200
             
         except Exception as e:
@@ -656,7 +676,16 @@ Browser Information:
                 'error': str(e)
             }), 503
 
+    @app.route('/')
+    def index():
+        """Root route - redirect to login if not authenticated, otherwise to corrections"""
+        if current_user.is_authenticated:
+            return redirect(url_for('corrections.index'))
+        else:
+            return redirect(url_for('auth.login'))
+
     @app.route('/test')
+    @login_required
     def test_page():
         # return '<h1>Test</h1>' # Link html templates here instead..
         # return render_template('test.html')

@@ -5,86 +5,81 @@ from flask import render_template, redirect, url_for, session, request, flash
 from .models.auth_models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from .. import db
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 
 
 @auth_bp.route('/login')
 def login():
-    # return 
+    # If user is already logged in, redirect to corrections page
+    if current_user.is_authenticated:
+        return redirect(url_for('corrections.index'))
     return render_template('auth/login.html')
 
 @auth_bp.route('/login_service', methods=['POST'])
 def login_post():
-    
-    #Query the DataStore for the user list and convert to a table
-    js = js_ds()
-    users = js.get_users()
-    user_table = pl.DataFrame(users)
-
-    # login code goes here
+    # Get form data
     username = request.form.get('username')
     password = request.form.get('password')
     remember = True if request.form.get('remember') else False
 
-    user_found = User.user_exists(user_table, username)
-    user_validated = False
+    # Get user from datastore
+    user = User.get(username)
 
-    if user_found:
-        user_validated = User.password_is_valid(user_table, username, password)
-
-    # check if the user actually exists
-    # take the user-supplied password, hash it, and compare it to the hashed password in the database
-    if not user_found or not user_validated:
+    # Check if user exists and password is valid
+    if not user or not user.check_password(password):
         flash('Please check your login details and try again.', 'error')
-        return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
-    else:
-        session["_username"] = username
-    # if the above check passes, then we know the user has the right credentials
-    # return redirect(url_for('index'))
-    
-    #login_user(user, remember=remember)
+        return redirect(url_for('auth.login'))
 
-    return redirect(url_for('corrections.index'))
+    # Log the user in with Flask-Login
+    login_user(user, remember=remember)
+    
+    # Get the next page to redirect to (if any)
+    next_page = request.args.get('next')
+    if not next_page or not next_page.startswith('/'):
+        next_page = url_for('corrections.index')
+    
+    return redirect(next_page)
 
 @auth_bp.route('/signup')
 def signup():
+    # If user is already logged in, redirect to corrections page
+    if current_user.is_authenticated:
+        return redirect(url_for('corrections.index'))
     return render_template('auth/signup.html')
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup_post():
-    
-    #Query the DataStore for the user list and convert to a table
-    js = js_ds()
-    users = js.get_users()
-    user_table = pl.DataFrame(users)    
-    
-    # code to validate and add user to database goes here
+    # Get form data
     username = request.form.get('username')
     name = request.form.get('name')
     password = request.form.get('password')
 
-    # print(username + password)
-    user_found = User.user_exists(user_table, username)
-    #user = User.query.filter_by(username=username).first() # if this returns a user, then the email already exists in database
-
-    if user_found: # if a user is found, we want to redirect back to signup page so user can try again
-        flash('User already exists')
+    # Validate input
+    if not username or not name or not password:
+        flash('Username, name, and password are required.', 'error')
         return redirect(url_for('auth.signup'))
 
-    # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-    #new_user = User(username=username, name=name, password=generate_password_hash(password, method='scrypt'))
-    js.save_user({"username":username, "name":name, "password":password})
-    # add the new user to the database
-    #db.session.add(new_user)
-    #db.session.commit()
+    # Check if user already exists
+    if User.user_exists_by_username(username):
+        flash('Username already exists. Please choose a different username.', 'error')
+        return redirect(url_for('auth.signup'))
 
-
+    # Create new user (email is not required)
+    new_user = User.create_user(username, name, '', password)
     
-    return redirect(url_for('auth.login'))
+    if new_user:
+        flash('Account created successfully! Please log in.', 'success')
+        return redirect(url_for('auth.login'))
+    else:
+        flash('Error creating account. Please try again.', 'error')
+        return redirect(url_for('auth.signup'))
 
 @auth_bp.route('/logout')
-#@login_required
+@login_required
 def logout():
+    # Clear any session data (for backward compatibility)
     session.pop('_username', None)
-    #logout_user()
+    # Log out with Flask-Login
+    logout_user()
+    flash('You have been logged out successfully.', 'info')
     return redirect(url_for('auth.login'))
