@@ -41,6 +41,7 @@ CORRECTION_TYPE = (
     ("1", "Daily Correction" ),
     ("2", "Monthly Correction"),
     ("3", "Correction Range"),
+    ("4", "Multi-Day Correction"),
 )
 
 HOURLY_ELEMENTS = (
@@ -88,6 +89,21 @@ class RangeCorrections(FlaskForm):
     element = SelectField('Element', choices=ELEMENTS)
     action = SelectField('Action', choices=(("1", "1A" ),("3", "3A")))
     defaults = BooleanField(default="checked")
+    datzilla_number = StringField('Datzilla #')
+    submit = SubmitField('Submit')
+
+    sub_element_SN = SelectField('SubElement', choices=SUB_ELEMENTS[:63])
+    sub_element_SX = SelectField('SubElement', choices=SUB_ELEMENTS[63:126])
+    sub_element_WT = SelectField('SubElement', choices=SUB_ELEMENTS[126:147])
+    sub_element_WV = SelectField('SubElement', choices=SUB_ELEMENTS[147:])
+
+class MultiDayCorrections(FlaskForm):
+    form_type = StringField('TYPE', validators=[InputRequired()])
+    ghcn_id = StringField('GHCN ID', validators=[InputRequired()])
+    begin_date = DateField('Begin Date', validators=[InputRequired()])
+    end_date = DateField('End Date', validators=[InputRequired()])
+    elements = SelectMultipleField('Elements', choices=ELEMENTS)
+    action = SelectField('Action', choices=ACTIONS)
     datzilla_number = StringField('Datzilla #')
     submit = SubmitField('Submit')
 
