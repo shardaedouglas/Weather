@@ -1,12 +1,12 @@
 from app.corrections import correction_bp
 from urllib.parse import urlparse, parse_qs, parse_qsl
-from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections, HourlyCorrections
+from app.corrections.forms import DailyCorrections, MonthlyCorrections, RangeCorrections, HourlyCorrections, MultiDayCorrections
 from flask import render_template, request, jsonify, flash
 from app.extensions import get_db, find_stations, parse_station_file, get_station_lat_long, find_nearest_station
 from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.corrections.models.corrections import Corrections
 from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 from flask_login import login_required
 from flask import session
@@ -20,7 +20,7 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 # All Corrections Landing Page
 @correction_bp.route('/')
 @correction_bp.route('/corrections')
-# @login_required
+@login_required
 def index():
     js = js_ds()
     page_settings = js.get_admin_settings()
@@ -496,6 +496,184 @@ _____________________________________________
 
 '''
 
+######################################################
+
+''' 
+_____________________________________________
+
+Multi-Day Corrections
+_____________________________________________
+
+'''
+
+# Multi-Day Correction Form & Landing Page
+@correction_bp.route('/corrections/multiday')
+def multiday_corrections():
+    # Extract query parameters for default values
+    selected_form = request.args.get('correction_type', 'multiday')
+    ghcn_id = request.args.get('ghcn_id', '')
+    begin_date = request.args.get('begin_date', '')
+    end_date = request.args.get('end_date', '')
+    elements = request.args.get('elements', '')
+    action = request.args.get('action', '')
+    datzilla_number = request.args.get('datzilla_number', '')
+    
+    # Create form with default values
+    multiday_form = MultiDayCorrections(
+        form_type=selected_form,
+        ghcn_id=ghcn_id,
+        begin_date=begin_date,
+        end_date=end_date,
+        datzilla_number=datzilla_number,
+    )
+    
+    return render_template(
+        '/corrections/forms/multi_day_correction_form.html',
+        selected_form=selected_form,
+        multiday_form=multiday_form
+    )
+
+# Save Multi-Day Correction to File
+@correction_bp.route('/submit_multiday_corrections', methods=['POST'])
+def submit_multiday_corrections():
+    try:  
+        data = request.get_json()
+        correction_entries = data.get('correction_entries', [])
+        entry_count = data.get('entry_count', 0)
+        
+        print("Correction Entries:", correction_entries)
+        print("Entry Count:", entry_count)
+        
+        if not correction_entries or len(correction_entries) == 0:
+            return jsonify({"error": "No correction entries provided"}), 400
+        
+        corrections_written = 0
+        
+        for entry in correction_entries:
+            try:
+                # Validate required fields
+                if not all([entry.get('ghcn_id'), entry.get('date'), entry.get('element'), entry.get('action')]):
+                    print(f"Skipping incomplete entry: {entry}")
+                    continue
+                
+                # Parse the date
+                correction_date = datetime.strptime(entry.get('date'), '%Y-%m-%d').date()
+                
+                # Get O-value using the existing get_o_value route logic
+                o_value = ''
+                try:
+                    # Create a mock request to get_o_value function
+                    from flask import g
+                    
+                    ghcn_id = entry.get('ghcn_id')
+                    correction_date_str = entry.get('date')
+                    element = entry.get('element')
+                    
+                    # Use the same logic as get_o_value route
+                    correction_year, correction_month, correction_day = correction_date_str.split('-')
+                    correction_year = int(correction_year)
+                    correction_month = int(correction_month)
+                    correction_day = int(correction_day)
+                    
+                    base_file_path = '/data/ops/ghcnd/data/'
+                    station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
+                    
+                    # Run parser with form data for each station
+                    filtered_json = parse_and_filter(
+                        correction_type="o_value",
+                        file_path=station_file_path,
+                        station_code=ghcn_id,
+                        year=correction_year,
+                        month=correction_month,
+                        observation_type=element,
+                        day=correction_day,
+                    )
+                    
+                    print(f"O-value filtered_json for {ghcn_id}: {filtered_json}")
+                    
+                    # Check if 'status' exists in filtered_json and is 'skip'
+                    if 'status' in filtered_json and filtered_json['status'] == 'skip':
+                        o_value = "No Value"
+                    else:
+                        # Apply unit conversions based on element type
+                        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+                        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+                        mm_keys = {"SNOW", "SNWD", "MDSF"}
+                        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+                        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+                        km_keys = {"MDWM", "WDMV"}
+                        
+                        if element in temp_keys:
+                            o_value = c_tenths_to_f(filtered_json[0])
+                        elif element in mm_keys:
+                            o_value = mm_to_inches(filtered_json[0])
+                        elif element in tenths_mm_keys:
+                            o_value = tenths_mm_to_inches(filtered_json[0])
+                        elif element in wind_keys:
+                            o_value = wind_tenths_to_mph(filtered_json[0])
+                        elif element in km_keys:
+                            o_value = km_to_miles(filtered_json[0])
+                        elif element in cm_keys:
+                            o_value = cm_to_inches(filtered_json[0])
+                        else:
+                            o_value = str(filtered_json[0]) if filtered_json[0] is not None else "No Value"
+                    
+                    print(f"Retrieved O-value for {ghcn_id} {element} on {correction_date_str}: {o_value}")
+                    
+                except Exception as o_value_error:
+                    print(f"Error retrieving O-value for entry {entry}: {o_value_error}")
+                    o_value = "Error retrieving O-value"
+                
+                # Handle element value - use sub-element if provided for specific element types
+                element_value = entry.get('element')
+                if entry.get('sub_element') and element_value in ["SN*#", "SX*#", "WT**", "WV**"]:
+                    element_value = entry.get('sub_element')
+                    print(f"Using sub-element value: {element_value} instead of {entry.get('element')}")
+                
+                # Create correction entry with retrieved O-value
+                correction = Corrections(
+                    ghcn_id=entry.get('ghcn_id'),
+                    correction_date=correction_date,
+                    element=element_value,  # Use sub-element if applicable
+                    action=entry.get('action'),
+                    e_value=entry.get('e_value', ''),  
+                    o_value=o_value,  # Now using retrieved O-value
+                    datzilla_number=entry.get('datzilla_number', '')
+                )
+                
+                # Save to database
+                if correction.save_to_db():
+                    corrections_written += 1
+                    print(f"Correction for {entry.get('ghcn_id')} on {correction_date} for element {entry.get('element')} successfully written")
+                else:
+                    print(f"Failed to save correction for {entry.get('ghcn_id')} on {correction_date}")
+                    
+            except Exception as entry_error:
+                print(f"Error processing entry {entry}: {entry_error}")
+                continue
+        
+        if corrections_written == 0:
+            return jsonify({"error": "No valid corrections were processed"}), 400
+        
+        # Respond with success
+        return jsonify({
+            "message": f"{corrections_written} correction entries submitted successfully!",
+            "processed": corrections_written,
+            "total": len(correction_entries)
+        }), 201
+
+    except Exception as e:
+        print(f"Error in submit_multiday_corrections: {e}")
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error"}), 500
+
+'''
+_____________________________________________
+
+End Multi-Day Corrections
+_____________________________________________
+
+'''
 ######################################################
 
 ''' 

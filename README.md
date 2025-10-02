@@ -32,8 +32,11 @@ Run Python Intepreter in the app directory
 This should create a database file in the /instance directory.
 
 ## Cybersecurity
+### Flask Secret Key generator command
+    Generate a secure SECRET_KEY (you can use: python -c "import secrets; print(secrets.token_hex(32))")
 
-Taking User Input
+
+### Taking User Input
 
 - You use the escape() function you imported earlier to render the word string as text. This is important to avoid Cross Site Scripting (XSS) attacks. If the user submits malicious JavaScript instead of a word, escape() will it render as text and the browser will not run it, keeping your web application safe...
 
