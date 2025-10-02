@@ -13,8 +13,7 @@ from flask import session
 import traceback
 from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
 
-user = current_user.username
-print(user)
+
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 
 # All Corrections Landing Page
@@ -22,7 +21,8 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 @login_required
 def index():
-    
+    user = current_user.username
+    print(user)
     js = js_ds()
     page_settings = js.get_admin_settings()
     username = "NCEI User"
@@ -316,7 +316,7 @@ def get_o_value():
 @login_required
 def submit_daily_corrections():
     try:
-
+        user = current_user.username
 
         data = request.get_json()  # Get the parsed JSON data
         # Extract the list of corrections from the JSON data & Parse Query string to Dict
@@ -426,7 +426,7 @@ def monthly_corrections():
 @login_required
 def submit_monthly_corrections():
     try:  
-        
+        user = current_user.username
         data = request.get_json()  # Get the parsed JSON data
         formData = parse_qs(data.get('form_input'), keep_blank_values=True)
         monthlyInputData = data.get('monthly_input')
@@ -548,6 +548,7 @@ def multiday_corrections():
 @login_required
 def submit_multiday_corrections():
     try:  
+        user = current_user.username
         data = request.get_json()
         correction_entries = data.get('correction_entries', [])
         entry_count = data.get('entry_count', 0)
@@ -843,6 +844,7 @@ def get_ranged_values():
 def submit_ranged_corrections():
 
     try:
+        user = current_user.username
         # Extract JSON data from the request body
         data = request.get_json()  # Get the parsed JSON data
 
