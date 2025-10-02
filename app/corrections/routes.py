@@ -983,42 +983,249 @@ _____________________________________________
 @correction_bp.route('/corrections/previous',  methods=['GET','POST'])
 @login_required
 def previous_corrections():
-
-    return render_template(
-        "/corrections/previous_corrections.html",
-    )
+    """Display previous corrections page with user correction data"""
+    try:
+        # Get all previous corrections data
+        corrections_data = get_previous_corrections()
+        
+        return render_template(
+            "/corrections/previous_corrections.html",
+            corrections_data=corrections_data
+        )
+    except Exception as e:
+        print(f"Error loading previous corrections: {e}")
+        flash('Error loading previous corrections. Please try again.', 'error')
+        return render_template(
+            "/corrections/previous_corrections.html",
+            corrections_data=[]
+        )
 
 
 # @correction_bp.route('/corrections/previous/get',  methods=['GET','POST']) #If the username needs to be hidden, POST can be used instead.
 @correction_bp.route('/corrections/previous/get',  methods=['GET'])
 @login_required
 def get_previous_corrections():
-
-    data = []
-    folder_path = '/data/ops/ghcndqi/corr/'
-    file_name = f'{user}corrections.txt'
-    with open( os.path.join(folder_path, file_name), "r") as file:
-        for line in file: 
-            if line:
-                print(line)
-
-                records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry] # Lines end in \n
-                records[1] = records[1] + records.pop(2) # Combine YYYYMM + DD
-                records.insert(0, user) # Placeholder for Username   
-
-                for col in [2,7]: # Reformat dates to YYYY-MM-DD for display only
-                    try:
-                        records[col] = datetime.strptime(records[col], "%Y%m%d").date().strftime('%Y-%m-%d')
-                    except Exception as err:
-                        print(
-                            f"Error reading Date" +
-                            f"{traceback.format_exc()}"
-                            )
-                        records[col] = ""
-                    pass
-
-                # print(records)
-                data.append(records)
+    """
+    Read correction files from file system for all users and return formatted data.
     
-    # print(data)
-    return data
+    Returns:
+        list: List of correction records with format:
+              [username, correction_date, begin_date, end_date, ghcn_id, element, action, o_value, e_value, datzilla_number]
+    """
+    all_corrections_data = []
+    
+    try:
+        # Get admin settings to determine the corrections folder path
+        js = js_ds()
+        admin_settings = js.get_admin_settings()
+        
+        # Use configured path or default path
+        corrections_folder = admin_settings.get('corrections_path', '/data/ops/ghcndqi/corr/')
+        
+        # Get all users from the datastore
+        all_users = js.get_users()
+        
+        print(f"Looking for correction files in: {corrections_folder}")
+        
+        # Process each user's correction file
+        for user_data in all_users:
+            username = user_data.get('username', '')
+            if not username:
+                continue
+                
+            # Construct the correction file path for this user
+            correction_file_path = os.path.join(corrections_folder, f'{username}corrections.txt')
+            
+            print(f"Checking correction file for user {username}: {correction_file_path}")
+            
+            # Check if the correction file exists for this user
+            if os.path.exists(correction_file_path):
+                try:
+                    user_corrections = _read_user_correction_file(correction_file_path, username)
+                    all_corrections_data.extend(user_corrections)
+                    print(f"Successfully loaded {len(user_corrections)} corrections for user {username}")
+                except Exception as file_error:
+                    print(f"Error reading correction file for user {username}: {file_error}")
+                    print(f"Traceback: {traceback.format_exc()}")
+                    continue
+            else:
+                print(f"No correction file found for user {username} at {correction_file_path}")
+        
+        # Sort corrections by correction date (most recent first)
+        all_corrections_data.sort(key=lambda x: x[1] if x[1] else '', reverse=True)
+        
+        print(f"Total corrections loaded: {len(all_corrections_data)}")
+        return all_corrections_data
+        
+    except Exception as e:
+        print(f"Error in get_previous_corrections: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return []
+
+
+def _read_user_correction_file(file_path, username):
+    """
+    Read and parse a single user's correction file.
+    
+    Args:
+        file_path (str): Path to the user's correction file
+        username (str): Username for the corrections
+        
+    Returns:
+        list: List of parsed correction records for this user
+    """
+    user_corrections = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line_number, line in enumerate(file, 1):
+                line = line.strip()
+                
+                # Skip empty lines
+                if not line:
+                    continue
+                
+                try:
+                    # Parse the correction line
+                    correction_record = _parse_correction_line(line, username)
+                    if correction_record:
+                        user_corrections.append(correction_record)
+                        
+                except Exception as parse_error:
+                    print(f"Error parsing line {line_number} in {file_path}: {parse_error}")
+                    print(f"Problematic line: {line}")
+                    continue
+                    
+    except FileNotFoundError:
+        print(f"Correction file not found: {file_path}")
+    except PermissionError:
+        print(f"Permission denied reading file: {file_path}")
+    except Exception as e:
+        print(f"Unexpected error reading file {file_path}: {e}")
+        
+    return user_corrections
+
+
+def _parse_correction_line(line, username):
+    """
+    Parse a single correction line from a user's correction file.
+    
+    Expected format: GHCNID,YYYYMM,DD,ELEMENT,ACTION,O_VALUE,E_VALUE,YYYYMMDD,DATZILLA_NUMBER
+    
+    Args:
+        line (str): Raw line from correction file
+        username (str): Username for this correction
+        
+    Returns:
+        list: Parsed correction record or None if parsing fails
+    """
+    try:
+        # Split the line by commas and clean up entries
+        parts = [entry.strip() for entry in line.split(',') if entry.strip()]
+        
+        # Filter out entries containing 'XX' (invalid data markers)
+        parts = [entry for entry in parts if 'XX' not in entry.upper()]
+        
+        # Ensure we have enough parts for a valid correction record
+        if len(parts) < 7:
+            print(f"Insufficient data in correction line: {line}")
+            return None
+        
+        # Extract and format the correction data
+        ghcn_id = parts[0] if len(parts) > 0 else ''
+        year_month = parts[1] if len(parts) > 1 else ''
+        day = parts[2] if len(parts) > 2 else ''
+        element = parts[3] if len(parts) > 3 else ''
+        action = parts[4] if len(parts) > 4 else ''
+        o_value = parts[5] if len(parts) > 5 else ''
+        e_value = parts[6] if len(parts) > 6 else ''
+        
+        # Handle dates
+        correction_date = ''
+        begin_date = ''
+        end_date = ''
+        datzilla_number = ''
+        
+        # Combine YYYYMM + DD to create correction date
+        if year_month and day:
+            try:
+                correction_date_str = year_month + day.zfill(2)
+                correction_date = datetime.strptime(correction_date_str, "%Y%m%d").date().strftime('%Y-%m-%d')
+            except ValueError:
+                print(f"Invalid date format: {year_month}{day}")
+                correction_date = f"{year_month}-{day}"
+        
+        # Handle additional fields if present
+        if len(parts) > 7:
+            # Try to parse the 8th field as begin/end date
+            date_field = parts[7]
+            try:
+                begin_date = datetime.strptime(date_field, "%Y%m%d").date().strftime('%Y-%m-%d')
+            except ValueError:
+                begin_date = date_field
+        
+        if len(parts) > 8:
+            datzilla_number = parts[8]
+        
+        # Return the formatted correction record
+        # Format: [username, correction_date, begin_date, end_date, ghcn_id, element, action, o_value, e_value, datzilla_number]
+        return [
+            username,
+            correction_date,
+            begin_date,
+            end_date,  # Will be empty for now, can be populated if format includes it
+            ghcn_id,
+            element,
+            action,
+            o_value,
+            e_value,
+            datzilla_number
+        ]
+        
+    except Exception as e:
+        print(f"Error parsing correction line '{line}': {e}")
+        return None
+
+
+@correction_bp.route('/corrections/previous/api', methods=['GET'])
+@login_required
+def get_previous_corrections_api():
+    """
+    API endpoint to return previous corrections data as JSON.
+    This can be used for AJAX requests to populate tables dynamically.
+    
+    Returns:
+        JSON response with corrections data and metadata
+    """
+    try:
+        corrections_data = get_previous_corrections()
+        
+        # Create response with metadata
+        response_data = {
+            'success': True,
+            'total_corrections': len(corrections_data),
+            'corrections': corrections_data,
+            'columns': [
+                'Username',
+                'Correction Date', 
+                'Begin Date',
+                'End Date',
+                'GHCN ID',
+                'Element',
+                'Action',
+                'Original Value',
+                'Expected Value',
+                'Datzilla Number'
+            ]
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Error in previous corrections API: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to load corrections data',
+            'total_corrections': 0,
+            'corrections': []
+        }), 500
