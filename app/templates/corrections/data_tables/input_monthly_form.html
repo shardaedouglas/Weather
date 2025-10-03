@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="col-auto">
                                     <div class="d-grid">
-                                        <button type="reset" class="btn btn-outline-secondary btn-modern">
+                                        <button type="button" class="btn btn-outline-secondary btn-modern" id="clear-monthly-table-btn">
                                             <i class="fas fa-eraser me-2"></i>Clear
                                         </button>
                                     </div>
@@ -84,17 +84,40 @@
     
 <script>
     function processRangeInput() {
-        let inputText = document.getElementById("rangeTextInput").value.trim();
+        let inputText = document.getElementById("rangeTextInput").value;
         
-        // Split input by common delimiters (comma, newline, space, tab)
-        let values = inputText.split(/[\s,]+/).filter(val => val !== ""); // Removes empty values
+        // Split input by newlines to preserve empty lines as skipped days
+        let lines = inputText.split('\n');
+        
+        // Process each line to handle different delimiters within lines
+        let values = [];
+        for (let line of lines) {
+            line = line.trim();
+            if (line === "") {
+                // Empty line represents a skipped day
+                values.push("");
+            } else {
+                // Split line by common delimiters (comma, space, tab)
+                let lineValues = line.split(/[\s,]+/).filter(val => val !== "");
+                values.push(...lineValues);
+            }
+        }
 
         console.log("Parsed Values:", values);
 
-        // Fill table with parsed values (up to 31)
+        // Fill table with parsed values (up to 31 days)
         let inputs = document.querySelectorAll(".table tbody tr td input.form-control");
-        for (let i = 0; i < inputs.length; i++) {
-            inputs[i].value = values[i] || ""; // Set value or empty if less than 31
+        for (let i = 0; i < Math.min(inputs.length, 31); i++) {
+            if (i < values.length) {
+                inputs[i].value = values[i]; // Set value (including empty strings for skipped days)
+            } else {
+                inputs[i].value = ""; // Empty if no more values
+            }
+        }
+        
+        // Show success message
+        if (typeof errorPopup !== 'undefined') {
+            errorPopup.success("Range data processed successfully! Empty lines represent skipped days.");
         }
     }
 
@@ -397,5 +420,29 @@
         font-size: 0.8rem;
         padding: 0.3rem 0.4rem;
     }
-}
+    }
 </style>
+
+<script>
+$(document).ready(function() {
+    // Clear button functionality for monthly table
+    $("#clear-monthly-table-btn").click(function() {
+        // Clear all day entry inputs
+        $(".day-entry").val('');
+        
+        // Clear the range text input
+        $("#rangeTextInput").val('');
+        
+        // Hide the total display
+        $("#total-display").hide();
+        
+        // Reset the total display text
+        $("#total-display").find('.total-display-modern').html('<span class="text-muted">Total will appear here</span>');
+        
+        // Show success message
+        if (typeof errorPopup !== 'undefined') {
+            errorPopup.success("Monthly table data cleared successfully!");
+        }
+    });
+});
+</script>
