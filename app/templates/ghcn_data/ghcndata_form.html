@@ -592,16 +592,14 @@
                         
                         // First half: days 16-31 from previous month
                         for (i=16; i <=31; i++) {
-                            if (response.data['Day ' + i]) {
-                                split_month_data['Day ' + i] = response.data['Day ' + i]
-                            }
+                            // Always include the day, even if it's empty
+                            split_month_data['Day ' + i] = response.data['Day ' + i] || {}
                         }
                         
                         // Second half: days 1-15 from current month
                         for (i=1; i <= 15; i++){
-                            if (context['Day ' + i]) {
-                                split_month_data['Day ' + i] = context['Day ' + i]
-                            }
+                            // Always include the day, even if it's empty
+                            split_month_data['Day ' + i] = context['Day ' + i] || {}
                         }
                         
                         console.log('split month data', split_month_data)
@@ -611,16 +609,12 @@
                         
                         // Add days 16-31 first (from previous month)
                         for (i=16; i <=31; i++) {
-                            if (split_month_data['Day ' + i]) {
-                                split_day_order.push('Day ' + i);
-                            }
+                            split_day_order.push('Day ' + i);
                         }
                         
                         // Add days 1-15 second (from current month)
                         for (i=1; i <= 15; i++){
-                            if (split_month_data['Day ' + i]) {
-                                split_day_order.push('Day ' + i);
-                            }
+                            split_day_order.push('Day ' + i);
                         }
                         
                         console.log('split day order', split_day_order)
