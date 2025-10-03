@@ -56,7 +56,7 @@ class DailyCorrections(FlaskForm):
     date = DateField('Date', validators=[InputRequired()])
     element = SelectField('Element', choices=ELEMENTS, default=ELEMENTS[0][0] if ELEMENTS else '')
     action = SelectField('Action', choices=ACTIONS, default=ACTIONS[0][0] if ACTIONS else '')
-    o_value = StringField('O-Value')
+    o_value = StringField('O-Value', render_kw={'readonly': True})
     e_value = StringField('E-Value')
     datzilla_number = StringField('Datzilla #')
     source = StringField('Source')
