@@ -161,15 +161,7 @@
                 errorPopup.error("Error: Form data could not be processed. Please check all required fields.");
                 return;
             }
-            
-            // Remove one of the date fields from formData.
-            formData = formData.split("&");
-            if (element_index == -1) {
-                //For some reason there's not a date field. 
-            } else {
-                formData.splice(element_index,1);
-            }
-            formData = formData.join("&");
+        
             
             // Code to Process the monthly data.
             console.log(formData);

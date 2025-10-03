@@ -482,7 +482,6 @@ def submit_monthly_corrections():
         datzilla_number = datzilla_number[0]
         source = ''
         eflag=''
-        print('made here 1')
         if datzilla_number == '':
             datzilla_number = 'None'
         
@@ -495,7 +494,6 @@ def submit_monthly_corrections():
         else:
             correction_year, correction_month = None, None, None
             yyyymm = ""
-        print('made here 2')
         # Process for retrieving the O-Value and associated Flags
         GhcnDataID = [
             ghcn_id,
@@ -507,7 +505,6 @@ def submit_monthly_corrections():
         # Get today's date in yyyymmdd format
         todays_date = datetime.today().strftime("%Y%m%d")
         
-        print('made here 3')
         day = 0
         for entry in monthlyInputData:
             if entry != '':
