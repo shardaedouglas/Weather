@@ -33,11 +33,13 @@
                                                 <th class="ghcn-table-cell" scope="col">GHCN ID</th>
                                                 <th class="ghcn-table-cell" scope="col">Date</th>
                                                 <th class="ghcn-table-cell" scope="col">Element</th>
-                                                <th class="ghcn-table-cell" scope="col">Sub-Element</th>
+                                                <th class="ghcn-table-cell d-none" scope="col" id="sub-element-header">Sub-Element</th>
                                                 <th class="ghcn-table-cell" scope="col">Action</th>
                                                 <th class="ghcn-table-cell" scope="col">E-Value</th>
+                                                <th class="ghcn-table-cell" scope="col">E Flag</th>
+                                                <th class="ghcn-table-cell" scope="col">Source</th>
                                                 <th class="ghcn-table-cell" scope="col">Datzilla #</th>
-                                                <th class="ghcn-table-cell" scope="col" style="width: 80px;">Actions</th>
+                                                 <th class="ghcn-table-cell" scope="col" style="width: 80px;">Delete</th>
                                             </tr>
                                         </thead>
                                     <tbody id="correction-entries-tbody">
@@ -106,6 +108,20 @@
     
     #correction-entries-table .ghcn-table-cell {
         vertical-align: middle;
+    }
+    
+    /* E Flag column styling */
+    #correction-entries-table th:nth-child(7),
+    #correction-entries-table td:nth-child(7) {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    /* Source column styling */
+    #correction-entries-table th:nth-child(8),
+    #correction-entries-table td:nth-child(8) {
+        width: 120px;
+        min-width: 120px;
     }
     
     /* Element field plus button styling */
@@ -218,40 +234,47 @@
         entryCounter++;
         const entryId = `entry-${entryCounter}`;
         
-        // Get the last entry's values for inheritance
-        const lastEntry = correctionEntries[correctionEntries.length - 1];
-        let inheritedGhcnId = '';
-        let inheritedDate = '';
-        let inheritedDatzillaNumber = '';
-        
-        if (lastEntry) {
-            inheritedGhcnId = lastEntry.ghcn_id || '';
-            inheritedDatzillaNumber = lastEntry.datzilla_number || '';
-            
-            // Calculate next date (increment by one day)
-            if (lastEntry.date) {
-                const lastDate = new Date(lastEntry.date);
-                lastDate.setDate(lastDate.getDate() + 1);
-                inheritedDate = lastDate.toISOString().split('T')[0];
-            }
-        }
+         // Get the last entry's values for inheritance
+         const lastEntry = correctionEntries[correctionEntries.length - 1];
+         let inheritedGhcnId = '';
+         let inheritedDate = '';
+         let inheritedDatzillaNumber = '';
+         let inheritedAction = '';
+         
+         if (lastEntry) {
+             inheritedGhcnId = lastEntry.ghcn_id || '';
+             inheritedDatzillaNumber = lastEntry.datzilla_number || '';
+             inheritedAction = lastEntry.action || '';
+             
+             // Calculate next date (increment by one day)
+             if (lastEntry.date) {
+                 const lastDate = new Date(lastEntry.date);
+                 lastDate.setDate(lastDate.getDate() + 1);
+                 inheritedDate = lastDate.toISOString().split('T')[0];
+             }
+         }
         
         // Create new entry object with inherited values
+        const defaultAction = inheritedAction || actionChoices[0]?.value || '';
+        const defaultElement = elementChoices[0]?.value || '';
+        const defaultEflag = 'Z';
         const newEntry = {
             id: entryId,
             ghcn_id: inheritedGhcnId,
             date: inheritedDate,
-            element: '',
-            action: '',
+            element: defaultElement,
+            action: defaultAction,
             e_value: '',
+            eflag: defaultEflag,
+            source: '',
             datzilla_number: inheritedDatzillaNumber
         };
         
         correctionEntries.push(newEntry);
         
-        // Create table row
-        const row = createCorrectionEntryRow(entryId, inheritedGhcnId, inheritedDate, inheritedDatzillaNumber);
-        $("#correction-entries-tbody").append(row);
+         // Create table row
+         const row = createCorrectionEntryRow(entryId, inheritedGhcnId, inheritedDate, inheritedDatzillaNumber, inheritedAction);
+         $("#correction-entries-tbody").append(row);
         
         // Focus on the element dropdown (since GHCN ID and date are pre-filled)
         $(`#${entryId}-element`).focus();
@@ -263,13 +286,20 @@
         }, 1000);
     }
 
-    function createCorrectionEntryRow(entryId, inheritedGhcnId = '', inheritedDate = '', inheritedDatzillaNumber = '') {
+    function createCorrectionEntryRow(entryId, inheritedGhcnId = '', inheritedDate = '', inheritedDatzillaNumber = '', inheritedAction = '') {
+        const defaultElement = elementChoices[0]?.value || '';
         const elementOptions = elementChoices.map(choice => 
-            `<option value="${choice.value}">${choice.label}</option>`
+            `<option value="${choice.value}" ${choice.value === defaultElement ? 'selected' : ''}>${choice.label}</option>`
         ).join('');
         
         const actionOptions = actionChoices.map(choice => 
-            `<option value="${choice.value}">${choice.label}</option>`
+            `<option value="${choice.value}" ${choice.value === inheritedAction ? 'selected' : ''}>${choice.label}</option>`
+        ).join('');
+        
+        // If no inherited action, select the first option by default
+        const defaultAction = inheritedAction || actionChoices[0]?.value || '';
+        const actionOptionsWithDefault = actionChoices.map(choice => 
+            `<option value="${choice.value}" ${choice.value === defaultAction ? 'selected' : ''}>${choice.label}</option>`
         ).join('');
 
         return `
@@ -290,13 +320,12 @@
                            onchange="updateEntry('${entryId}', 'date', this.value)">
                 </td>
                 <td class="ghcn-table-cell">
-                    <div class="input-group input-group-sm">
-                        <select class="form-select" 
-                                id="${entryId}-element" 
-                                onchange="updateEntryAndShowSubElement('${entryId}', this.value)">
-                            <option value="">Select Element</option>
-                            ${elementOptions}
-                        </select>
+                     <div class="input-group input-group-sm">
+                         <select class="form-select" 
+                                 id="${entryId}-element" 
+                                 onchange="updateEntryAndShowSubElement('${entryId}', this.value)">
+                             ${elementOptions}
+                         </select>
                         <button type="button" class="btn btn-outline-primary btn-sm" 
                                 onclick="duplicateEntry('${entryId}')" 
                                 title="Duplicate entry with same GHCN ID and date"
@@ -305,26 +334,40 @@
                         </button>
                     </div>
                 </td>
-                <td class="ghcn-table-cell">
-                    <select class="form-select form-select-sm d-none" 
+                <td class="ghcn-table-cell d-none" id="${entryId}-sub_element-cell">
+                    <select class="form-select form-select-sm" 
                             id="${entryId}-sub_element" 
                             onchange="updateEntry('${entryId}', 'sub_element', this.value)">
                         <option value="">Select Sub-Element</option>
                     </select>
                 </td>
-                <td class="ghcn-table-cell">
-                    <select class="form-select form-select-sm" 
-                            id="${entryId}-action" 
-                            onchange="updateEntry('${entryId}', 'action', this.value)">
-                        <option value="">Select Action</option>
-                        ${actionOptions}
-                    </select>
-                </td>
+                 <td class="ghcn-table-cell">
+                     <select class="form-select form-select-sm ${inheritedAction ? 'inherited-field' : ''}" 
+                             id="${entryId}-action" 
+                             title="${inheritedAction ? 'Inherited from previous entry' : 'Select Action'}"
+                             onchange="updateEntry('${entryId}', 'action', this.value)">
+                         ${actionOptionsWithDefault}
+                     </select>
+                 </td>
                 <td class="ghcn-table-cell">
                     <input type="text" class="form-control form-control-sm" 
                            id="${entryId}-e_value" 
                            placeholder="Enter E-Value"
                            onchange="updateEntry('${entryId}', 'e_value', this.value)">
+                </td>
+                 <td class="ghcn-table-cell">
+                     <select class="form-select form-select-sm" 
+                             id="${entryId}-eflag" 
+                             onchange="updateEntry('${entryId}', 'eflag', this.value)">
+                         <option value="Z" selected>Z</option>
+                         <option value="E">E</option>
+                     </select>
+                 </td>
+                <td class="ghcn-table-cell">
+                    <input type="text" class="form-control form-control-sm" 
+                           id="${entryId}-source" 
+                           placeholder="Enter Source"
+                           onchange="updateEntry('${entryId}', 'source', this.value)">
                 </td>
                 <td class="ghcn-table-cell">
                     <input type="text" class="form-control form-control-sm ${inheritedDatzillaNumber ? 'inherited-field' : ''}" 
@@ -357,13 +400,17 @@
         updateEntry(entryId, 'element', elementValue);
         
         // Handle sub-element display
+        const subElementCell = $(`#${entryId}-sub_element-cell`);
         const subElementSelect = $(`#${entryId}-sub_element`);
+        const subElementHeader = $('#sub-element-header');
         
-        // Hide sub-element by default
-        subElementSelect.addClass('d-none');
+        // Hide sub-element by default for all elements
+        subElementCell.addClass('d-none');
         subElementSelect.html('<option value="">Select Sub-Element</option>');
+        subElementHeader.addClass('d-none');
         
-        // Show sub-element for specific element types
+        // Only show sub-element for elements with asterisks (*)
+        // These are: SN*# (soil temp min), SX*# (soil temp max), WT** (weather type), WV** (weather vicinity)
         let subElementOptions = [];
         switch (elementValue) {
             case "SN*#":
@@ -379,17 +426,36 @@
                 subElementOptions = subElementChoices.WV;
                 break;
             default:
-                // No sub-element needed
+                // No sub-element needed for elements without asterisks
                 return;
         }
         
-        // Populate sub-element options
+        // Populate sub-element options and show the field and header
         const optionsHtml = subElementOptions.map(choice => 
             `<option value="${choice.value}">${choice.label}</option>`
         ).join('');
         
         subElementSelect.html('<option value="">Select Sub-Element</option>' + optionsHtml);
-        subElementSelect.removeClass('d-none');
+        subElementCell.removeClass('d-none');
+        subElementHeader.removeClass('d-none');
+        
+        // Update header visibility based on all entries
+        updateSubElementHeaderVisibility();
+    }
+    
+    function updateSubElementHeaderVisibility() {
+        const subElementHeader = $('#sub-element-header');
+        
+        // Check if any entry currently needs a sub-element
+        const needsSubElement = correctionEntries.some(entry => {
+            return ["SN*#", "SX*#", "WT**", "WV**"].includes(entry.element);
+        });
+        
+        if (needsSubElement) {
+            subElementHeader.removeClass('d-none');
+        } else {
+            subElementHeader.addClass('d-none');
+        }
     }
 
     function removeEntry(entryId) {
@@ -398,6 +464,9 @@
         
         // Remove from DOM
         $(`#row-${entryId}`).remove();
+        
+        // Update sub-element header visibility
+        updateSubElementHeaderVisibility();
         
         // Show message if no entries left
         if (correctionEntries.length === 0) {
@@ -424,22 +493,27 @@
         entryCounter++;
         const newEntryId = `entry-${entryCounter}`;
         
-        // Create new entry object with same GHCN ID and date
-        const newEntry = {
-            id: newEntryId,
-            ghcn_id: sourceEntry.ghcn_id,  // Same GHCN ID
-            date: sourceEntry.date,        // Same date
-            element: '',                   // Empty element (user needs to select)
-            action: sourceEntry.action || '', // Inherit action if available
-            e_value: '',                   // Empty E-value (user needs to enter)
-            datzilla_number: sourceEntry.datzilla_number || '' // Inherit Datzilla number
-        };
+         // Create new entry object with same GHCN ID and date
+         const defaultAction = sourceEntry.action || actionChoices[0]?.value || '';
+         const defaultElement = elementChoices[0]?.value || '';
+         const defaultEflag = 'Z';
+         const newEntry = {
+             id: newEntryId,
+             ghcn_id: sourceEntry.ghcn_id,  // Same GHCN ID
+             date: sourceEntry.date,        // Same date
+             element: defaultElement,       // Default element
+             action: defaultAction,         // Inherit action or use default
+             e_value: '',                   // Empty E-value (user needs to enter)
+             eflag: defaultEflag,           // Default E flag
+             source: sourceEntry.source || '', // Inherit source if available
+             datzilla_number: sourceEntry.datzilla_number || '' // Inherit Datzilla number
+         };
         
         correctionEntries.push(newEntry);
         
-        // Create table row
-        const row = createCorrectionEntryRow(newEntryId, newEntry.ghcn_id, newEntry.date, newEntry.datzilla_number);
-        $("#correction-entries-tbody").append(row);
+         // Create table row
+         const row = createCorrectionEntryRow(newEntryId, newEntry.ghcn_id, newEntry.date, newEntry.datzilla_number, newEntry.action);
+         $("#correction-entries-tbody").append(row);
         
         // Focus on the element dropdown
         $(`#${newEntryId}-element`).focus();
@@ -458,6 +532,10 @@
             correctionEntries = [];
             entryCounter = 0;
             $("#correction-entries-tbody").empty();
+            
+            // Update sub-element header visibility (should hide since no entries)
+            updateSubElementHeaderVisibility();
+            
             addCorrectionEntry(); // Add one empty row (no inheritance since array is empty)
             errorPopup.success("All entries cleared.");
         }
@@ -465,7 +543,7 @@
 
     function validateEntries() {
         const validEntries = correctionEntries.filter(entry => {
-            // Check basic required fields
+            // Check basic required fields (element and action now have defaults, so they should always be present)
             const hasBasicFields = entry.ghcn_id && entry.date && entry.element && entry.action;
             
             // Check if sub-element is required and provided
@@ -482,7 +560,7 @@
         
         // Check for incomplete entries
         const incompleteEntries = correctionEntries.filter(entry => {
-            const hasSomeFields = entry.ghcn_id || entry.date || entry.element || entry.action || entry.sub_element;
+            const hasSomeFields = entry.ghcn_id || entry.date || entry.element || entry.action || entry.sub_element || entry.eflag || entry.source;
             const needsSubElement = ["SN*#", "SX*#", "WT**", "WV**"].includes(entry.element);
             const isComplete = entry.ghcn_id && entry.date && entry.element && entry.action && 
                               (!needsSubElement || entry.sub_element);
