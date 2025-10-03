@@ -7,6 +7,7 @@ from app.dataingest.readandfilterGHCN import parse_and_filter
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import generateMonthlyPub, lowestRecordedTemp, getLowestTemperatureExtreme, getTemperatureTable, calculate_station_avg
 from app.utilities.Reports.CdMonthly_Pub.CdMonthly_pub import calculate_station_avg, highestRecordedTemp, lowestRecordedTemp, getTotalSnowAndIcePellets, getMaxDepthOnGround, getGreatest1DayPrecipitationExtreme, getNumOfDays, getMonthlyHDD, generateDailyPrecip, generateSDThreshold, generateSFThreshold 
 from app.utilities.Reports.HomrDB import ConnectDB, QueryDB, QuerySoM, DailyPrecipQuery
+from flask_login import login_required
 
 from datetime import datetime
 import os
@@ -19,6 +20,7 @@ import csv
 
 # Route to Render GHCN Station Page
 @ghcndata_bp.route('/ghcn_data')
+@login_required
 def view_ghcn_data():
     # Form instatialization
     form = GhcnDataForm(country='', state='')
@@ -27,6 +29,7 @@ def view_ghcn_data():
 
 
 @ghcndata_bp.route('/station_metadata')
+@login_required
 def view_ghcn_metadata():
     station_data = {
         'GHCN ID': None,
@@ -111,6 +114,7 @@ def view_ghcn_metadata():
 
 # Route to Send Emails
 @ghcndata_bp.route('/send_email') # Need to be removed from this directory and added into Utilities...
+@login_required
 def send_email():
     msg = Message("Hello this is a test to myself!",
                   sender="NCEI.Datzilla@noaa.gov",
@@ -214,6 +218,7 @@ def extract_years_from_dly(file_path: str) -> list[int]:
     
  ########### Endpoint for fetching and proccessing GHCN data ############
 @ghcndata_bp.route('/get_data_for_GHCN_table', methods=['POST'])
+@login_required
 def get_data_for_GHCN_table():
     try:
         # print("Form Data:", request.form)
@@ -390,6 +395,7 @@ def get_data_for_GHCN_table():
     
 ###########  ############
 @ghcndata_bp.route('/get_state_for_GHCN_table', methods=['POST'])
+@login_required
 def get_state_for_GHCN_table():
     try:
         
@@ -483,6 +489,7 @@ def get_state_for_GHCN_table():
 
 ###########  ############    
 @ghcndata_bp.route('/get_state_for_GHCN_table_df', methods=['POST'])
+@login_required
 def get_state_for_GHCN_table_df():
     try:
         # Extract form data from the POST request
@@ -585,6 +592,7 @@ def get_state_for_GHCN_table_df():
 
 ########### Run Summary of the Month Calculations for the Target Station   ############
 @ghcndata_bp.route('/get_station_calc_for_GHCND', methods=['POST'])
+@login_required
 def  get_station_calc_for_GHCND():
     """
     Compiles temperature and precipitation calculations for a given GHCND station.
@@ -900,6 +908,7 @@ def  get_station_calc_for_GHCND():
     return comp_calcs
     
 @ghcndata_bp.route('/test_monthlyPub')
+@login_required
 def test_monthlyPub():
     try:
         
@@ -913,6 +922,7 @@ def test_monthlyPub():
     
     
 @ghcndata_bp.route('/ghcn_hourly')
+@login_required
 def view_ghcn_hourly_data(): 
     ghcn_id = request.args.get('ghcn_id', '')
     date = request.args.get('date','')
@@ -975,6 +985,7 @@ def format_as_json(filtered_df, return_response=True):
     
 
 @ghcndata_bp.route('/ghcn_inventory', methods=['POST'])
+@login_required
 def get_ghcn_inventory():
     """
     Retrieves the GHCN inventory for a specified station.

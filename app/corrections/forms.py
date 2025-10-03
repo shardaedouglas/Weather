@@ -60,6 +60,7 @@ class DailyCorrections(FlaskForm):
     e_value = StringField('E-Value')
     datzilla_number = StringField('Datzilla #')
     source = StringField('Source')
+    eflag = SelectField('E-Flag', choices=['Z', 'E'])
     submit = SubmitField('Submit')
     
     sub_element_SN = SelectField('SubElement', choices=SUB_ELEMENTS[:63])

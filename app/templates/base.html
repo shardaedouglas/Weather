@@ -208,6 +208,54 @@
             .dark-mode.high-contrast .btn {
                 border-width: 2px !important;
             }
+            
+            /* User Avatar Styles */
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .user-avatar:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+            
+            .user-initials {
+                color: white;
+                font-weight: 600;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            /* Dark mode avatar adjustments */
+            .dark-mode .user-avatar {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                border: 2px solid #4a5568;
+            }
+            
+            /* High contrast mode avatar adjustments */
+            .high-contrast .user-avatar {
+                background: #000000 !important;
+                border: 2px solid #ffffff !important;
+            }
+            
+            .dark-mode.high-contrast .user-avatar {
+                background: #ffffff !important;
+                border: 2px solid #000000 !important;
+            }
+            
+            .dark-mode.high-contrast .user-initials {
+                color: #000000 !important;
+            }
         </style>
 
         <script>
@@ -457,6 +505,31 @@
                         </div>
                     </li>
                 </ul>
+                
+                <!-- User Profile Icon -->
+                {% if current_user.is_authenticated %}
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown">
+                        <div class="dropdown">
+                            <button class="btn p-0" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border: none; background: none;">
+                                <div class="user-avatar" title="{{ current_user.name }}">
+                                    <span class="user-initials">{{ current_user.name.split()[0][0] }}{% if current_user.name.split()|length > 1 %}{{ current_user.name.split()[-1][0] }}{% endif %}</span>
+                                </div>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <div class="dropdown-header">
+                                    <strong>{{ current_user.name }}</strong><br>
+                                    <small class="text-muted">{{ current_user.username }}</small>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
               </div>
             </div>
           </nav>

@@ -8,11 +8,10 @@ from app.corrections.models.corrections import Corrections
 from app.ghcndata.routes import mm_to_inches, tenths_mm_to_inches, c_tenths_to_f, cm_tenths_to_inches, km_to_miles, wind_tenths_to_mph, cm_to_inches
 from datetime import date, datetime, timedelta
 import os
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flask import session
 import traceback
 from app.utilities.JSON_DataStore import JSON_DataStore as js_ds
-
 
 
 file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
@@ -22,6 +21,8 @@ file_path = os.path.join(os.getcwd(), 'USW00093991.dly')
 @correction_bp.route('/corrections')
 @login_required
 def index():
+    user = current_user.username
+    print(user)
     js = js_ds()
     page_settings = js.get_admin_settings()
     username = "NCEI User"
@@ -50,9 +51,11 @@ _____________________________________________
 
 # Daily Correction Form & Landing Page
 @correction_bp.route('/corrections/daily')
+@login_required
 def daily_corrections():
+    
 
-        # Extract query parameters for default values
+    # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
     ghcn_id = request.args.get('ghcn_id', '')
     correction_date = request.args.get('date', '')
@@ -91,6 +94,7 @@ def daily_corrections():
 
 # Compare Target to Neighboring Stations
 @correction_bp.route('/get_data_for_daily_corrections', methods=['POST'])
+@login_required
 def process_correction():
     try:
         
@@ -228,6 +232,7 @@ def process_correction():
 
 # Auto-populate O-Value when Form input is given    
 @correction_bp.route('/get_o_value', methods=['POST'])
+@login_required
 def get_o_value():
 
     try:
@@ -297,36 +302,42 @@ def get_o_value():
             
             "o_value": ovalue,
             "o_flag_value": filtered_json[1]
-            })
-                
-               
-
-        
+            })  
     except Exception as e:
         print(f"Error in get_o_value: {e}")
         return jsonify({"error": "Internal server error"}), 500
     
 # Save Daily Correction to File
 @correction_bp.route('/submit_daily_corrections', methods=['POST'])
+@login_required
 def submit_daily_corrections():
     try:
-
+        user = current_user.username
 
         data = request.get_json()  # Get the parsed JSON data
         # Extract the list of corrections from the JSON data & Parse Query string to Dict
         correction_data = parse_qs(data.get('correction_data'), keep_blank_values=True)
-
+        ghcn_id = correction_data['ghcn_id'][0]
+        element = correction_data['element'][0]
+        correction_date = correction_data['date'][0]
+        action = correction_data['action'][0]
+        o_value = correction_data['o_value']
+        e_value = correction_data['e_value'][0]
+        eflag = correction_data['eflag'][0]
+        source = correction_data['source'][0]
+        datzilla_number = correction_data['datzilla_number'][0]
         # Print out the correction data for logging
         print(correction_data)
-        correction_list = ['ghcn_id', 'date', 'element','action', 'o_value', 'e_value', 'datzilla_number']
 
+        correction_list = ['ghcn_id', 'date', 'element','action', 'o_value', 'e_value', 'eflag', 'source', 'datzilla_number']
         # Process each correction entry
         for key in correction_list:
             if key not in correction_data:
                 correction_data[key] =''
 
-        correction_date = correction_data['date'][0]
-
+        
+        if datzilla_number == '':
+            datzilla_number = 'None'
 
         if correction_date:
             correction_year, correction_month, correction_day = correction_date.split('-')
@@ -339,15 +350,45 @@ def submit_daily_corrections():
             dd = date_obj.strftime("%d")
         else:
             yyyymm, dd = "", ""
+        
+        # Process for retrieving the O-Value and associated Flags
+        GhcnDataID = [
+            ghcn_id,
+            int(correction_year),
+            int(correction_month),
+            element,
+        ]
+
+        o_value_data = get_oval(GhcnDataID, dd)
+        o_value = o_value_data[0]
+        mflag = o_value_data[1]
+        qflag = o_value_data[2]
+        sflag = o_value_data[3]
+        print('mflag:', mflag,'end')
+        print('qflag:', qflag,'end')
+        print('sflag:', sflag,'end')
+       
+       
+       # Account For Missing Values
+        if mflag == ' ':
+            mflag = 'None'
+
+        if qflag == ' ':
+            qflag = 'None'
+
+        if sflag == ' ':
+            sflag = 'None'
+        if source == '':
+            source = 'None'
 
         # Get today's date in yyyymmdd format
         todays_date = datetime.today().strftime("%Y%m%d")
 
         # Prepare the line for the text file
-        line = f"{correction_data['ghcn_id'][0]}, {yyyymm}, {dd}, {correction_data['element'][0]}, {correction_data['action'][0]}, {correction_data['o_value'][0]}, XX, XX, XX, {correction_data['e_value'][0]}, XX, XX, {todays_date}, {correction_data['datzilla_number'][0]}, XX\n"
+        line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, {mflag}, {qflag}, {sflag}, {e_value}, {eflag}, {source}, {todays_date}, {datzilla_number}, 0\n"
 
         # Append to the text file
-        with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+        with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
             file.write(line)
         flash('Correction successfully written', 'success')
         print("Correction successfully written to daily_corrections.txt")
@@ -378,6 +419,7 @@ _____________________________________________
 '''
 
 @correction_bp.route('/corrections/monthly')
+@login_required
 def monthly_corrections():
     # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'daily')  # Default to 'daily'
@@ -390,7 +432,7 @@ def monthly_corrections():
     begin_date = request.args.get('begin_date', '')
     end_date = request.args.get('end_date', '')
     datzilla_number = request.args.get('datzilla_number', '')
-
+    
     
     # Convert dates if needed
     if correction_date:
@@ -416,64 +458,96 @@ def monthly_corrections():
 # Save Monthly Correction to File
 
 @correction_bp.route('/submit_monthly_corrections', methods=['POST'])
+@login_required
 def submit_monthly_corrections():
     try:  
+        user = current_user.username
         data = request.get_json()  # Get the parsed JSON data
         formData = parse_qs(data.get('form_input'), keep_blank_values=True)
         monthlyInputData = data.get('monthly_input')
-        print(formData)
         print(monthlyInputData)
         ghcn_id = formData.get('ghcn_id')
         ghcn_id = ghcn_id[0]
         
         correction_date = formData.get('date')
+        correction_date = correction_date[0]
         print(correction_date)
         element = formData.get('element')
         element = element[0]
         action = formData.get('action')
         action = action[0]
-        datzilla_number = formData.get('datzilla_number')
-        print(ghcn_id, action, datzilla_number, element)
-        if datzilla_number != '':
-            datzilla_number = datzilla_number[0]
-            print(datzilla_number)
-        else:
-            datzilla_number = 'null'
+        datzilla_number = formData.get('datzilla_number') 
+        datzilla_number = datzilla_number[0]
+        source = ''
+        eflag=''
 
+        if datzilla_number == '':
+            datzilla_number = 'None'
+        
+        
         # Parse the correction date into year, month, and day
         if correction_date:
-            correction_year = correction_date[0:3]
-            correction_month = correction_date[4:5]
-            yyyymm = correction_date[0]
+            correction_year = correction_date[0:4]
+            correction_month = correction_date[4:6]
+            yyyymm = correction_date
         else:
             correction_year, correction_month = None, None, None
             yyyymm = ""
 
-        # if correction_date:
-        #     date_obj = datetime.strptime(correction_date[0], "%Y-%m-%d")
-        #     yyyymm = date_obj.strftime("%Y%m")
-
-        # else:
-        #     yyyymm = ""
+        # Process for retrieving the O-Value and associated Flags
+        GhcnDataID = [
+            ghcn_id,
+            int(correction_year),
+            int(correction_month),
+            element,
+        ]
 
         # Get today's date in yyyymmdd format
         todays_date = datetime.today().strftime("%Y%m%d")
-            
+        
 
         day = 0
         for entry in monthlyInputData:
             if entry != '':
                 # Extract relevant fields for each record           
-                o_value = 'placeholder'
+                
                 e_value = monthlyInputData[day]            
                 day += 1
+                o_value_data = get_oval(GhcnDataID, day)
+                print(o_value_data)
+                o_value = o_value_data[0]
+                mflag = o_value_data[1]
+                qflag = o_value_data[2]
+                sflag = o_value_data[3]
+                print('mflag:', mflag,'end')
+                print('qflag:', qflag,'end')
+                print('sflag:', sflag,'end')
+                
+                # Account For missing fields
+                if mflag == ' ':
+                    mflag = 'None'
 
+                if qflag == ' ':
+                    qflag = 'None'
+
+                if sflag == ' ':
+                    sflag = 'None'
+                if source == '':
+                    source = 'None'  
+                if eflag == '':
+                    eflag = 'None'
+
+                if (day <= 9):
+                    correction_day = f'0{day}'
+                else:
+                    correction_day = day
                 
                 # Prepare the line for the text file
-                line = f"{ghcn_id}, {yyyymm}, {day}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+                line = f"{ghcn_id}, {yyyymm}, {correction_day}, {element}, {action}, {o_value}, {mflag}, {qflag}, {sflag}, {e_value}, {eflag}, {source}, {todays_date}, {datzilla_number}, 0\n"
+
 
                 # Append to the text file for each correction
-                with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+                with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
                     file.write(line)
 
                 print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
@@ -488,6 +562,70 @@ def submit_monthly_corrections():
     except Exception as e:
         print(f"Error in submit_monthly_corrections: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+
+def get_oval(correctionData, day):
+        try:
+            base_file_path = '/data/ops/ghcnd/data/'
+            station_file_path = base_file_path + 'ghcnd_all/' + correctionData[0] + '.dly'
+
+            # Run parser with form data for each station
+            filtered_json = parse_and_filter(
+                correction_type = "o_value",
+                file_path=station_file_path,
+                station_code=correctionData[0],
+                year=correctionData[1],
+                month=correctionData[2],
+                observation_type=correctionData[3],
+                day=day,
+            )
+            
+            print("filtered_json", filtered_json)
+            
+            # Check if 'status' exists in filtered_json and is 'skip'
+            if 'status' in filtered_json and filtered_json['status'] == 'skip':
+                return jsonify({
+                    "o_value": "No Value",
+                    "o_flag_value": "   "
+                })
+            
+            flags = filtered_json[1]
+            print(flags)
+            mflag = flags[0]
+            qflag = flags[1]
+            sflag = flags[2]
+            
+
+            element = correctionData[3]
+            temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
+            tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
+            mm_keys = {"SNOW", "SNWD", "MDSF"}
+            wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
+            cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
+            km_keys = {"MDWM", "WDMV"}
+            
+            
+            ovalue=''
+            if element in temp_keys :
+                ovalue = c_tenths_to_f(filtered_json[0])
+            elif element in mm_keys:
+                ovalue = mm_to_inches(filtered_json[0])
+            elif element in tenths_mm_keys:
+                ovalue = tenths_mm_to_inches(filtered_json[0])
+            elif element in wind_keys:
+                ovalue = wind_tenths_to_mph(filtered_json[0])
+            elif element in km_keys: 
+                ovalue = km_to_miles(filtered_json[0])
+            elif element in cm_keys:
+                ovalue = cm_to_inches(filtered_json[0])
+            print("This is the o valu ", ovalue)   
+            o_valueData = [ovalue, mflag, qflag, sflag]
+            return o_valueData
+        except Exception as e:
+                print(f"Error in get_o_value: {e}")
+                return jsonify({"error": "Internal server error"}), 500
+
+
 ''' 
 _____________________________________________
 
@@ -508,6 +646,7 @@ _____________________________________________
 
 # Multi-Day Correction Form & Landing Page
 @correction_bp.route('/corrections/multiday')
+@login_required
 def multiday_corrections():
     # Extract query parameters for default values
     selected_form = request.args.get('correction_type', 'multiday')
@@ -535,8 +674,10 @@ def multiday_corrections():
 
 # Save Multi-Day Correction to File
 @correction_bp.route('/submit_multiday_corrections', methods=['POST'])
+@login_required
 def submit_multiday_corrections():
     try:  
+        user = current_user.username
         data = request.get_json()
         correction_entries = data.get('correction_entries', [])
         entry_count = data.get('entry_count', 0)
@@ -686,6 +827,7 @@ _____________________________________________
 
 #Invalidate Range Form & Landing Page
 @correction_bp.route('/corrections/range')
+@login_required
 def range_corrections():
 
     # Extract query parameters for default values
@@ -726,6 +868,7 @@ def range_corrections():
 
 # Render Invalidated Range Table (Post Form Submittal)
 @correction_bp.route('/get_ranged_values', methods=['POST'])
+@login_required
 def get_ranged_values():
     try:
         
@@ -770,11 +913,10 @@ def get_ranged_values():
             begin_date = begin_date,
             end_date = end_date,
             observation_type=element,
-            station_code=ghcn_id,
-            
+            station_code=ghcn_id,    
         )
-        
-        # Check if 'status' exists in filtered_json and is 'skip'
+
+                # Check if 'status' exists in filtered_json and is 'skip'
         if 'status' in filtered_json and filtered_json['status'] == 'skip':
             print("SKIPPING")
 
@@ -826,14 +968,18 @@ def get_ranged_values():
     
 
 @correction_bp.route('/submit_ranged_corrections', methods=['POST'])
+@login_required
 def submit_ranged_corrections():
 
     try:
+        user = current_user.username
         # Extract JSON data from the request body
         data = request.get_json()  # Get the parsed JSON data
 
         # Extract the list of corrections from the JSON data
         correction_data = data.get('correction_data', [])
+        source = ''
+        eflag=''
 
         # Process each correction entry
         for correction in correction_data:
@@ -842,9 +988,10 @@ def submit_ranged_corrections():
             correction_date = correction.get('date')
             element = correction.get('element')
             action = correction.get('action')
-            o_value = correction.get('o_value')
-            e_value = correction.get('e_value')
+            o_value = correction.get('value')
+            e_value = correction.get('newValue')
             datzilla_number = correction.get('datzilla_number')
+            
 
             # Parse the correction date into year, month, and day
             if correction_date:
@@ -859,14 +1006,47 @@ def submit_ranged_corrections():
             else:
                 yyyymm, dd = "", ""
 
+            # Process for retrieving the O-Value and associated Flags
+            GhcnDataID = [
+            ghcn_id,
+            int(correction_year),
+            int(correction_month),
+            element,
+        ]
+            
+            
+
+            o_value_data = get_oval(GhcnDataID, int(dd))
+            print("here's the o-value data", o_value_data)
+            o_value = o_value_data[0]
+            mflag = o_value_data[1]
+            qflag = o_value_data[2]
+            sflag = o_value_data[3]
+            print('mflag:', mflag,'end')
+            print('qflag:', qflag,'end')
+            print('sflag:', sflag,'end')
+            
+            # Account for missing Fields
+            if mflag == ' ':
+                mflag = 'None'
+            if qflag == ' ':
+                qflag = 'None'
+            if sflag == ' ':
+                sflag = 'None'
+            if source == '':
+                source = 'None'
+            if eflag == '':
+                eflag = 'None'
+
             # Get today's date in yyyymmdd format
             todays_date = datetime.today().strftime("%Y%m%d")
             
             # Prepare the line for the text file
-            line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, XX, XX, XX, {e_value}, XX, XX, {todays_date}, {datzilla_number}, XX\n"
+            line = f"{ghcn_id}, {yyyymm}, {dd}, {element}, {action}, {o_value}, {mflag}, {qflag}, {sflag}, {e_value}, {eflag}, {source}, {todays_date}, {datzilla_number}, 0\n"
+
 
             # Append to the text file for each correction
-            with open("/data/ops/ghcndqi/corr/corrections.txt", "a") as file:
+            with open(f'/data/ops/ghcndqi/corr/{user}corrections.txt', "a") as file:
                 file.write(line)
 
             print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
@@ -896,6 +1076,7 @@ _____________________________________________
 
 '''
 @correction_bp.route('/corrections/hourly')
+@login_required
 def hourly_corrections():
 
     # Extract query parameters for default values
@@ -964,42 +1145,254 @@ _____________________________________________
 
 '''
 @correction_bp.route('/corrections/previous',  methods=['GET','POST'])
+@login_required
 def previous_corrections():
-
-    return render_template(
-        "/corrections/previous_corrections.html",
-    )
+    """Display previous corrections page with user correction data"""
+    try:
+        # Get all previous corrections data
+        corrections_data = get_previous_corrections()
+        
+        return render_template(
+            "/corrections/previous_corrections.html",
+            corrections_data=corrections_data
+        )
+    except Exception as e:
+        print(f"Error loading previous corrections: {e}")
+        flash('Error loading previous corrections. Please try again.', 'error')
+        return render_template(
+            "/corrections/previous_corrections.html",
+            corrections_data=[]
+        )
 
 
 # @correction_bp.route('/corrections/previous/get',  methods=['GET','POST']) #If the username needs to be hidden, POST can be used instead.
 @correction_bp.route('/corrections/previous/get',  methods=['GET'])
+@login_required
 def get_previous_corrections():
-
-    data = []
-    folder_path = '/data/ops/ghcndqi/corr/'
-    file_name = 'corrections.txt'
-    with open( os.path.join(folder_path, file_name), "r") as file:
-        for line in file: 
-            if line:
-                print(line)
-
-                records = [entry.strip() for entry in line[:-1].split(",") if 'XX' not in entry] # Lines end in \n
-                records[1] = records[1] + records.pop(2) # Combine YYYYMM + DD
-                records.insert(0, "User") # Placeholder for Username   
-
-                for col in [2,7]: # Reformat dates to YYYY-MM-DD for display only
-                    try:
-                        records[col] = datetime.strptime(records[col], "%Y%m%d").date().strftime('%Y-%m-%d')
-                    except Exception as err:
-                        print(
-                            f"Error reading Date" +
-                            f"{traceback.format_exc()}"
-                            )
-                        records[col] = ""
-                    pass
-
-                # print(records)
-                data.append(records)
+    """
+    Read correction files from file system for all users and return formatted data.
     
-    # print(data)
-    return data
+    Returns:
+        list: List of correction records with format:
+              [username, correction_date, begin_date, end_date, ghcn_id, element, action, o_value, e_value, datzilla_number]
+    """
+    all_corrections_data = []
+    
+    try:
+        # Get admin settings to determine the corrections folder path
+        js = js_ds()
+        admin_settings = js.get_admin_settings()
+        
+        # Use configured path or default path
+        corrections_folder = admin_settings.get('corrections_path', '/data/ops/ghcndqi/corr/')
+        
+        # Get all users from the datastore
+        all_users = js.get_users()
+        
+        print(f"Looking for correction files in: {corrections_folder}")
+        
+        # Process each user's correction file
+        for user_data in all_users:
+            username = user_data.get('username', '')
+            if not username:
+                continue
+                
+            # Construct the correction file path for this user
+            correction_file_path = os.path.join(corrections_folder, f'{username}corrections.txt')
+            
+            print(f"Checking correction file for user {username}: {correction_file_path}")
+            
+            # Check if the correction file exists for this user
+            if os.path.exists(correction_file_path):
+                try:
+                    user_corrections = _read_user_correction_file(correction_file_path, username)
+                    all_corrections_data.extend(user_corrections)
+                    print(f"Successfully loaded {len(user_corrections)} corrections for user {username}")
+                except Exception as file_error:
+                    print(f"Error reading correction file for user {username}: {file_error}")
+                    print(f"Traceback: {traceback.format_exc()}")
+                    continue
+            else:
+                print(f"No correction file found for user {username} at {correction_file_path}")
+        
+        # Sort corrections by correction date (most recent first)
+        all_corrections_data.sort(key=lambda x: x[1] if x[1] else '', reverse=True)
+        
+        print(f"Total corrections loaded: {len(all_corrections_data)}")
+        return all_corrections_data
+        
+    except Exception as e:
+        print(f"Error in get_previous_corrections: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return []
+
+
+def _read_user_correction_file(file_path, username):
+    """
+    Read and parse a single user's correction file.
+    
+    Args:
+        file_path (str): Path to the user's correction file
+        username (str): Username for the corrections
+        
+    Returns:
+        list: List of parsed correction records for this user
+    """
+    user_corrections = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line_number, line in enumerate(file, 1):
+                line = line.strip()
+                
+                # Skip empty lines
+                if not line:
+                    continue
+                
+                try:
+                    # Parse the correction line
+                    correction_record = _parse_correction_line(line, username)
+                    if correction_record:
+                        user_corrections.append(correction_record)
+                        
+                except Exception as parse_error:
+                    print(f"Error parsing line {line_number} in {file_path}: {parse_error}")
+                    print(f"Problematic line: {line}")
+                    continue
+                    
+    except FileNotFoundError:
+        print(f"Correction file not found: {file_path}")
+    except PermissionError:
+        print(f"Permission denied reading file: {file_path}")
+    except Exception as e:
+        print(f"Unexpected error reading file {file_path}: {e}")
+        
+    return user_corrections
+
+
+def _parse_correction_line(line, username):
+    """
+    Parse a single correction line from a user's correction file.
+    
+    Expected format: GHCNID,YYYYMM,DD,ELEMENT,ACTION,O_VALUE,E_VALUE, E_FLAG, SOURCE,YYYYMMDD,DATZILLA_NUMBER
+    
+    Args:
+        line (str): Raw line from correction file
+        username (str): Username for this correction
+        
+    Returns:
+        list: Parsed correction record or None if parsing fails
+    """
+    try:
+        # Split the line by commas and clean up entries
+        parts = [entry.strip() for entry in line.split(',') if entry.strip()]
+        print(parts)
+        # Filter out entries containing 'XX' (invalid data markers)
+        parts = [entry for entry in parts if 'XX' not in entry.upper()]
+        
+        # Ensure we have enough parts for a valid correction record
+        if len(parts) < 12:
+            print(f"Insufficient data in correction line: {line}")
+            return None
+        
+        # Extract and format the correction data
+        ghcn_id = parts[0] if len(parts) > 0 else ''
+        year_month = parts[1] if len(parts) > 1 else ''
+        day = parts[2] if len(parts) > 2 else ''
+        element = parts[3] if len(parts) > 3 else ''
+        action = parts[4] if len(parts) > 4 else ''
+        o_value = parts[5] if len(parts) > 5 else ''
+        mflag = parts[6] if len(parts) > 6 else ''
+        qflag = parts[7] if len(parts) > 7 else ''
+        sflag = parts[8] if len(parts) > 8 else ''
+        e_value = parts[9] if len(parts) > 9 else ''
+        eflag = parts[10] if len(parts) > 10 else ''
+        source = parts[11] if len(parts) > 11 else ''
+        submission_date = parts[12] if len(parts) > 12 else ''
+        datzilla_number = parts[13] if len(parts) > 13 else ''
+        # Handle correction date
+        correction_date = ''
+        submission_date = datetime.strptime(submission_date, "%Y%m%d").date().strftime('%Y-%m-%d')
+        
+        
+        # Combine YYYYMM + DD to create correction date
+        if year_month and day:
+            try:
+                correction_date_str = year_month + day.zfill(2)
+                correction_date = datetime.strptime(correction_date_str, "%Y%m%d").date().strftime('%Y-%m-%d')
+            except ValueError:
+                print(f"Invalid date format: {year_month}{day}")
+                correction_date = f"{year_month}-{day}"
+        
+
+        
+        # Return the formatted correction record
+        # Format: [username, ghcn_id, correction_date, element, action, o_value, mflag, qflag, sflag, e_value, submission_date, datzilla_number]
+        return [
+            username,
+            ghcn_id,
+            correction_date,
+            element,
+            action,
+            o_value,
+            mflag,
+            qflag,
+            sflag,
+            e_value,
+            eflag,
+            source,
+            submission_date,  
+            datzilla_number
+        ]
+        
+    except Exception as e:
+        print(f"Error parsing correction line '{line}': {e}")
+        return None
+
+
+@correction_bp.route('/corrections/previous/api', methods=['GET'])
+@login_required
+def get_previous_corrections_api():
+    """
+    API endpoint to return previous corrections data as JSON.
+    This can be used for AJAX requests to populate tables dynamically.
+    
+    Returns:
+        JSON response with corrections data and metadata
+    """
+    try:
+        corrections_data = get_previous_corrections()
+        
+        # Create response with metadata
+        response_data = {
+            'success': True,
+            'total_corrections': len(corrections_data),
+            'corrections': corrections_data,
+            'columns': [
+                'Username',
+                'GHCN ID',
+                'Date',
+                'Element',
+                'Action',
+                'Original Value',
+                "mflag",
+                "qflag",
+                "sflag",
+                'Expected Value',
+                "eflag",
+                'Source'
+                'Correction Date',
+                'Datzilla Number'
+            ]
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Error in previous corrections API: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to load corrections data',
+            'total_corrections': 0,
+            'corrections': []
+        }), 500
