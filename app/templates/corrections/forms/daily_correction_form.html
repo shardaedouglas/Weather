@@ -128,7 +128,7 @@
         </div>
         <div class="row g-3" >
             <div class="col-sm">
-                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold">Clear</button>
+                <button type="reset" class="btn button-dull" style="width:100%;display:block;font-weight: bold" id="daily-clear-btn">Clear</button>
             </div>
         </div>
     </form>
@@ -137,6 +137,88 @@
     
     <div id="spinner" class="spinner-border text-info" style="display:none; margin-left: auto; margin-right: auto; margin-top: 20px;" >
     </div>
+
+<style>
+/* Comparison Table Dark Mode Styling */
+#correction-comparison-table {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+#correction-comparison-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-color: #dee2e6;
+    font-weight: 600;
+}
+
+#correction-comparison-table td {
+    background-color: #ffffff;
+    color: #212529;
+    border-color: #dee2e6;
+}
+
+#correction-comparison-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#correction-comparison-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+#correction-comparison-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Dark mode adjustments for comparison table */
+.dark-mode #correction-comparison-table {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+.dark-mode #correction-comparison-table th {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+.dark-mode #correction-comparison-table td {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+.dark-mode #correction-comparison-table tbody tr:hover {
+    background-color: #4a5568 !important;
+}
+
+.dark-mode #correction-comparison-table tbody tr:nth-child(odd) {
+    background-color: #2d3748;
+}
+
+.dark-mode #correction-comparison-table tbody tr:nth-child(even) {
+    background-color: #374151;
+}
+
+/* High contrast mode adjustments */
+.high-contrast #correction-comparison-table {
+    border: 2px solid #000000 !important;
+}
+
+.high-contrast #correction-comparison-table th,
+.high-contrast #correction-comparison-table td {
+    border: 1px solid #000000 !important;
+}
+
+.dark-mode.high-contrast #correction-comparison-table {
+    border: 2px solid #ffffff !important;
+}
+
+.dark-mode.high-contrast #correction-comparison-table th,
+.dark-mode.high-contrast #correction-comparison-table td {
+    border: 1px solid #ffffff !important;
+}
+</style>
 
     <div class="row" style="text-align: center">
         <div class="col">
@@ -152,6 +234,12 @@
 
 <script>
         $(document).ready(function () {
+
+            // Clear button functionality
+            $("#daily-clear-btn").click(function() {
+                // Hide the comparison table when clear is pressed
+                document.getElementById('correction-comparison-table').style.display = "none";
+            });
 
             $("form").submit(function (event) {
                 event.preventDefault();

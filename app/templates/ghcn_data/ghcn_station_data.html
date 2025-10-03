@@ -203,6 +203,88 @@
     </div>
 </div>
 
+<style>
+/* GHCN Data Table Styling */
+#GHCND_Table {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+#GHCND_Table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-color: #dee2e6;
+    font-weight: 600;
+}
+
+#GHCND_Table td {
+    background-color: #ffffff;
+    color: #212529;
+    border-color: #dee2e6;
+}
+
+#GHCND_Table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#GHCND_Table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+#GHCND_Table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Dark mode adjustments for GHCN table */
+.dark-mode #GHCND_Table {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+.dark-mode #GHCND_Table th {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+.dark-mode #GHCND_Table td {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+.dark-mode #GHCND_Table tbody tr:hover {
+    background-color: #4a5568 !important;
+}
+
+.dark-mode #GHCND_Table tbody tr:nth-child(odd) {
+    background-color: #2d3748;
+}
+
+.dark-mode #GHCND_Table tbody tr:nth-child(even) {
+    background-color: #374151;
+}
+
+/* High contrast mode adjustments */
+.high-contrast #GHCND_Table {
+    border: 2px solid #000000 !important;
+}
+
+.high-contrast #GHCND_Table th,
+.high-contrast #GHCND_Table td {
+    border: 1px solid #000000 !important;
+}
+
+.dark-mode.high-contrast #GHCND_Table {
+    border: 2px solid #ffffff !important;
+}
+
+.dark-mode.high-contrast #GHCND_Table th,
+.dark-mode.high-contrast #GHCND_Table td {
+    border: 1px solid #ffffff !important;
+}
+</style>
+
 <script>
     // $(document).ready(function(){
     //     $('#GHCND_Table').dataTable();
