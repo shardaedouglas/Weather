@@ -19,23 +19,23 @@
     <div class="row">
       <div class="col">
         <div class="table-responsive-lg">
-          <table class="table table-light table-striped text-center" id="PrevCorrectionsTable" style="table-layout: fixed; width: 100%;">
+          <table class="table table-light table-striped text-center" id="PrevCorrectionsTable">
             <thead>
               <tr>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">GHCN ID</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Date</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Element</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Action</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">O Value</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">M Flag</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Q Flag</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">S Flag</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E Value</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E Flag</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Source</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Correction Submission Date</th>
-                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Datzilla Number</th>
+                <th class="text-center">User</th>
+                <th class="text-center">GHCN ID</th>
+                <th class="text-center">Date</th>
+                <th class="text-center">Element</th>
+                <th class="text-center">Action</th>
+                <th class="text-center">O Value</th>
+                <th class="text-center">M Flag</th>
+                <th class="text-center">Q Flag</th>
+                <th class="text-center">S Flag</th>
+                <th class="text-center">E Value</th>
+                <th class="text-center">E Flag</th>
+                <th class="text-center">Source</th>
+                <th class="text-center">Correction Submission Date</th>
+                <th class="text-center">Datzilla Number</th>
               </tr>
             </thead>
             <tbody>
@@ -51,93 +51,75 @@
 <!-- Custom CSS for PrevCorrectionsTable -->
 <style>
 #PrevCorrectionsTable {
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
+  min-width: max-content;
 }
 
 #PrevCorrectionsTable th,
 #PrevCorrectionsTable td {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 0;
+  padding: 8px 12px;
+  text-align: center;
 }
 
-/* Specific column widths for better layout */
-#PrevCorrectionsTable th:nth-child(1),  /* User */
-#PrevCorrectionsTable td:nth-child(1) {
-  width: 8%;
+/* Allow columns to auto-size based on content */
+#PrevCorrectionsTable th,
+#PrevCorrectionsTable td {
+  width: auto;
+  min-width: fit-content;
 }
 
-#PrevCorrectionsTable th:nth-child(2),  /* GHCN ID */
-#PrevCorrectionsTable td:nth-child(2) {
-  width: 10%;
+/* Ensure table container can handle horizontal scroll if needed */
+.table-responsive-lg {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  min-width: 100%;
 }
 
-#PrevCorrectionsTable th:nth-child(3),  /* Date */
-#PrevCorrectionsTable td:nth-child(3) {
-  width: 8%;
+/* Make table wider to accommodate sort buttons */
+#PrevCorrectionsTable {
+  min-width: 1400px;
+  width: max-content;
 }
 
-#PrevCorrectionsTable th:nth-child(4),  /* Element */
-#PrevCorrectionsTable td:nth-child(4) {
-  width: 8%;
+/* Ensure sort buttons are visible */
+#PrevCorrectionsTable th {
+  position: relative;
+  padding-right: 25px; /* Extra space for sort arrows */
 }
 
-#PrevCorrectionsTable th:nth-child(5),  /* Action */
-#PrevCorrectionsTable td:nth-child(5) {
-  width: 6%;
+/* Style for DataTables sort indicators */
+#PrevCorrectionsTable th.sorting,
+#PrevCorrectionsTable th.sorting_asc,
+#PrevCorrectionsTable th.sorting_desc {
+  cursor: pointer;
+  position: relative;
 }
 
-#PrevCorrectionsTable th:nth-child(6),  /* O Value */
-#PrevCorrectionsTable td:nth-child(6) {
-  width: 8%;
+#PrevCorrectionsTable th.sorting:after,
+#PrevCorrectionsTable th.sorting_asc:after,
+#PrevCorrectionsTable th.sorting_desc:after {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
 }
 
-#PrevCorrectionsTable th:nth-child(7),  /* M Flag */
-#PrevCorrectionsTable td:nth-child(7) {
-  width: 6%;
+#PrevCorrectionsTable th.sorting:after {
+  content: "↕";
+  opacity: 0.5;
 }
 
-#PrevCorrectionsTable th:nth-child(8),  /* Q Flag */
-#PrevCorrectionsTable td:nth-child(8) {
-  width: 6%;
+#PrevCorrectionsTable th.sorting_asc:after {
+  content: "↑";
+  opacity: 1;
 }
 
-#PrevCorrectionsTable th:nth-child(9),  /* S Flag */
-#PrevCorrectionsTable td:nth-child(9) {
-  width: 6%;
-}
-
-#PrevCorrectionsTable th:nth-child(10), /* E Value */
-#PrevCorrectionsTable td:nth-child(10) {
-  width: 8%;
-}
-
-#PrevCorrectionsTable th:nth-child(11), /* E Flag */
-#PrevCorrectionsTable td:nth-child(11) {
-  width: 6%;
-}
-
-#PrevCorrectionsTable th:nth-child(12), /* Source */
-#PrevCorrectionsTable td:nth-child(12) {
-  width: 8%;
-}
-
-#PrevCorrectionsTable th:nth-child(13), /* Correction Submission Date */
-#PrevCorrectionsTable td:nth-child(13) {
-  width: 12%;
-}
-
-#PrevCorrectionsTable th:nth-child(14), /* Datzilla Number */
-#PrevCorrectionsTable td:nth-child(14) {
-  width: 10%;
-}
-
-/* Tooltip for truncated text */
-#PrevCorrectionsTable th[title],
-#PrevCorrectionsTable td[title] {
-  cursor: help;
+#PrevCorrectionsTable th.sorting_desc:after {
+  content: "↓";
+  opacity: 1;
 }
 
 /* Dark mode adjustments */
@@ -155,6 +137,29 @@
 .dark-mode.high-contrast #PrevCorrectionsTable th,
 .dark-mode.high-contrast #PrevCorrectionsTable td {
   border: 2px solid #ffffff !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1200px) {
+  #PrevCorrectionsTable {
+    font-size: 0.9rem;
+  }
+  
+  #PrevCorrectionsTable th,
+  #PrevCorrectionsTable td {
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  #PrevCorrectionsTable {
+    font-size: 0.8rem;
+  }
+  
+  #PrevCorrectionsTable th,
+  #PrevCorrectionsTable td {
+    padding: 4px 6px;
+  }
 }
 </style>
 
