@@ -690,6 +690,11 @@ def submit_multiday_corrections():
         
         corrections_written = 0
         
+        # Get admin settings to determine the corrections folder path
+        js = js_ds()
+        admin_settings = js.get_admin_settings()
+        corrections_folder = admin_settings.get('corrections_path', '/data/ops/ghcndqi/corr/')
+        
         for entry in correction_entries:
             try:
                 # Validate required fields
@@ -697,97 +702,83 @@ def submit_multiday_corrections():
                     print(f"Skipping incomplete entry: {entry}")
                     continue
                 
-                # Parse the date
-                correction_date = datetime.strptime(entry.get('date'), '%Y-%m-%d').date()
+                # Extract relevant fields for each record
+                ghcn_id = entry.get('ghcn_id')
+                correction_date = entry.get('date')
+                element = entry.get('element')
+                action = entry.get('action')
+                e_value = entry.get('e_value', '')
+                source = entry.get('source', '')
+                eflag = entry.get('eflag', '')
+                datzilla_number = entry.get('datzilla_number', '')
                 
-                # Get O-value using the existing get_o_value route logic
-                o_value = ''
+                # Handle element value - use sub-element if provided for specific element types
+                element_value = element
+                if entry.get('sub_element') and element in ["SN*#", "SX*#", "WT**", "WV**"]:
+                    element_value = entry.get('sub_element')
+                
+                # Parse the correction date into year, month, and day
+                if correction_date:
+                    correction_year, correction_month, correction_day = correction_date.split('-')
+                else:
+                    correction_year, correction_month, correction_day = None, None, None
+
+                if correction_date:
+                    date_obj = datetime.strptime(correction_date, "%Y-%m-%d")
+                    yyyymm = date_obj.strftime("%Y%m")
+                    dd = date_obj.strftime("%d")
+                else:
+                    yyyymm, dd = "", ""
+
+                # Process for retrieving the O-Value and associated Flags
+                GhcnDataID = [
+                    ghcn_id,
+                    int(correction_year),
+                    int(correction_month),
+                    element_value,  # Use the element value (potentially sub-element)
+                ]
+                
                 try:
-                    # Create a mock request to get_o_value function
-                    from flask import g
-                    
-                    ghcn_id = entry.get('ghcn_id')
-                    correction_date_str = entry.get('date')
-                    element = entry.get('element')
-                    
-                    # Use the same logic as get_o_value route
-                    correction_year, correction_month, correction_day = correction_date_str.split('-')
-                    correction_year = int(correction_year)
-                    correction_month = int(correction_month)
-                    correction_day = int(correction_day)
-                    
-                    base_file_path = '/data/ops/ghcnd/data/'
-                    station_file_path = base_file_path + 'ghcnd_all/' + ghcn_id + '.dly'
-                    
-                    # Run parser with form data for each station
-                    filtered_json = parse_and_filter(
-                        correction_type="o_value",
-                        file_path=station_file_path,
-                        station_code=ghcn_id,
-                        year=correction_year,
-                        month=correction_month,
-                        observation_type=element,
-                        day=correction_day,
-                    )
-                    
-                    print(f"O-value filtered_json for {ghcn_id}: {filtered_json}")
-                    
-                    # Check if 'status' exists in filtered_json and is 'skip'
-                    if 'status' in filtered_json and filtered_json['status'] == 'skip':
-                        o_value = "No Value"
-                    else:
-                        # Apply unit conversions based on element type
-                        temp_keys = {"TMAX", "TMIN", "TAVG", "TAXN", "TOBS", "MDTX", "MDTN", "AWBT", "ADPT", "MNPN", "MXPN"}
-                        tenths_mm_keys = {"PRCP", "EVAP", "WESD", "WESF", "MDEV", "MDPR", "THIC"}
-                        mm_keys = {"SNOW", "SNWD", "MDSF"}
-                        wind_keys = {"AWND", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM"}
-                        cm_keys = {"FRGB", "FRGT", "FRTH", "GAHT"}
-                        km_keys = {"MDWM", "WDMV"}
-                        
-                        if element in temp_keys:
-                            o_value = c_tenths_to_f(filtered_json[0])
-                        elif element in mm_keys:
-                            o_value = mm_to_inches(filtered_json[0])
-                        elif element in tenths_mm_keys:
-                            o_value = tenths_mm_to_inches(filtered_json[0])
-                        elif element in wind_keys:
-                            o_value = wind_tenths_to_mph(filtered_json[0])
-                        elif element in km_keys:
-                            o_value = km_to_miles(filtered_json[0])
-                        elif element in cm_keys:
-                            o_value = cm_to_inches(filtered_json[0])
-                        else:
-                            o_value = str(filtered_json[0]) if filtered_json[0] is not None else "No Value"
-                    
-                    print(f"Retrieved O-value for {ghcn_id} {element} on {correction_date_str}: {o_value}")
-                    
+                    o_value_data = get_oval(GhcnDataID, int(dd))
+                    print("here's the o-value data", o_value_data)
+                    o_value = o_value_data[0]
+                    mflag = o_value_data[1]
+                    qflag = o_value_data[2]
+                    sflag = o_value_data[3]
+                    print('mflag:', mflag,'end')
+                    print('qflag:', qflag,'end')
+                    print('sflag:', sflag,'end')
                 except Exception as o_value_error:
                     print(f"Error retrieving O-value for entry {entry}: {o_value_error}")
                     o_value = "Error retrieving O-value"
+                    mflag = 'None'
+                    qflag = 'None'
+                    sflag = 'None'
                 
-                # Handle element value - use sub-element if provided for specific element types
-                element_value = entry.get('element')
-                if entry.get('sub_element') and element_value in ["SN*#", "SX*#", "WT**", "WV**"]:
-                    element_value = entry.get('sub_element')
-                    print(f"Using sub-element value: {element_value} instead of {entry.get('element')}")
+                # Account for missing Fields
+                if mflag == ' ':
+                    mflag = 'None'
+                if qflag == ' ':
+                    qflag = 'None'
+                if sflag == ' ':
+                    sflag = 'None'
+                if source == '':
+                    source = 'None'
+                if eflag == '':
+                    eflag = 'None'
+
+                # Get today's date in yyyymmdd format
+                todays_date = datetime.today().strftime("%Y%m%d")
                 
-                # Create correction entry with retrieved O-value
-                correction = Corrections(
-                    ghcn_id=entry.get('ghcn_id'),
-                    correction_date=correction_date,
-                    element=element_value,  # Use sub-element if applicable
-                    action=entry.get('action'),
-                    e_value=entry.get('e_value', ''),  
-                    o_value=o_value,  # Now using retrieved O-value
-                    datzilla_number=entry.get('datzilla_number', '')
-                )
-                
-                # Save to database
-                if correction.save_to_db():
-                    corrections_written += 1
-                    print(f"Correction for {entry.get('ghcn_id')} on {correction_date} for element {entry.get('element')} successfully written")
-                else:
-                    print(f"Failed to save correction for {entry.get('ghcn_id')} on {correction_date}")
+                # Prepare the line for the text file
+                line = f"{ghcn_id}, {yyyymm}, {dd}, {element_value}, {action}, {o_value}, {mflag}, {qflag}, {sflag}, {e_value}, {eflag}, {source}, {todays_date}, {datzilla_number}, 0\n"
+
+                # Append to the text file for each correction
+                with open(f'{corrections_folder}{user}corrections.txt', "a") as file:
+                    file.write(line)
+
+                corrections_written += 1
+                print(f"Correction for {ghcn_id} on {correction_date} successfully written to corrections.txt")
                     
             except Exception as entry_error:
                 print(f"Error processing entry {entry}: {entry_error}")
@@ -798,7 +789,7 @@ def submit_multiday_corrections():
         
         # Respond with success
         return jsonify({
-            "message": f"{corrections_written} correction entries submitted successfully!",
+            "message": f"{corrections_written} corrections submitted successfully!",
             "processed": corrections_written,
             "total": len(correction_entries)
         }), 201

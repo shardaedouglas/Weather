@@ -14,12 +14,12 @@
     </div>
     <div class="container-md form-container">
         <form class="row g-3 align-items-center" method="POST" action="/corrections/range">
-            <div class="row g-3">
-                <div class="col input-group">
+            <div class="row g-3 justify-content-center">
+                <div class="col-auto input-group" style="max-width: 300px;">
                     <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
                     {{range_form.ghcn_id(class_='form-control')}}
                 </div>
-                <div class="col datepicker-container">
+                <div class="col-auto datepicker-container" style="max-width: 400px;">
                     <!-- Input field that triggers the date picker -->
                     <div class="input-group">
                         <span class="input-group-text" id="inputGroup-sizing-default">Date Range</span>
@@ -100,24 +100,24 @@
                 </div>
             </div> -->
     
-            <div class="row g-3" style="padding-top: 15px; padding-bottom: 15px;">
-                <div class="col input-group" style="width:13%; flex-wrap: nowrap;">
+            <div class="row g-3 justify-content-center" style="padding-top: 15px; padding-bottom: 15px;">
+                <div class="col-auto input-group" style="max-width: 200px;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Datzilla #</span>
                     {{range_form.datzilla_number(class_='form-control')}}
                 </div>
-                <div class="col input-group" style="flex-wrap: nowrap;">
+                <div class="col-auto input-group" style="max-width: 300px;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
                     {{range_form.element(class_='form-select element-select')}}
                 </div>
                 <!-- Sub selection for Element -->
-                <div class="col-md input-group justify-content-start d-none" style="flex-wrap: nowrap;" id="sub-element-select">
+                <div class="col-auto input-group d-none" style="max-width: 300px;" id="sub-element-select">
                     <span class="input-group-text element-select" id="inputGroup-sizing-default">Sub-Element</span>
-                    <div class="col sub-element-option">{{range_form.sub_element_SN(class_='form-select element-select')}}</div>
-                    <div class="col sub-element-option">{{range_form.sub_element_SX(class_='form-select element-select')}}</div>
-                    <div class="col sub-element-option">{{range_form.sub_element_WT(class_='form-select element-select')}}</div>
-                    <div class="col sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
+                    <div class="sub-element-option">{{range_form.sub_element_SN(class_='form-select element-select')}}</div>
+                    <div class="sub-element-option">{{range_form.sub_element_SX(class_='form-select element-select')}}</div>
+                    <div class="sub-element-option">{{range_form.sub_element_WT(class_='form-select element-select')}}</div>
+                    <div class="sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
                 </div>
-                <div class="col input-group" style="flex-wrap: nowrap;">
+                <div class="col-auto input-group" style="max-width: 250px;">
                     <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
                     {{range_form.action(class_='form-select action-select')}}
                 </div>

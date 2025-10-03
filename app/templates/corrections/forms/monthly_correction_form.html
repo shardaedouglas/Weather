@@ -16,12 +16,12 @@
 
     <div class="container-md form-container" style="max-width: max-content;">
         <form class="row g-3 align-items-center">
-            <div class="row g-3">
-                <div class="col input-group">
+            <div class="row g-3 justify-content-center">
+                <div class="col-auto input-group" style="max-width: 300px;">
                     <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
                     {{monthly_form.ghcn_id(class_='form-control') }}
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-2">
                     <!-- Date Picker Modal -->
                     <div id="date-picker-modal" class="modal fade" tabindex="-1" aria-labelledby="date-picker-modal-label" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
@@ -33,18 +33,18 @@
                                 <div class="modal-body">
                                     <div class="container-fluid">
                                         <div class="row g-4">
-                                            <!-- Month Column -->
-                                            <div class="col">
-                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
-                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
-                                                    <!-- Months will be dynamically generated here -->
-                                                </div>
-                                            </div>
                                             <!-- Year Column -->
                                             <div class="col">
                                                 <h3 class="fw-bold text-dark mb-2">Year</h3>
                                                 <div id="year-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
                                                     <!-- Years will be dynamically generated here -->
+                                                </div>
+                                            </div>
+                                            <!-- Month Column -->
+                                            <div class="col">
+                                                <h3 class="fw-bold text-dark mb-2">Month</h3>
+                                                <div id="month-list" class="list-group list-group-flush" style="overflow-y: auto; max-height: 450px;">
+                                                    <!-- Months will be dynamically generated here -->
                                                 </div>
                                             </div>
                                         </div>
@@ -62,12 +62,37 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Correct structure for Bootstrap input-group -->
                     <div class="input-group">
                         <label for="date" class="input-group-text">Date</label>
-                        <input type="text" name='date' class="form-control" id="date" placeholder="mm/yyyy" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
+                        <input type="text" name='date' class="form-control" id="date" placeholder="yyyy/mm" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
                     </div>
                 </div>
+                 <div class="col-auto input-group" style="max-width: 250px;">
+                     <span class="input-group-text" id="inputGroup-sizing-default">Datzilla #</span>
+                     {{monthly_form.datzilla_number(class_='form-control')}}
+                 </div>
+             </div>
+ 
+             <div class="row g-3 justify-content-center">
+                 <div class="col-auto input-group" style="max-width: 300px;">
+                     <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
+                     {{monthly_form.element(class_='form-select element-select')}}
+                 </div>
+                 <div class="col-auto input-group d-none" id="sub-element-select" style="max-width: 300px;">
+                     <div class="input-group">
+                         <span class="input-group-text" id="inputGroup-sizing-default">Sub-Element</span>
+                         <div class="sub-element-option">{{monthly_form.sub_element_SN(class_='form-select element-select')}}</div>
+                         <div class="sub-element-option">{{monthly_form.sub_element_SX(class_='form-select element-select')}}</div>
+                         <div class="sub-element-option">{{monthly_form.sub_element_WT(class_='form-select element-select')}}</div>
+                         <div class="sub-element-option">{{monthly_form.sub_element_WV(class_='form-select element-select')}}</div>
+                     </div>
+                 </div> 
+                 
+                 <div class="col-auto input-group" style="max-width: 250px;">
+                     <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
+                     {{monthly_form.action(class_='form-select action-select')}}
+                 </div>
+             </div>
             </div>
             <div class="row justify-content-center g-3" id="button-row">
                 <div class="col-sm">
@@ -96,9 +121,9 @@
     $(document).ready(function () {
         // First Window Next Button
         $("#monthly-next-btn").click(function() {
-            if (!$("#ghcn_id").val() || !$("#date").val()){
-                // Error message: need both values.
-                errorPopup.warning("Both values need to be filled out.");
+            if (!$("#ghcn_id").val() || !$("#date").val() || !$("#element").val() || !$("#action").val()){
+                // Error message: need all values.
+                errorPopup.warning("GHCN ID, Date, Element, and Action fields are required.");
             } else {
                 showMonthTable($("form"));
             }
@@ -186,7 +211,7 @@
 
     function showMonthTable(form_object) {
         console.log(form_object.get(0).elements);
-        console.log(form_object.get(0).elements.date[0].value);
+        console.log(form_object.get(0).elements.date.value);
         const inputMonthlyTable = document.getElementById('input-monthly-table');
         $("#ghcn-id-span").text($("#ghcn_id").val());
         $("#month-ghcn-date-mirror").val($("#date").val());
