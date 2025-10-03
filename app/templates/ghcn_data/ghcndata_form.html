@@ -587,34 +587,36 @@
                         console.log("RESPONSE.DATA = ", response.data)
                         console.log("The table Keys:", response.ordered_keys) 
 
-                        //Combine both month's data
+                        //Combine both month's data (with padded day numbers)
                         let split_month_data = {};
                         
                         // First half: days 16-31 from previous month
                         for (i=16; i <=31; i++) {
+                            const paddedDay = i.toString().padStart(2, '0');
                             // Always include the day, even if it's empty
-                            split_month_data['Day ' + i] = response.data['Day ' + i] || {}
+                            split_month_data['Day ' + paddedDay] = response.data['Day ' + paddedDay] || {}
                         }
                         
                         // Second half: days 1-15 from current month
                         for (i=1; i <= 15; i++){
+                            const paddedDay = i.toString().padStart(2, '0');
                             // Always include the day, even if it's empty
-                            split_month_data['Day ' + i] = context['Day ' + i] || {}
+                            split_month_data['Day ' + paddedDay] = context['Day ' + paddedDay] || {}
                         }
                         
                         console.log('split month data', split_month_data)
                         
-                        // Create custom day order for split month display
+                        // Create custom day order for split month display (with padded numbers)
                         let split_day_order = [];
                         
                         // Add days 16-31 first (from previous month)
                         for (i=16; i <=31; i++) {
-                            split_day_order.push('Day ' + i);
+                            split_day_order.push('Day ' + i.toString().padStart(2, '0'));
                         }
                         
                         // Add days 1-15 second (from current month)
                         for (i=1; i <= 15; i++){
-                            split_day_order.push('Day ' + i);
+                            split_day_order.push('Day ' + i.toString().padStart(2, '0'));
                         }
                         
                         console.log('split day order', split_day_order)
