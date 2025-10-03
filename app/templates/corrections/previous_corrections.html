@@ -51,36 +51,31 @@
 <!-- Custom CSS for PrevCorrectionsTable -->
 <style>
 #PrevCorrectionsTable {
-  table-layout: auto;
   width: 100%;
-  min-width: max-content;
 }
 
 #PrevCorrectionsTable th,
 #PrevCorrectionsTable td {
-  white-space: nowrap;
-  padding: 8px 12px;
+  padding: 8px 6px;
   text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-/* Allow columns to auto-size based on content */
-#PrevCorrectionsTable th,
-#PrevCorrectionsTable td {
-  width: auto;
-  min-width: fit-content;
-}
-
-/* Ensure table container can handle horizontal scroll if needed */
+/* Table container styling */
 .table-responsive-lg {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  min-width: 100%;
+  width: 100%;
 }
 
-/* Make table wider to accommodate sort buttons */
+/* DataTables wrapper styling */
+.dataTables_wrapper {
+  width: 100%;
+}
+
+/* Make table fit the container */
 #PrevCorrectionsTable {
-  min-width: 1400px;
-  width: max-content;
+  width: 100%;
+  table-layout: fixed;
 }
 
 /* Ensure sort buttons are visible */
@@ -191,6 +186,25 @@
 $(document).ready(function(){
         $('#PrevCorrectionsTable').dataTable({
           pageLength: 25,
+          scrollX: false,
+          autoWidth: true,
+          responsive: false,
+          columnDefs: [
+            { targets: 0, width: "8%", className: 'text-center' },   // User
+            { targets: 1, width: "10%", className: 'text-center' },  // GHCN ID
+            { targets: 2, width: "8%", className: 'text-center' },   // Date
+            { targets: 3, width: "8%", className: 'text-center' },   // Element
+            { targets: 4, width: "7%", className: 'text-center' },   // Action
+            { targets: 5, width: "7%", className: 'text-center' },   // O Value
+            { targets: 6, width: "6%", className: 'text-center' },   // M Flag
+            { targets: 7, width: "6%", className: 'text-center' },   // Q Flag
+            { targets: 8, width: "6%", className: 'text-center' },   // S Flag
+            { targets: 9, width: "7%", className: 'text-center' },   // E Value
+            { targets: 10, width: "6%", className: 'text-center' },  // E Flag
+            { targets: 11, width: "8%", className: 'text-center' },  // Source
+            { targets: 12, width: "10%", className: 'text-center' }, // Submission Date
+            { targets: 13, width: "9%", className: 'text-center' }   // Datzilla Number
+          ]
         });
 
         

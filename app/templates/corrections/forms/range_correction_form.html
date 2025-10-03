@@ -138,7 +138,7 @@
                         style="width:100%;display:block;font-weight: bold;">Clear</button>
                 </div>
                 <div class="col-sm">
-                    <button type="submit" class="btn btn-success" style="width:100%;display:block;font-weight: bold;">Next</button>
+                    <button type="submit" class="btn btn-success" id="submit-range-form" style="width:100%;display:block;font-weight: bold;">Next</button>
                 </div>
 
             </div>
@@ -478,5 +478,85 @@
 
         });
     </script>
+
+<!-- Form Validation -->
+<script>
+$(document).ready(function() {
+    // Form validation for required fields
+    $("form").submit(function(event) {
+        const dateRangeField = $("#date-range-input");
+        const ghcnIdField = $("#ghcn_id");
+        const elementField = $(".element-select");
+        const actionField = $(".action-select");
+        
+        // Check if date range field is empty
+        if (!dateRangeField.val() || dateRangeField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("Date range is required. Please select a date range before submitting.");
+            } else {
+                alert("Date range is required. Please select a date range before submitting.");
+            }
+            
+            // Focus on date range field
+            dateRangeField.focus();
+            return false;
+        }
+        
+        // Check if GHCN ID field is empty
+        if (!ghcnIdField.val() || ghcnIdField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("GHCN ID is required. Please enter a GHCN ID before submitting.");
+            } else {
+                alert("GHCN ID is required. Please enter a GHCN ID before submitting.");
+            }
+            
+            // Focus on GHCN ID field
+            ghcnIdField.focus();
+            return false;
+        }
+        
+        // Check if element field is empty
+        if (!elementField.val() || elementField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("Element is required. Please select an element before submitting.");
+            } else {
+                alert("Element is required. Please select an element before submitting.");
+            }
+            
+            // Focus on element field
+            elementField.focus();
+            return false;
+        }
+        
+        // Check if action field is empty
+        if (!actionField.val() || actionField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("Action is required. Please select an action before submitting.");
+            } else {
+                alert("Action is required. Please select an action before submitting.");
+            }
+            
+            // Focus on action field
+            actionField.focus();
+            return false;
+        }
+        
+        // If all fields are filled, allow form submission
+        return true;
+    });
+});
+</script>
 
 {% endblock content %}
