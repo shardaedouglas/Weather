@@ -13,76 +13,63 @@
 
     </div>
     <div class="row g-3 m-5">
-        <div class="col rounded p-3 m-4" style="border: 1px solid #707070"> 
-            <div class="row flex-column">
-                <div class="col my-2" style="font-size:160%;font-weight: 600;" > 
-                    Daily corrections
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    This is a brief description of daily corrections. This is a brief description of daily corrections.
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.daily_corrections') }}'">Enter a Correction</button>
-                </div>
-        
+        <div class="col rounded p-3 m-4 d-flex flex-column" style="border: 1px solid #707070; min-height: 200px;"> 
+            <div class="my-2" style="font-size:160%;font-weight: 600;"> 
+                Daily corrections
             </div>
-            
-            
-        </div>
-        <div class="col rounded p-3 m-4" style="border: 1px solid #707070">  
-            <div class="row flex-column">
-                <div class="col my-2" style="font-size:160%;font-weight: 600;" >
-                    Monthly corrections
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    This is a brief description of monthly corrections. This is a brief description of monthly corrections.
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.monthly_corrections') }}'">Enter a Correction</button>
-                </div>
-        
+            <div class="my-2 flex-grow-1" style="font-size:106%;"> 
+                Submit corrections for individual daily weather data points. Enter GHCN station ID, date, element, and corrected value.
+            </div>
+            <div class="my-2 mt-auto"> 
+                <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.daily_corrections') }}'">Enter a Correction</button>
             </div>
         </div>
-        <div class="col rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="row flex-column">
-                <div class="col my-2" style="font-size:160%;font-weight: 600;" >
-                    Ranged corrections
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    This is a brief description of ranged corrections. This is a brief description of ranged corrections.
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.range_corrections') }}'">Enter a Correction</button>
-                </div>
         
+        <div class="col rounded p-3 m-4 d-flex flex-column" style="border: 1px solid #707070; min-height: 200px;">  
+            <div class="my-2" style="font-size:160%;font-weight: 600;">
+                Monthly corrections
+            </div>
+            <div class="my-2 flex-grow-1" style="font-size:106%;"> 
+                Submit corrections for monthly aggregated weather data. Enter monthly totals or averages for weather elements.
+            </div>
+            <div class="my-2 mt-auto"> 
+                <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.monthly_corrections') }}'">Enter a Correction</button>
             </div>
         </div>
-        <div class="col rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="row flex-column">
-                <div class="col my-2" style="font-size:160%;font-weight: 600;" >
-                    Hourly corrections
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    This is a brief description of Hourly corrections. This is a brief description of Hourly corrections.
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.hourly_corrections') }}'">Enter a Correction</button>
-                </div>
         
+        <div class="col rounded p-3 m-4 d-flex flex-column" style="border: 1px solid #707070; min-height: 200px;">
+            <div class="my-2" style="font-size:160%;font-weight: 600;">
+                Ranged corrections
+            </div>
+            <div class="my-2 flex-grow-1" style="font-size:106%;"> 
+                Submit corrections for weather data spanning a continuous date range. Efficient for bulk corrections over multiple consecutive days.
+            </div>
+            <div class="my-2 mt-auto"> 
+                <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.range_corrections') }}'">Enter a Correction</button>
             </div>
         </div>
-        <div class="col rounded p-3 m-4" style="border: 1px solid #707070">
-            <div class="row flex-column">
-                <div class="col my-2" style="font-size:160%;font-weight: 600;" >
-                    Multi-Day corrections
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    Add individual correction entries with dynamic row management. Each entry includes GHCN ID, date, element, action, and E-value. Perfect for flexible correction workflows.
-                </div>
-                <div class="col my-2" style="font-size:106%;"> 
-                    <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.multiday_corrections') }}'">Enter a Correction</button>
-                </div>
         
+        <div class="col rounded p-3 m-4 d-flex flex-column" style="border: 1px solid #707070; min-height: 200px;">
+            <div class="my-2" style="font-size:160%;font-weight: 600;">
+                Hourly corrections
+            </div>
+            <div class="my-2 flex-grow-1" style="font-size:106%;"> 
+                Submit corrections for hourly weather data points. Enter specific hour-by-hour corrections for detailed weather elements.
+            </div>
+            <div class="my-2 mt-auto"> 
+                <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.hourly_corrections') }}'">Enter a Correction</button>
+            </div>
+        </div>
+        
+        <div class="col rounded p-3 m-4 d-flex flex-column" style="border: 1px solid #707070; min-height: 200px;">
+            <div class="my-2" style="font-size:160%;font-weight: 600;">
+                Multi-Day corrections
+            </div>
+            <div class="my-2 flex-grow-1" style="font-size:106%;"> 
+                Add multiple individual correction entries with dynamic row management. Perfect for flexible correction workflows.
+            </div>
+            <div class="my-2 mt-auto"> 
+                <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.multiday_corrections') }}'">Enter a Correction</button>
             </div>
         </div>
         </div>
