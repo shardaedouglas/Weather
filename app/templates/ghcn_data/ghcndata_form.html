@@ -16,7 +16,7 @@
         <div class="row g-3">
             <div class="col-md input-group">
                 <input class="form-check-input id-option-ghcn" type="radio" id="radio-option-ghcn-id" name="id-option" value="GHCN ID" checked="checked" >
-                <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span> {{ghcnForm.ghcn_id(class_='form-control', id='search-option-ghcn-id')}}
+                <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID <span class="text-danger">*</span></span> {{ghcnForm.ghcn_id(class_='form-control', id='search-option-ghcn-id')}}
             </div>
             
             <!--<div class="col-md input-group" style="flex-wrap: nowrap;">
@@ -81,7 +81,7 @@
                     </div>
                     <!-- Correct structure for Bootstrap input-group -->
                     <div class="input-group">
-                        <label for="date" class="input-group-text">Date</label>
+                        <label for="date" class="input-group-text">Date <span class="text-danger">*</span></label>
                         <input type="text" name='date' class="form-control" id="date" placeholder="yyyymm" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
                     </div>
                     <!-- <span class="input-group-text" id="inputGroup-sizing-default" >Date</span>
@@ -95,7 +95,7 @@
                 <button type="reset" class="btn button-dull w-100 d-block fw-bold">Clear</button>
             </div>
             <div class="col-md">
-                <button type="submit" class="btn btn-success w-100 d-block fw-bold">Submit</button>
+                <button type="submit" class="btn btn-success w-100 d-block fw-bold" id="submit-ghcn-form">Submit</button>
             </div>
             
         </div>
@@ -360,10 +360,19 @@
         }
         data = paddedData;
 
-        // Sort days numerically
-        const sortedDays = Object.keys(data).sort(
-            (a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', ''))
-        );
+        // Sort days - use custom order for split month, otherwise sort numerically
+        let sortedDays;
+        if (window.splitMonthDayOrder && window.splitMonthDayOrder.length > 0) {
+            // Use custom split month day order
+            sortedDays = window.splitMonthDayOrder.filter(dayKey => data.hasOwnProperty(dayKey));
+            console.log('Using split month day order:', sortedDays);
+        } else {
+            // Default numerical sorting
+            sortedDays = Object.keys(data).sort(
+                (a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', ''))
+            );
+            console.log('Using default numerical day order:', sortedDays);
+        }
 
         // Use orderedKeys from backend or fallback to keys from data
         const allKeys = orderedKeys && orderedKeys.length > 0
@@ -581,18 +590,45 @@
                         //Combine both month's data
                         let split_month_data = {};
                         
-                        //const entries = Object.entries(response.data);
-
-                        for (i=1; i <= 15; i++) {
-                            split_month_data['Day ' + i] = response.data['Day ' + i]
-                            
+                        // First half: days 16-31 from previous month
+                        for (i=16; i <=31; i++) {
+                            if (response.data['Day ' + i]) {
+                                split_month_data['Day ' + i] = response.data['Day ' + i]
+                            }
                         }
                         
-                        for (i=16; i <=31; i++){
-                            split_month_data['Day ' + i] = context['Day ' + i]
+                        // Second half: days 1-15 from current month
+                        for (i=1; i <= 15; i++){
+                            if (context['Day ' + i]) {
+                                split_month_data['Day ' + i] = context['Day ' + i]
+                            }
                         }
+                        
                         console.log('split month data', split_month_data)
-                        //Populate Table with previous month's data
+                        
+                        // Create custom day order for split month display
+                        let split_day_order = [];
+                        
+                        // Add days 16-31 first (from previous month)
+                        for (i=16; i <=31; i++) {
+                            if (split_month_data['Day ' + i]) {
+                                split_day_order.push('Day ' + i);
+                            }
+                        }
+                        
+                        // Add days 1-15 second (from current month)
+                        for (i=1; i <= 15; i++){
+                            if (split_month_data['Day ' + i]) {
+                                split_day_order.push('Day ' + i);
+                            }
+                        }
+                        
+                        console.log('split day order', split_day_order)
+                        
+                        // Store the custom day order for use in showComparisonTable
+                        window.splitMonthDayOrder = split_day_order;
+                        
+                        //Populate Table with split month data using original ordered keys for elements
                         showComparisonTable(split_month_data, response.ordered_keys)
                     },
                     error: function (xhr, status, error) {
@@ -606,7 +642,10 @@
             }
             else if($(this).prop("checked") == false){
                 console.log("Disable Split Month")
+                // Clear the custom day order
+                window.splitMonthDayOrder = null;
                 // Reset to the original table data
+                showComparisonTable(lastFetchedData, lastFetchedData.ordered_keys || Object.keys(lastFetchedData));
             }
         })
     })
@@ -914,6 +953,53 @@
 
 
     </script>
+
+<!-- Form Validation -->
+<script>
+$(document).ready(function() {
+    // Form validation for required date field
+    $("form").submit(function(event) {
+        const dateField = $("#date");
+        const ghcnIdField = $("#search-option-ghcn-id");
+        
+        // Check if date field is empty
+        if (!dateField.val() || dateField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("Date field is required. Please select a date before submitting.");
+            } else {
+                alert("Date field is required. Please select a date before submitting.");
+            }
+            
+            // Focus on date field
+            dateField.focus();
+            return false;
+        }
+        
+        // Check if GHCN ID field is empty
+        if (!ghcnIdField.val() || ghcnIdField.val().trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            
+            // Show error message
+            if (typeof errorPopup !== 'undefined') {
+                errorPopup.error("GHCN ID field is required. Please enter a GHCN ID before submitting.");
+            } else {
+                alert("GHCN ID field is required. Please enter a GHCN ID before submitting.");
+            }
+            
+            // Focus on GHCN ID field
+            ghcnIdField.focus();
+            return false;
+        }
+        
+        // If both fields are filled, allow form submission
+        return true;
+    });
+});
+</script>
+
 <!-- Date Picker Functionality -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {

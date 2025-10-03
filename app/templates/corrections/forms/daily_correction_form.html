@@ -18,13 +18,13 @@
             <div class="col-lg-4">
 
                 <div class="input-group">
-                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold" >GHCN ID <span class="text-danger">*</span></span>
                     {{daily_form.ghcn_id(class_='form-control')}}
                 </div>
             </div>
             <div class="col-lg-3 col-md-5 col-6 justify-content-start" id="date-div">
                 <div class="input-group">
-                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date <span class="text-danger">*</span></span>
                     {{daily_form.date(class_='form-control date-picker')}}
                 </div>
             </div>
@@ -38,13 +38,13 @@
         <div class="row g-3 justify-content-center" >
             <div class="col-lg-3 col-md-4 col-sm-5" style=" flex-wrap: nowrap; max-height: 40px">
                 <div class="input-group">
-                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Action</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold;">Action <span class="text-danger">*</span></span>
                     {{daily_form.action(class_='form-control')}}
                 </div>
             </div>
             <div class="col-lg-3 col-md-5 col-sm-5 col-6 justify-content-start" style="flex-wrap: nowrap;">
                 <div class="input-group">
-                    <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element</span>
+                    <span class="input-group-text element-select" id="inputGroup-sizing-default" style="font-weight: bold">Element <span class="text-danger">*</span></span>
                     {{daily_form.element(class_='form-select element-select')}}
                 </div>
             </div>

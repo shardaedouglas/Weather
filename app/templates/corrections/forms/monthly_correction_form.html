@@ -18,7 +18,7 @@
         <form class="row g-3 align-items-center">
             <div class="row g-3 justify-content-center">
                 <div class="col-auto input-group" style="max-width: 300px;">
-                    <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default" >GHCN ID <span class="text-danger">*</span></span>
                     {{monthly_form.ghcn_id(class_='form-control') }}
                 </div>
                 <div class="col-lg-2">
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="date" class="input-group-text">Date</label>
+                        <label for="date" class="input-group-text">Date <span class="text-danger">*</span></label>
                         <input type="text" name='date' class="form-control" id="date" placeholder="yyyy/mm" data-bs-toggle="modal" data-bs-target="#date-picker-modal">
                     </div>
                 </div>
@@ -75,7 +75,7 @@
  
              <div class="row g-3 justify-content-center">
                  <div class="col-auto input-group" style="max-width: 300px;">
-                     <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
+                     <span class="input-group-text" id="inputGroup-sizing-default">Element <span class="text-danger">*</span></span>
                      {{monthly_form.element(class_='form-select element-select')}}
                  </div>
                  <div class="col-auto input-group d-none" id="sub-element-select" style="max-width: 300px;">
@@ -89,7 +89,7 @@
                  </div> 
                  
                  <div class="col-auto input-group" style="max-width: 250px;">
-                     <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
+                     <span class="input-group-text" id="inputGroup-sizing-default">Action <span class="text-danger">*</span></span>
                      {{monthly_form.action(class_='form-select action-select')}}
                  </div>
              </div>
@@ -240,7 +240,8 @@
 
     //  First Section's Clear button
         $("#monthly-form-clear-1").on("click", function() {
-        $("#monthly-form-table").hide();
+        // Refresh the page to completely reset the form
+        window.location.reload();
         });
         
     function submitCorrections(formData, monthlyInputData) {

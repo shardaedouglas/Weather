@@ -16,20 +16,20 @@
             <div class="row g-3 align-items-center">
                 <div class="col input-group">
                     <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">GHCN
-                        ID</span>
+                        ID <span class="text-danger">*</span></span>
                      {{hourly_form.ghcn_id(class_='form-control')}}
                 </div>
             </div>
             <div class="row g-3">
                 <div class="col input-group justify-content-start" id="date-div">
-                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default" style="font-weight: bold">Date <span class="text-danger">*</span></span>
                     {{hourly_form.date(class_='form-control date-picker')}}
                 </div>
             </div>
             <div class="row g-3">
                 <div class="col-sm input-group justify-content-start" style="flex-wrap: nowrap;">
                     <span class="input-group-text element-select" id="inputGroup-sizing-default"
-                        style="font-weight: bold">Element</span>
+                        style="font-weight: bold">Element <span class="text-danger">*</span></span>
                          {{hourly_form.element(class_='form-select element-select' , id='hourly-multi-select')}}
                 </div>
             </div>

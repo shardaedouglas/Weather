@@ -16,13 +16,13 @@
         <form class="row g-3 align-items-center" method="POST" action="/corrections/range">
             <div class="row g-3 justify-content-center">
                 <div class="col-auto input-group" style="max-width: 300px;">
-                    <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default">GHCN ID <span class="text-danger">*</span></span>
                     {{range_form.ghcn_id(class_='form-control')}}
                 </div>
                 <div class="col-auto datepicker-container" style="max-width: 400px;">
                     <!-- Input field that triggers the date picker -->
                     <div class="input-group">
-                        <span class="input-group-text" id="inputGroup-sizing-default">Date Range</span>
+                        <span class="input-group-text" id="inputGroup-sizing-default">Date Range <span class="text-danger">*</span></span>
                         <input type="text" id="date-range-input" name="date" class="form-control" placeholder="Select Date Range" readonly>
                         <span class="input-group-text">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-range" viewBox="0 0 16 16">
@@ -106,7 +106,7 @@
                     {{range_form.datzilla_number(class_='form-control')}}
                 </div>
                 <div class="col-auto input-group" style="max-width: 300px;">
-                    <span class="input-group-text" id="inputGroup-sizing-default">Element</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default">Element <span class="text-danger">*</span></span>
                     {{range_form.element(class_='form-select element-select')}}
                 </div>
                 <!-- Sub selection for Element -->
@@ -118,7 +118,7 @@
                     <div class="sub-element-option">{{range_form.sub_element_WV(class_='form-select element-select')}}</div>
                 </div>
                 <div class="col-auto input-group" style="max-width: 250px;">
-                    <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
+                    <span class="input-group-text" id="inputGroup-sizing-default">Action <span class="text-danger">*</span></span>
                     {{range_form.action(class_='form-select action-select')}}
                 </div>
             </div>
