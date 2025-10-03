@@ -149,7 +149,18 @@
             console.log(monthly_input);
             // NOTE that the Element field needs to be replaced with its sub element if the selection is WT** WV** SN*# or SX*#
             // See formatWeatherDataQuery() and checkFields() in daily_correction_form.html
+            console.log("Form data before formatWeatherDataQuery:", $(this).serialize());
+            console.log("Element field value:", $("#element").val());
+            console.log("Element field exists:", $("#element").length > 0);
+            console.log("Form element names:", Object.keys($(this).get(0).elements).map(name => $(this).get(0).elements[name].name));
             var formData = formatWeatherDataQuery($(this));
+            console.log("Form data after formatWeatherDataQuery:", formData);
+            
+            // Check if formData is valid before proceeding
+            if (!formData || formData === 'undefined' || formData === 'null') {
+                errorPopup.error("Error: Form data could not be processed. Please check all required fields.");
+                return;
+            }
             
             // Remove one of the date fields from formData.
             formData = formData.split("&");

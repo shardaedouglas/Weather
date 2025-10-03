@@ -765,11 +765,14 @@
             function formatWeatherDataQuery(formData) {
                 const form = formData.get(0);
                 var formDataArray = formData.serialize().split("&");
-                // console.log("FORMDATA: ", formDataArray);
+                console.log("formatWeatherDataQuery - FORMDATA: ", formDataArray);
+                console.log("formatWeatherDataQuery - Form elements:", form.elements);
                 sub_element_str = "element=";
                 element_index = formDataArray.findIndex((element => element.indexOf("element=") != -1));
+                console.log("formatWeatherDataQuery - Element index:", element_index);
                 if (element_index == -1) {
                     console.log("Element was not found in form response.")
+                    console.log("Available form data:", formDataArray);
                     // Throw an exception or an error.
                     return formDataArray.join("&"); // Return original data if element not found
                 }
@@ -807,15 +810,20 @@
 
                 // Remove Sub Elements from form parameters if they exist
                 let subElementIndex = formDataArray.findIndex((element => element.indexOf("sub_element_SN=") != -1));
+                console.log("formatWeatherDataQuery - Sub-element index:", subElementIndex);
                 if (subElementIndex !== -1) {
                     // Remove all sub-element fields (SN, SX, WT, WV)
                     formDataArray.splice(subElementIndex, 4);
-                    // console.log(formDataArray);
-                    return formDataArray.join("&");
+                    console.log("formatWeatherDataQuery - After removing sub-elements:", formDataArray);
+                    const result = formDataArray.join("&");
+                    console.log("formatWeatherDataQuery - Final result with sub-elements removed:", result);
+                    return result;
                 } else {
                     // No sub-elements found, return the processed data
                     console.log("No sub-elements found in form data, returning processed data.");
-                    return formDataArray.join("&");
+                    const result = formDataArray.join("&");
+                    console.log("formatWeatherDataQuery - Final result without sub-elements:", result);
+                    return result;
                 }
             }
             
