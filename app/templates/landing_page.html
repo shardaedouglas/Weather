@@ -72,10 +72,77 @@
                 <button type="button" class="btn btn-primary" onclick="window.location.href = '{{ url_for('corrections.multiday_corrections') }}'">Enter a Correction</button>
             </div>
         </div>
+        
+        <!-- Review Corrections Box - Special Styling -->
+        <div class="col-12 rounded p-4 m-3 d-flex flex-column review-corrections-box" style="border: 2px solid #056FB7; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 180px; box-shadow: 0 4px 12px rgba(5, 111, 183, 0.15);">
+            <div class="my-2 text-center review-title" style="font-size:180%;font-weight: 700; color: #056FB7;">
+                <i class="fas fa-search me-2"></i>Review Corrections
+            </div>
+            <div class="my-2 flex-grow-1 text-center review-description" style="font-size:110%; color: #495057;">
+                View and analyze previously submitted corrections. Access correction history, review data quality, and track correction workflows across all correction types.
+            </div>
+            <div class="my-2 mt-auto text-center"> 
+                <button type="button" class="btn btn-primary btn-lg px-4 review-button" style="background: linear-gradient(135deg, #056FB7 0%, #003087 100%); border: none; box-shadow: 0 4px 8px rgba(5, 111, 183, 0.3); transition: all 0.3s ease;" onclick="window.location.href = '{{ url_for('corrections.previous_corrections') }}'">
+                    <i class="fas fa-eye me-2"></i>Review Corrections
+                </button>
+            </div>
+        </div>
         </div>
 
     </div>
 
 </div>
+
+<style>
+/* Review Corrections Box Dark Mode Styling */
+.dark-mode .review-corrections-box {
+    border: 2px solid #3182ce !important;
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3) !important;
+}
+
+.dark-mode .review-corrections-box .review-title {
+    color: #3182ce !important;
+}
+
+.dark-mode .review-corrections-box .review-description {
+    color: #e2e8f0 !important;
+}
+
+.dark-mode .review-corrections-box .review-button {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%) !important;
+    box-shadow: 0 4px 8px rgba(49, 130, 206, 0.4) !important;
+}
+
+.dark-mode .review-corrections-box .review-button:hover {
+    background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(49, 130, 206, 0.5) !important;
+}
+
+/* High contrast mode adjustments */
+.high-contrast .review-corrections-box {
+    border: 3px solid #000000 !important;
+    background: #ffffff !important;
+}
+
+.high-contrast .review-corrections-box .review-title {
+    color: #000000 !important;
+}
+
+.high-contrast .review-corrections-box .review-description {
+    color: #000000 !important;
+}
+
+.dark-mode.high-contrast .review-corrections-box {
+    background: #000000 !important;
+    border: 3px solid #ffffff !important;
+}
+
+.dark-mode.high-contrast .review-corrections-box .review-title,
+.dark-mode.high-contrast .review-corrections-box .review-description {
+    color: #ffffff !important;
+}
+</style>
 
 {% endblock content %}
