@@ -19,23 +19,23 @@
     <div class="row">
       <div class="col">
         <div class="table-responsive-lg">
-          <table class="table table-light table-striped" id="PrevCorrectionsTable">
+          <table class="table table-light table-striped text-center" id="PrevCorrectionsTable" style="table-layout: fixed; width: 100%;">
             <thead>
               <tr>
-                <th>User</th>
-                <th>GHCN ID</th>
-                <th>Date</th>
-                <th>Element</th>
-                <th>Action</th>
-                <th>O Value</th>
-                <th>M Flag</th>
-                <th>Q Flag</th>
-                <th>S Flag</th>
-                <th>E Value</th>
-                <th>E Flag</th>
-                <th>Source</th>
-                <th>Correction Submission Date</th>
-                <th>Datzilla Number</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">GHCN ID</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Date</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Element</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Action</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">O Value</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">M Flag</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Q Flag</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">S Flag</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E Value</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E Flag</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Source</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Correction Submission Date</th>
+                <th class="text-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Datzilla Number</th>
               </tr>
             </thead>
             <tbody>
@@ -48,6 +48,115 @@
   </div>
 </div>
 
+<!-- Custom CSS for PrevCorrectionsTable -->
+<style>
+#PrevCorrectionsTable {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#PrevCorrectionsTable th,
+#PrevCorrectionsTable td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+
+/* Specific column widths for better layout */
+#PrevCorrectionsTable th:nth-child(1),  /* User */
+#PrevCorrectionsTable td:nth-child(1) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(2),  /* GHCN ID */
+#PrevCorrectionsTable td:nth-child(2) {
+  width: 10%;
+}
+
+#PrevCorrectionsTable th:nth-child(3),  /* Date */
+#PrevCorrectionsTable td:nth-child(3) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(4),  /* Element */
+#PrevCorrectionsTable td:nth-child(4) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(5),  /* Action */
+#PrevCorrectionsTable td:nth-child(5) {
+  width: 6%;
+}
+
+#PrevCorrectionsTable th:nth-child(6),  /* O Value */
+#PrevCorrectionsTable td:nth-child(6) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(7),  /* M Flag */
+#PrevCorrectionsTable td:nth-child(7) {
+  width: 6%;
+}
+
+#PrevCorrectionsTable th:nth-child(8),  /* Q Flag */
+#PrevCorrectionsTable td:nth-child(8) {
+  width: 6%;
+}
+
+#PrevCorrectionsTable th:nth-child(9),  /* S Flag */
+#PrevCorrectionsTable td:nth-child(9) {
+  width: 6%;
+}
+
+#PrevCorrectionsTable th:nth-child(10), /* E Value */
+#PrevCorrectionsTable td:nth-child(10) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(11), /* E Flag */
+#PrevCorrectionsTable td:nth-child(11) {
+  width: 6%;
+}
+
+#PrevCorrectionsTable th:nth-child(12), /* Source */
+#PrevCorrectionsTable td:nth-child(12) {
+  width: 8%;
+}
+
+#PrevCorrectionsTable th:nth-child(13), /* Correction Submission Date */
+#PrevCorrectionsTable td:nth-child(13) {
+  width: 12%;
+}
+
+#PrevCorrectionsTable th:nth-child(14), /* Datzilla Number */
+#PrevCorrectionsTable td:nth-child(14) {
+  width: 10%;
+}
+
+/* Tooltip for truncated text */
+#PrevCorrectionsTable th[title],
+#PrevCorrectionsTable td[title] {
+  cursor: help;
+}
+
+/* Dark mode adjustments */
+.dark-mode #PrevCorrectionsTable th,
+.dark-mode #PrevCorrectionsTable td {
+  border-color: #4a5568;
+}
+
+/* High contrast mode adjustments */
+.high-contrast #PrevCorrectionsTable th,
+.high-contrast #PrevCorrectionsTable td {
+  border: 2px solid #000000 !important;
+}
+
+.dark-mode.high-contrast #PrevCorrectionsTable th,
+.dark-mode.high-contrast #PrevCorrectionsTable td {
+  border: 2px solid #ffffff !important;
+}
+</style>
 
 <script>
 $(document).ready(function(){

@@ -7,17 +7,17 @@
             <div class="row " style="text-align: center">
                 <div class="col">
                     <div class="table-responsive-lg">
-                        <table class="table table-sm table-striped table-borderless border" id="rangeTable">
+                        <table class="table table-sm table-striped table-borderless border text-center" id="rangeTable">
                             <thead>
                                 <tr>
-                                    <th class="ghcn-table-cell" scope="col">GHCN ID</th>
-                                    <th class="ghcn-table-cell" scope="col">Date</th>
-                                    <th class="ghcn-table-cell" scope="col">Element</th>
-                                    <th class="ghcn-table-cell" scope="col">Action</th>
-                                    <th class="ghcn-table-cell" scope="col">Value</th>
-                                    <th class="ghcn-table-cell" scope="col">New Value (Invalidation)</th>
-                                    <th class="ghcn-table-cell" scope="col">Today's Date</th>
-                                    <th class="ghcn-table-cell" scope="col">Datzilla #</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">GHCN ID</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Date</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Element</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Action</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Value</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">New Value (Invalidation)</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Today's Date</th>
+                                    <th class="ghcn-table-cell text-center" scope="col">Datzilla #</th>
                                 </tr>
                             </thead>
                         </table>
@@ -42,6 +42,15 @@
     });
 
     $(".btn-submit").click(function () {
+        // Show loading spinner
+        const loadingSpinner = document.querySelector('#spinner');
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'block';
+        }
+        
+        // Disable the submit button to prevent multiple submissions
+        $(this).prop('disabled', true);
+        
         // Get the stored table data
         const correctionData = JSON.parse($('#correctionData').val());
         console.log(correctionData);
@@ -57,11 +66,32 @@
             contentType: 'application/json',  // Ensure the server handles the data as JSON
             data: JSON.stringify({ correction_data: correctionData }),  // Send data as JSON
             success: function(response) {
+                // Hide the loading spinner
+                const loadingSpinner = document.querySelector('#spinner');
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+                
+                // Re-enable the submit button
+                $(".btn-submit").prop('disabled', false);
+                
+                // Hide the ranged table
+                $("#ranged-form-table").hide();
+                
                 // Handle processing
                 handleAjaxSuccess("Ranged Correction Submitted Successfully");
                 showSubmissionConfirmation("ranged");
             },
             error: function(xhr, status, error) {
+                // Hide the loading spinner
+                const loadingSpinner = document.querySelector('#spinner');
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+                
+                // Re-enable the submit button
+                $(".btn-submit").prop('disabled', false);
+                
                 console.error("Error:", error);
                 handleAjaxError(xhr, status, error, "There was an error processing your ranged correction request.");
             }
