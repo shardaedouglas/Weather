@@ -153,7 +153,6 @@
             
             // Remove one of the date fields from formData.
             formData = formData.split("&");
-            element_index = formData.findIndex((element => element.indexOf("date=") != -1));
             if (element_index == -1) {
                 //For some reason there's not a date field. 
             } else {
@@ -263,7 +262,7 @@
         
         const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
         const currentYear = new Date().getFullYear();
-        const years = Array.from({ length: 50 }, (_, i) => currentYear  - i);
+        const years = Array.from({ length: 100 }, (_, i) => currentYear  - i);
 
         let selectedMonth = null;
         let selectedYear = null;

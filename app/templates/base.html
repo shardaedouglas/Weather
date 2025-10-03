@@ -764,13 +764,14 @@
              */
             function formatWeatherDataQuery(formData) {
                 const form = formData.get(0);
-                var formData = formData.serialize().split("&");
-                // console.log("FORMDATA: ", formData);
+                var formDataArray = formData.serialize().split("&");
+                // console.log("FORMDATA: ", formDataArray);
                 sub_element_str = "element=";
-                element_index = formData.findIndex((element => element.indexOf("element=") != -1));
+                element_index = formDataArray.findIndex((element => element.indexOf("element=") != -1));
                 if (element_index == -1) {
                     console.log("Element was not found in form response.")
                     // Throw an exception or an error.
+                    return formDataArray.join("&"); // Return original data if element not found
                 }
                 // Replace ELEMENT subselection if relevant.
                 switch (form.elements.element.value.toString()) {
@@ -778,40 +779,43 @@
                         // Get the value from the sub-element
                         const newValue = form.elements.sub_element_SN.value.toString();
                         // console.log("new value:", newValue)
-                        formData[element_index] = sub_element_str + newValue;
+                        formDataArray[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "SX*#": {
                         const newValue = form.elements.sub_element_SX.value.toString();
                         // console.log("new value:", newValue)
-                        formData[element_index] = sub_element_str + newValue;
+                        formDataArray[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "WT**": {
                         const newValue = form.elements.sub_element_WT.value.toString();
                         // console.log("new value:", newValue)
-                        formData[element_index] = sub_element_str + newValue;
+                        formDataArray[element_index] = sub_element_str + newValue;
                         break;
                     }
                     case "WV**": {
                         const newValue = form.elements.sub_element_WV.value.toString();
                         // console.log("new value:", newValue)
-                        formData[element_index] = sub_element_str + newValue;
+                        formDataArray[element_index] = sub_element_str + newValue;
                         break;
                     }
                     default:  
+                        // Keep the original element value
+                        break;
                 }
 
-                // Remove Sub Elements from form parameters
-                let index = formData.findIndex((element => element.indexOf("sub_element_SN=") != -1));
-                if (index !== -1) {
-                    formData.splice(index,4);
-                    // console.log(formData);
-                    return formData.join("&")
+                // Remove Sub Elements from form parameters if they exist
+                let subElementIndex = formDataArray.findIndex((element => element.indexOf("sub_element_SN=") != -1));
+                if (subElementIndex !== -1) {
+                    // Remove all sub-element fields (SN, SX, WT, WV)
+                    formDataArray.splice(subElementIndex, 4);
+                    // console.log(formDataArray);
+                    return formDataArray.join("&");
                 } else {
-                    // For some reason there is not "sub_element_SN=" in the form object. 
-                    console.log("sub_element_SN= was not found.");
-                    return 
+                    // No sub-elements found, return the processed data
+                    console.log("No sub-elements found in form data, returning processed data.");
+                    return formDataArray.join("&");
                 }
             }
             
